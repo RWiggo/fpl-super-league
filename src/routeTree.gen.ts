@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as FixturesRouteImport } from './routes/fixtures'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SeasonSeasonIdRouteImport } from './routes/season.$seasonId'
 
 const HistoryRoute = HistoryRouteImport.update({
   id: '/history',
@@ -28,35 +29,44 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SeasonSeasonIdRoute = SeasonSeasonIdRouteImport.update({
+  id: '/season/$seasonId',
+  path: '/season/$seasonId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/fixtures': typeof FixturesRoute
   '/history': typeof HistoryRoute
+  '/season/$seasonId': typeof SeasonSeasonIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/fixtures': typeof FixturesRoute
   '/history': typeof HistoryRoute
+  '/season/$seasonId': typeof SeasonSeasonIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/fixtures': typeof FixturesRoute
   '/history': typeof HistoryRoute
+  '/season/$seasonId': typeof SeasonSeasonIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/fixtures' | '/history'
+  fullPaths: '/' | '/fixtures' | '/history' | '/season/$seasonId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/fixtures' | '/history'
-  id: '__root__' | '/' | '/fixtures' | '/history'
+  to: '/' | '/fixtures' | '/history' | '/season/$seasonId'
+  id: '__root__' | '/' | '/fixtures' | '/history' | '/season/$seasonId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   FixturesRoute: typeof FixturesRoute
   HistoryRoute: typeof HistoryRoute
+  SeasonSeasonIdRoute: typeof SeasonSeasonIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/season/$seasonId': {
+      id: '/season/$seasonId'
+      path: '/season/$seasonId'
+      fullPath: '/season/$seasonId'
+      preLoaderRoute: typeof SeasonSeasonIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,7 +106,17 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   FixturesRoute: FixturesRoute,
   HistoryRoute: HistoryRoute,
+  SeasonSeasonIdRoute: SeasonSeasonIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
