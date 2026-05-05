@@ -9,38 +9,103 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as HistoryRouteImport } from './routes/history'
+import { Route as FixturesRouteImport } from './routes/fixtures'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TeamManagerIdRouteImport } from './routes/team.$managerId'
+import { Route as SeasonSeasonIdRouteImport } from './routes/season.$seasonId'
 
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FixturesRoute = FixturesRouteImport.update({
+  id: '/fixtures',
+  path: '/fixtures',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TeamManagerIdRoute = TeamManagerIdRouteImport.update({
+  id: '/team/$managerId',
+  path: '/team/$managerId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SeasonSeasonIdRoute = SeasonSeasonIdRouteImport.update({
+  id: '/season/$seasonId',
+  path: '/season/$seasonId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/fixtures': typeof FixturesRoute
+  '/history': typeof HistoryRoute
+  '/season/$seasonId': typeof SeasonSeasonIdRoute
+  '/team/$managerId': typeof TeamManagerIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/fixtures': typeof FixturesRoute
+  '/history': typeof HistoryRoute
+  '/season/$seasonId': typeof SeasonSeasonIdRoute
+  '/team/$managerId': typeof TeamManagerIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/fixtures': typeof FixturesRoute
+  '/history': typeof HistoryRoute
+  '/season/$seasonId': typeof SeasonSeasonIdRoute
+  '/team/$managerId': typeof TeamManagerIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/fixtures'
+    | '/history'
+    | '/season/$seasonId'
+    | '/team/$managerId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/fixtures' | '/history' | '/season/$seasonId' | '/team/$managerId'
+  id:
+    | '__root__'
+    | '/'
+    | '/fixtures'
+    | '/history'
+    | '/season/$seasonId'
+    | '/team/$managerId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  FixturesRoute: typeof FixturesRoute
+  HistoryRoute: typeof HistoryRoute
+  SeasonSeasonIdRoute: typeof SeasonSeasonIdRoute
+  TeamManagerIdRoute: typeof TeamManagerIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fixtures': {
+      id: '/fixtures'
+      path: '/fixtures'
+      fullPath: '/fixtures'
+      preLoaderRoute: typeof FixturesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,21 +113,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/team/$managerId': {
+      id: '/team/$managerId'
+      path: '/team/$managerId'
+      fullPath: '/team/$managerId'
+      preLoaderRoute: typeof TeamManagerIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/season/$seasonId': {
+      id: '/season/$seasonId'
+      path: '/season/$seasonId'
+      fullPath: '/season/$seasonId'
+      preLoaderRoute: typeof SeasonSeasonIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  FixturesRoute: FixturesRoute,
+  HistoryRoute: HistoryRoute,
+  SeasonSeasonIdRoute: SeasonSeasonIdRoute,
+  TeamManagerIdRoute: TeamManagerIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
