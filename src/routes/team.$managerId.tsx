@@ -129,6 +129,13 @@ function TeamPage() {
       } as React.CSSProperties)
     : undefined;
 
+  const latestMst = [...d.mst].sort((a: any, b: any) => {
+    const sa = d.seasons.find((s: any) => s.id === a.season_id)?.year_start ?? 0;
+    const sb = d.seasons.find((s: any) => s.id === b.season_id)?.year_start ?? 0;
+    return sb - sa;
+  })[0];
+  const currentTeamName = latestMst?.team_name ?? d.manager.team_name ?? d.manager.name;
+
   return (
     <div style={brandStyle}>
       <PageHero
