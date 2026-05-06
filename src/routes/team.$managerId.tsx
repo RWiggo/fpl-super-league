@@ -20,12 +20,13 @@ function TeamPage() {
   useEffect(() => {
     setD(null);
     (async () => {
-      const [manager, seasons, allManagers, mst, standings, fixtures, streaks, h2h, overall, teamStats, legends, tots, history, alltimePlayers] = await Promise.all([
+      const [manager, seasons, allManagers, mst, standings, allStandings, fixtures, streaks, h2h, overall, teamStats, legends, tots, history, alltimePlayers] = await Promise.all([
         supabase.from("managers").select("*").eq("id", managerId).single(),
         supabase.from("seasons").select("*").order("year_start"),
         supabase.from("managers").select("*"),
         supabase.from("manager_season_teams").select("*").eq("manager_id", managerId),
         supabase.from("season_standings").select("*").eq("manager_id", managerId),
+        supabase.from("season_standings").select("*"),
         supabase.from("fixture_records").select("*").or(`home_manager_id.eq.${managerId},away_manager_id.eq.${managerId}`),
         supabase.from("win_streaks").select("*").eq("manager_id", managerId),
         supabase.from("h2h_records").select("*").or(`manager_a_id.eq.${managerId},manager_b_id.eq.${managerId}`),
