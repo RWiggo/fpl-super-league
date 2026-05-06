@@ -1,19 +1,36 @@
 import { Link, Outlet } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase, type Manager, type Season } from "@/lib/supabase";
 import { Trophy, Menu, X } from "lucide-react";
 
 export function Layout() {
   const [managers, setManagers] = useState<Manager[]>([]);
   const [seasons, setSeasons] = useState<Season[]>([]);
+  const [mst, setMst] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [teamsOpen, setTeamsOpen] = useState(false);
   const [seasonsOpen, setSeasonsOpen] = useState(false);
 
   useEffect(() => {
-    supabase.from("managers").select("*").order("name").then(({ data }) => setManagers(data ?? []));
+    supabase.from("managers").select("*").then(({ data }) => setManagers(data ?? []));
     supabase.from("seasons").select("*").order("year_start").then(({ data }) => setSeasons(data ?? []));
+    supabase.from("manager_season_teams").select("manager_id,team_name,season_id").then(({ data }) => setMst(data ?? []));
   }, []);
+
+  const teamsList = useMemo(() => {
+    const latestSeason = new Map<any, number>();
+    const latestName = new Map<any, string>();
+    for (const r of mst) {
+      const prev = latestSeason.get(r.manager_id) ?? -Infinity;
+      if (r.season_id > prev) {
+        latestSeason.set(r.manager_id, r.season_id);
+        latestName.set(r.manager_id, r.team_name);
+      }
+    }
+    return managers
+      .map((m) => ({ ...m, displayName: latestName.get(m.id) ?? m.team_name ?? m.name }))
+      .sort((a, b) => a.displayName.localeCompare(b.displayName));
+  }, [managers, mst]);
 
   const navLinks = [
     { to: "/", label: "Home" },
@@ -36,9 +53,9 @@ export function Layout() {
               <button className="px-3 py-2 hover:text-gold transition">Teams</button>
               {teamsOpen && (
                 <div className="absolute top-full left-0 mt-1 w-56 premium-card rounded-md py-2 max-h-96 overflow-auto">
-                  {managers.map((m) => (
-                    <Link key={m.id} to="/team/$managerId" params={{ managerId: m.id }} className="block px-4 py-2 text-sm hover:bg-gold/10 hover:text-gold capitalize">
-                      {m.name}
+                  {teamsList.map((m) => (
+                    <Link key={m.id} to="/team/$managerId" params={{ managerId: m.id }} className="block px-4 py-2 text-sm hover:bg-gold/10 hover:text-gold">
+                      {m.displayName}
                     </Link>
                   ))}
                 </div>
@@ -77,8 +94,8 @@ export function Layout() {
               <details className="border-t border-border/30 pt-2">
                 <summary className="py-2 text-sm uppercase tracking-wider cursor-pointer">Teams</summary>
                 <div className="pl-4 max-h-60 overflow-auto">
-                  {managers.map((m) => (
-                    <Link key={m.id} to="/team/$managerId" params={{ managerId: m.id }} onClick={() => setOpen(false)} className="block py-1.5 text-sm capitalize">{m.name}</Link>
+                  {teamsList.map((m) => (
+                    <Link key={m.id} to="/team/$managerId" params={{ managerId: m.id }} onClick={() => setOpen(false)} className="block py-1.5 text-sm">{m.displayName}</Link>
                   ))}
                 </div>
               </details>
