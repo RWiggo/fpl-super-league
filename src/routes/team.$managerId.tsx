@@ -87,7 +87,28 @@ function TeamPage() {
   const totalDraws = d.standings.reduce((acc: number, s: any) => acc + (s.draws ?? 0), 0);
   const totalLosses = d.standings.reduce((acc: number, s: any) => acc + (s.losses ?? 0), 0);
   const totalPoints = d.standings.reduce((acc: number, s: any) => acc + (s.total_points ?? 0), 0);
+  const totalPF = d.standings.reduce((acc: number, s: any) => acc + Number(s.points_for ?? 0), 0);
+  const totalPA = d.standings.reduce((acc: number, s: any) => acc + Number(s.points_against ?? 0), 0);
+  const pointsDiff = totalPF - totalPA;
   const winPct = totalGames ? ((totalWins / totalGames) * 100).toFixed(1) : "0";
+
+  // All-time league position by PPG
+  const ppgByManager = new Map<string, { games: number; pts: number }>();
+  for (const s of d.allStandings as any[]) {
+    const cur = ppgByManager.get(s.manager_id) ?? { games: 0, pts: 0 };
+    cur.games += (s.wins ?? 0) + (s.draws ?? 0) + (s.losses ?? 0);
+    cur.pts += s.total_points ?? 0;
+    ppgByManager.set(s.manager_id, cur);
+  }
+  const ppgRanked = [...ppgByManager.entries()]
+    .map(([id, v]) => ({ id, ppg: v.games ? v.pts / v.games : 0 }))
+    .sort((a, b) => b.ppg - a.ppg);
+  const allTimeRank = ppgRanked.findIndex((x) => x.id === managerId) + 1;
+  const ordinal = (n: number) => {
+    const s = ["th", "st", "nd", "rd"], v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  };
+
 
   // personal records
   const myFixtures = d.fixtures;
