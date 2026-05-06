@@ -2,9 +2,11 @@
 // Primary color is applied to the team page hero accent (overrides --gold locally).
 import b1 from "@/assets/badges/1.svg";
 import b2 from "@/assets/badges/2.svg";
+import b3 from "@/assets/badges/3.svg";
 import b4 from "@/assets/badges/4.svg";
 import b5 from "@/assets/badges/5.svg";
 import b6 from "@/assets/badges/6.svg";
+import b7 from "@/assets/badges/7.svg";
 import b8 from "@/assets/badges/8.svg";
 import b9 from "@/assets/badges/9.svg";
 import b10 from "@/assets/badges/10.svg";
@@ -17,9 +19,11 @@ export type Branding = { badge: string; primary: string; primaryFg?: string };
 export const MANAGER_BRANDING: Record<string, Branding> = {
   "1":  { badge: b1,  primary: "#d00e29" },                       // El Changusto
   "2":  { badge: b2,  primary: "#b5b6d4", primaryFg: "#0a0a0a" }, // Charleston Athletic
+  "3":  { badge: b3,  primary: "#01f9c9", primaryFg: "#0a0a0a" }, // Wiggo Wanderers
   "4":  { badge: b4,  primary: "#d06000" },                       // ALS Ajax
   "5":  { badge: b5,  primary: "#f15a37" },                       // Padleys Piranhas
   "6":  { badge: b6,  primary: "#964e27" },                       // Fill Her Wycombe
+  "7":  { badge: b7,  primary: "#c69629" },                       // Raybould Eagles
   "8":  { badge: b8,  primary: "#f8cf2c", primaryFg: "#0a0a0a" }, // Adam All Stars
   "9":  { badge: b9,  primary: "#f78f1e" },                       // Lallana Rhoades (orange on navy)
   "10": { badge: b10, primary: "#e4181c" },                       // Send Me Location
