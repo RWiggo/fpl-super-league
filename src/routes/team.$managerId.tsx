@@ -20,12 +20,13 @@ function TeamPage() {
   useEffect(() => {
     setD(null);
     (async () => {
-      const [manager, seasons, allManagers, mst, standings, fixtures, streaks, h2h, overall, teamStats, legends, tots, history, alltimePlayers] = await Promise.all([
+      const [manager, seasons, allManagers, mst, standings, allStandings, fixtures, streaks, h2h, overall, teamStats, legends, tots, history, alltimePlayers] = await Promise.all([
         supabase.from("managers").select("*").eq("id", managerId).single(),
         supabase.from("seasons").select("*").order("year_start"),
         supabase.from("managers").select("*"),
         supabase.from("manager_season_teams").select("*").eq("manager_id", managerId),
         supabase.from("season_standings").select("*").eq("manager_id", managerId),
+        supabase.from("season_standings").select("*"),
         supabase.from("fixture_records").select("*").or(`home_manager_id.eq.${managerId},away_manager_id.eq.${managerId}`),
         supabase.from("win_streaks").select("*").eq("manager_id", managerId),
         supabase.from("h2h_records").select("*").or(`manager_a_id.eq.${managerId},manager_b_id.eq.${managerId}`),
@@ -46,6 +47,7 @@ function TeamPage() {
           const sb = seasons.data?.find((s: any) => s.id === b.season_id)?.year_start ?? 0;
           return sa - sb;
         }),
+        allStandings: allStandings.data ?? [],
         fixtures: fixtures.data ?? [],
         streaks: streaks.data ?? [],
         h2h: h2h.data ?? [],
@@ -85,7 +87,28 @@ function TeamPage() {
   const totalDraws = d.standings.reduce((acc: number, s: any) => acc + (s.draws ?? 0), 0);
   const totalLosses = d.standings.reduce((acc: number, s: any) => acc + (s.losses ?? 0), 0);
   const totalPoints = d.standings.reduce((acc: number, s: any) => acc + (s.total_points ?? 0), 0);
+  const totalPF = d.standings.reduce((acc: number, s: any) => acc + Number(s.points_for ?? 0), 0);
+  const totalPA = d.standings.reduce((acc: number, s: any) => acc + Number(s.points_against ?? 0), 0);
+  const pointsDiff = totalPF - totalPA;
   const winPct = totalGames ? ((totalWins / totalGames) * 100).toFixed(1) : "0";
+
+  // All-time league position by PPG
+  const ppgByManager = new Map<string, { games: number; pts: number }>();
+  for (const s of d.allStandings as any[]) {
+    const cur = ppgByManager.get(s.manager_id) ?? { games: 0, pts: 0 };
+    cur.games += (s.wins ?? 0) + (s.draws ?? 0) + (s.losses ?? 0);
+    cur.pts += s.total_points ?? 0;
+    ppgByManager.set(s.manager_id, cur);
+  }
+  const ppgRanked = [...ppgByManager.entries()]
+    .map(([id, v]) => ({ id, ppg: v.games ? v.pts / v.games : 0 }))
+    .sort((a, b) => b.ppg - a.ppg);
+  const allTimeRank = ppgRanked.findIndex((x) => x.id === managerId) + 1;
+  const ordinal = (n: number) => {
+    const s = ["th", "st", "nd", "rd"], v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  };
+
 
   // personal records
   const myFixtures = d.fixtures;
@@ -168,15 +191,19 @@ function TeamPage() {
 
       {/* Career */}
       <section className="max-w-7xl mx-auto px-4 py-12">
-        <SectionTitle kicker="Career" title="Overall Record" />
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mt-6">
-          <StatCard label="Seasons" value={d.standings.length} />
-          <StatCard label="Titles" value={titles} icon={titles > 0 ? <Trophy className="w-4 h-4" /> : undefined} />
-          <StatCard label="W-D-L" value={`${totalWins}-${totalDraws}-${totalLosses}`} />
-          <StatCard label="Win %" value={`${winPct}%`} />
-          <StatCard label="Total Pts" value={totalPoints} />
-          <StatCard label="Best Finish" value={bestFinish ?? "—"} />
-          <StatCard label="Worst Finish" value={worstFinish ?? "—"} />
+        <SectionTitle kicker="A brief history" title={`${currentTeamName} by the numbers`} />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
+          <StatCard label="Seasons in the League" value={d.standings.length} />
+          <StatCard label="League Titles Won" value={titles} icon={titles > 0 ? <Trophy className="w-4 h-4" /> : undefined} />
+          <StatCard label="All-Time League Position" value={allTimeRank > 0 ? ordinal(allTimeRank) : "—"} sub="By points per game" />
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-3">
+          <StatCard label="All-Time Wins" value={totalWins} />
+          <StatCard label="All-Time Draws" value={totalDraws} />
+          <StatCard label="All-Time Losses" value={totalLosses} />
+          <StatCard label="All-Time Win %" value={`${winPct}%`} />
+          <StatCard label="FPL Points Difference" value={`${pointsDiff >= 0 ? "+" : ""}${pointsDiff.toFixed(0)}`} />
+          <StatCard label="All-Time Points" value={totalPoints} />
         </div>
       </section>
 
