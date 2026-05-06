@@ -5,6 +5,7 @@ import { PageHero } from "@/components/PageHero";
 import { StatCard, Skeleton } from "@/components/StatCard";
 import { FormationPitch } from "@/components/FormationPitch";
 import { Trophy, Crown, Flame, Target, Zap, TrendingDown } from "lucide-react";
+import { getBranding } from "@/lib/managerBranding";
 
 export const Route = createFileRoute("/team/$managerId")({
   component: TeamPage,
