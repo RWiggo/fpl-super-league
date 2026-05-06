@@ -47,6 +47,7 @@ function TeamPage() {
           const sb = seasons.data?.find((s: any) => s.id === b.season_id)?.year_start ?? 0;
           return sa - sb;
         }),
+        allStandings: allStandings.data ?? [],
         fixtures: fixtures.data ?? [],
         streaks: streaks.data ?? [],
         h2h: h2h.data ?? [],
