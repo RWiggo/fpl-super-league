@@ -5,6 +5,7 @@ import { PageHero } from "@/components/PageHero";
 import { StatCard, Skeleton } from "@/components/StatCard";
 import { FormationPitch } from "@/components/FormationPitch";
 import { Trophy, Crown, Flame, Target, Zap, TrendingDown } from "lucide-react";
+import { getBranding } from "@/lib/managerBranding";
 
 export const Route = createFileRoute("/team/$managerId")({
   component: TeamPage,
@@ -110,11 +111,40 @@ function TeamPage() {
   const seasonStats = d.teamStats.find((s: any) => s.season_id === statSeason);
   const totsPlayers = d.tots.filter((p: any) => p.season_id === totsSeason);
 
+  const branding = getBranding(managerId);
+  const brandStyle = branding
+    ? ({
+        ["--gold" as any]: branding.primary,
+        ["--color-gold" as any]: branding.primary,
+        ["--gold-bright" as any]: branding.primary,
+        ["--color-gold-bright" as any]: branding.primary,
+        ["--primary" as any]: branding.primary,
+        ["--color-primary" as any]: branding.primary,
+        ...(branding.primaryFg
+          ? {
+              ["--primary-foreground" as any]: branding.primaryFg,
+              ["--color-primary-foreground" as any]: branding.primaryFg,
+            }
+          : {}),
+      } as React.CSSProperties)
+    : undefined;
+
   return (
-    <div>
+    <div style={brandStyle}>
       <PageHero
         kicker={`Manager · ${d.mst.length} Season${d.mst.length !== 1 ? "s" : ""}`}
-        title={<span className="capitalize gold-gradient">{d.manager.name}</span>}
+        title={
+          <span className="flex items-center gap-6 flex-wrap">
+            {branding && (
+              <img
+                src={branding.badge}
+                alt={`${d.manager.team_name ?? d.manager.name} badge`}
+                className="w-24 h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 shrink-0 drop-shadow-[0_8px_30px_rgba(0,0,0,0.6)]"
+              />
+            )}
+            <span className="capitalize gold-gradient">{d.manager.name}</span>
+          </span>
+        }
         subtitle={
           <div className="flex flex-wrap gap-2 mt-2">
             {d.mst.map((t: any) => (
