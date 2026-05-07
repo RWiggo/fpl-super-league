@@ -20,27 +20,29 @@ function TeamPage() {
   useEffect(() => {
     setD(null);
     (async () => {
-      const [manager, seasons, allManagers, mst, standings, allStandings, fixtures, streaks, h2h, overall, teamStats, legends, tots, history, alltimePlayers, unbeaten, winless, losing, allClubs] = await Promise.all([
-        supabase.from("managers").select("*").eq("id", managerId).single(),
+      const managerRes = await supabase.from("managers").select("*").eq("id", managerId).single();
+      const mName = managerRes.data?.name;
+      const [seasons, allManagers, mst, standings, allStandings, fixtures, streaks, h2h, overall, teamStats, legends, tots, history, alltimePlayers, unbeaten, winless, losing, allClubs] = await Promise.all([
         supabase.from("seasons").select("*").order("year_start"),
         supabase.from("managers").select("*"),
         supabase.from("manager_season_teams").select("*").eq("manager_id", managerId),
         supabase.from("season_standings").select("*").eq("manager_id", managerId),
         supabase.from("season_standings").select("*"),
         supabase.from("fixture_records").select("*").or(`home_manager_id.eq.${managerId},away_manager_id.eq.${managerId}`),
-        supabase.from("win_streaks").select("*").eq("manager_id", managerId),
+        supabase.from("win_streaks").select("*").eq("manager_name", mName),
         supabase.from("h2h_records").select("*").or(`manager_a_id.eq.${managerId},manager_b_id.eq.${managerId}`),
         supabase.from("manager_overall_record").select("*").eq("manager_id", managerId).maybeSingle(),
         supabase.from("team_season_stats_full").select("*").eq("manager_id", managerId),
         supabase.from("team_legends").select("*").eq("manager_id", managerId),
         supabase.from("team_of_the_season").select("*").eq("manager_id", managerId),
-        supabase.from("player_team_history").select("*").eq("manager_id", managerId),
+        supabase.from("player_team_history").select("*").eq("manager_name", mName),
         supabase.from("player_team_alltime").select("*").eq("manager_id", managerId),
-        supabase.from("unbeaten_streaks").select("*").eq("manager_id", managerId),
-        supabase.from("winless_streaks").select("*").eq("manager_id", managerId),
-        supabase.from("losing_streaks").select("*").eq("manager_id", managerId),
+        supabase.from("unbeaten_streaks").select("*").eq("manager_name", mName),
+        supabase.from("winless_streaks").select("*").eq("manager_name", mName),
+        supabase.from("losing_streaks").select("*").eq("manager_name", mName),
         supabase.from("player_team_history").select("club"),
       ]);
+      const manager = managerRes;
       setD({
         manager: manager.data,
         seasons: seasons.data ?? [],
