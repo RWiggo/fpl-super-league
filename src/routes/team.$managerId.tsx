@@ -514,3 +514,51 @@ function SectionTitle({ kicker, title }: { kicker: string; title: string }) {
 function Skel() {
   return <div className="max-w-7xl mx-auto px-4 py-20 space-y-4"><Skeleton className="h-32" /><Skeleton className="h-96" /></div>;
 }
+
+function PlayerLeaderboard({ title, subtitle, players, icon, accent }: { title: string; subtitle?: string; players: any[]; icon?: React.ReactNode; accent?: boolean }) {
+  return (
+    <div className="premium-card rounded-lg overflow-hidden">
+      <div className="p-5 border-b border-border/50">
+        <div className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-gold mb-1">{icon}{title}</div>
+        {subtitle && <div className="text-xs text-muted-foreground">{subtitle}</div>}
+      </div>
+      <table className="w-full text-sm">
+        <tbody>
+          {players.map((p, i) => (
+            <tr key={`${p.player_id ?? p.player_name}-${i}`} className="border-t border-border/40">
+              <td className="p-3 w-10 font-display text-gold">{i + 1}</td>
+              <td className="p-3 font-medium">{p.player_name ?? p.name}</td>
+              <td className="p-3 text-xs uppercase text-muted-foreground w-12 text-center">{p.position}</td>
+              <td className="p-3 text-right font-display text-gold">{Number(p.total_fantasy_points ?? 0).toFixed(0)}</td>
+            </tr>
+          ))}
+          {players.length === 0 && (
+            <tr><td colSpan={4} className="p-6 text-center text-muted-foreground text-sm">No data</td></tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ClubLeaderboard({ title, subtitle, rows, accent }: { title: string; subtitle?: string; rows: { club: string; pts: number }[]; accent?: boolean }) {
+  return (
+    <div className="premium-card rounded-lg overflow-hidden">
+      <div className="p-5 border-b border-border/50">
+        <div className="text-xs uppercase tracking-[0.25em] text-gold mb-1">{title}</div>
+        {subtitle && <div className="text-xs text-muted-foreground">{subtitle}</div>}
+      </div>
+      <table className="w-full text-sm">
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={r.club} className="border-t border-border/40">
+              <td className="p-3 w-10 font-display text-gold">{i + 1}</td>
+              <td className="p-3 font-display tracking-wider">{r.club}</td>
+              <td className="p-3 text-right font-display text-gold">{r.pts > 0 ? r.pts.toFixed(0) : <span className="text-muted-foreground/60">Never used</span>}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
