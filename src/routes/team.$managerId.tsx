@@ -138,11 +138,65 @@ function TeamPage() {
   });
   const heaviestDef = [...myLosses].sort((a: any, b: any) => (b.margin ?? 0) - (a.margin ?? 0))[0];
 
-  const winStreak = [...d.streaks].filter((s: any) => (s.streak_type ?? s.type) === "win" || (s.streak_type ?? s.type) === "W").sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
-  const lossStreak = [...d.streaks].filter((s: any) => (s.streak_type ?? s.type) === "loss" || (s.streak_type ?? s.type) === "L").sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
+  const winStreak = [...d.streaks].filter((s: any) => (s.streak_type ?? s.type ?? s.outcome) === "win" || (s.streak_type ?? s.type ?? s.outcome) === "W").sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
+  const lossStreak = [...d.streaks].filter((s: any) => (s.streak_type ?? s.type ?? s.outcome) === "loss" || (s.streak_type ?? s.type ?? s.outcome) === "L").sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
 
   const seasonStats = d.teamStats.find((s: any) => s.season_id === statSeason);
   const totsPlayers = d.tots.filter((p: any) => p.season_id === totsSeason);
+
+  // Highs & Lows
+  const sortedPlayers = [...(d.alltimePlayers as any[])].sort((a, b) => (b.total_fantasy_points ?? 0) - (a.total_fantasy_points ?? 0));
+  const top5Players = sortedPlayers.slice(0, 5);
+  const bottom5Players = [...sortedPlayers].reverse().slice(0, 5);
+
+  const longest = (rows: any[]) => [...rows].sort((a, b) => (b.streak_length ?? 0) - (a.streak_length ?? 0))[0];
+  const bestWinRun = longest((d.streaks as any[]).filter((r) => r.outcome === "W"));
+  const bestUnbeatenRun = longest(d.unbeaten ?? []);
+  const worstWinlessRun = longest(d.winless ?? []);
+  const worstLosingRun = longest(d.losing ?? []);
+
+  // Clubs aggregation
+  const clubAgg = new Map<string, number>();
+  for (const r of (d.history as any[])) {
+    if (!r.club) continue;
+    clubAgg.set(r.club, (clubAgg.get(r.club) ?? 0) + Number(r.fantasy_points ?? 0));
+  }
+  // include unused clubs with 0
+  for (const c of (d.allClubs as string[])) if (!clubAgg.has(c)) clubAgg.set(c, 0);
+  const clubsRanked = [...clubAgg.entries()].map(([club, pts]) => ({ club, pts })).sort((a, b) => b.pts - a.pts);
+  const top5Clubs = clubsRanked.slice(0, 5);
+  const bottom5Clubs = [...clubsRanked].reverse().slice(0, 5);
+
+  // All-time XI in legal formation
+  const posMap: Record<string, "GK" | "DEF" | "MID" | "FWD"> = { G: "GK", GK: "GK", GKP: "GK", D: "DEF", DEF: "DEF", M: "MID", MID: "MID", F: "FWD", FWD: "FWD" };
+  const byPos: Record<string, any[]> = { GK: [], DEF: [], MID: [], FWD: [] };
+  for (const p of sortedPlayers) {
+    const k = posMap[p.position];
+    if (k) byPos[k].push(p);
+  }
+  const formations: Array<[number, number, number]> = [
+    [3, 4, 3], [3, 5, 2], [4, 3, 3], [4, 4, 2], [4, 5, 1], [5, 3, 2], [5, 4, 1],
+  ];
+  let bestXI: any[] = [];
+  let bestXISum = -1;
+  let bestFormation: [number, number, number] = [4, 4, 2];
+  for (const [nd, nm, nf] of formations) {
+    if (byPos.GK.length < 1 || byPos.DEF.length < nd || byPos.MID.length < nm || byPos.FWD.length < nf) continue;
+    const xi = [
+      ...byPos.GK.slice(0, 1),
+      ...byPos.DEF.slice(0, nd),
+      ...byPos.MID.slice(0, nm),
+      ...byPos.FWD.slice(0, nf),
+    ];
+    const sum = xi.reduce((a, p) => a + (p.total_fantasy_points ?? 0), 0);
+    if (sum > bestXISum) {
+      bestXISum = sum;
+      bestXI = xi;
+      bestFormation = [nd, nm, nf];
+    }
+  }
+  // normalize positions for FormationPitch
+  const bestXIForPitch = bestXI.map((p) => ({ ...p, position: posMap[p.position] ?? p.position }));
 
   const branding = getBranding(managerId);
   const brandStyle = branding
