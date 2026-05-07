@@ -103,7 +103,7 @@ function TeamPage() {
   const ppgRanked = [...ppgByManager.entries()]
     .map(([id, v]) => ({ id, ppg: v.games ? v.pts / v.games : 0 }))
     .sort((a, b) => b.ppg - a.ppg);
-  const allTimeRank = ppgRanked.findIndex((x) => x.id === managerId) + 1;
+  const allTimeRank = ppgRanked.findIndex((x) => String(x.id) === String(managerId)) + 1;
   const ordinal = (n: number) => {
     const s = ["th", "st", "nd", "rd"], v = n % 100;
     return n + (s[(v - 20) % 10] || s[v] || s[0]);
