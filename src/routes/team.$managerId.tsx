@@ -198,12 +198,12 @@ function TeamPage() {
           <StatCard label="All-Time League Position" value={allTimeRank > 0 ? ordinal(allTimeRank) : "—"} sub="By points per game" />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-3">
-          <StatCard label="All-Time Wins" value={totalWins} />
-          <StatCard label="All-Time Draws" value={totalDraws} />
-          <StatCard label="All-Time Losses" value={totalLosses} />
-          <StatCard label="All-Time Win %" value={`${winPct}%`} />
-          <StatCard label="FPL Points Difference" value={`${pointsDiff >= 0 ? "+" : ""}${pointsDiff.toFixed(0)}`} />
-          <StatCard label="All-Time Points" value={totalPoints} />
+          <StatCard label="All-Time Wins" value={totalWins} align="center" />
+          <StatCard label="All-Time Draws" value={totalDraws} align="center" />
+          <StatCard label="All-Time Losses" value={totalLosses} align="center" />
+          <StatCard label="All-Time Win %" value={`${winPct}%`} align="center" />
+          <StatCard label="FPL Points Difference" value={`${pointsDiff >= 0 ? "+" : ""}${pointsDiff.toFixed(0)}`} align="center" />
+          <StatCard label="All-Time Points" value={totalPoints} align="center" />
         </div>
       </section>
 
