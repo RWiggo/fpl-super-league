@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { PageHero } from "@/components/PageHero";
 import { StatCard, Skeleton } from "@/components/StatCard";
 import { FormationPitch } from "@/components/FormationPitch";
-import { Trophy, Crown, Flame, Target, Zap, TrendingDown } from "lucide-react";
+import { Trophy, Crown, Flame, Target, Zap, TrendingDown, Award, ShieldOff, Flag, Skull } from "lucide-react";
 import { getBranding } from "@/lib/managerBranding";
 
 export const Route = createFileRoute("/team/$managerId")({
@@ -20,23 +20,29 @@ function TeamPage() {
   useEffect(() => {
     setD(null);
     (async () => {
-      const [manager, seasons, allManagers, mst, standings, allStandings, fixtures, streaks, h2h, overall, teamStats, legends, tots, history, alltimePlayers] = await Promise.all([
-        supabase.from("managers").select("*").eq("id", managerId).single(),
+      const managerRes = await supabase.from("managers").select("*").eq("id", managerId).single();
+      const mName = managerRes.data?.name;
+      const [seasons, allManagers, mst, standings, allStandings, fixtures, streaks, h2h, overall, teamStats, legends, tots, history, alltimePlayers, unbeaten, winless, losing, allClubs] = await Promise.all([
         supabase.from("seasons").select("*").order("year_start"),
         supabase.from("managers").select("*"),
         supabase.from("manager_season_teams").select("*").eq("manager_id", managerId),
         supabase.from("season_standings").select("*").eq("manager_id", managerId),
         supabase.from("season_standings").select("*"),
         supabase.from("fixture_records").select("*").or(`home_manager_id.eq.${managerId},away_manager_id.eq.${managerId}`),
-        supabase.from("win_streaks").select("*").eq("manager_id", managerId),
+        supabase.from("win_streaks").select("*").eq("manager_name", mName),
         supabase.from("h2h_records").select("*").or(`manager_a_id.eq.${managerId},manager_b_id.eq.${managerId}`),
         supabase.from("manager_overall_record").select("*").eq("manager_id", managerId).maybeSingle(),
         supabase.from("team_season_stats_full").select("*").eq("manager_id", managerId),
         supabase.from("team_legends").select("*").eq("manager_id", managerId),
         supabase.from("team_of_the_season").select("*").eq("manager_id", managerId),
-        supabase.from("player_team_history").select("*").eq("manager_id", managerId),
+        supabase.from("player_team_history").select("*").eq("manager_name", mName),
         supabase.from("player_team_alltime").select("*").eq("manager_id", managerId),
+        supabase.from("unbeaten_streaks").select("*").eq("manager_name", mName),
+        supabase.from("winless_streaks").select("*").eq("manager_name", mName),
+        supabase.from("losing_streaks").select("*").eq("manager_name", mName),
+        supabase.from("player_team_history").select("club"),
       ]);
+      const manager = managerRes;
       setD({
         manager: manager.data,
         seasons: seasons.data ?? [],
@@ -57,6 +63,10 @@ function TeamPage() {
         tots: tots.data ?? [],
         history: history.data ?? [],
         alltimePlayers: alltimePlayers.data ?? [],
+        unbeaten: unbeaten.data ?? [],
+        winless: winless.data ?? [],
+        losing: losing.data ?? [],
+        allClubs: [...new Set((allClubs.data ?? []).map((r: any) => r.club).filter(Boolean))] as string[],
       });
     })();
   }, [managerId]);
@@ -128,11 +138,65 @@ function TeamPage() {
   });
   const heaviestDef = [...myLosses].sort((a: any, b: any) => (b.margin ?? 0) - (a.margin ?? 0))[0];
 
-  const winStreak = [...d.streaks].filter((s: any) => (s.streak_type ?? s.type) === "win" || (s.streak_type ?? s.type) === "W").sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
-  const lossStreak = [...d.streaks].filter((s: any) => (s.streak_type ?? s.type) === "loss" || (s.streak_type ?? s.type) === "L").sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
+  const winStreak = [...d.streaks].filter((s: any) => (s.streak_type ?? s.type ?? s.outcome) === "win" || (s.streak_type ?? s.type ?? s.outcome) === "W").sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
+  const lossStreak = [...d.streaks].filter((s: any) => (s.streak_type ?? s.type ?? s.outcome) === "loss" || (s.streak_type ?? s.type ?? s.outcome) === "L").sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
 
   const seasonStats = d.teamStats.find((s: any) => s.season_id === statSeason);
   const totsPlayers = d.tots.filter((p: any) => p.season_id === totsSeason);
+
+  // Highs & Lows
+  const sortedPlayers = [...(d.alltimePlayers as any[])].sort((a, b) => (b.total_fantasy_points ?? 0) - (a.total_fantasy_points ?? 0));
+  const top5Players = sortedPlayers.slice(0, 5);
+  const bottom5Players = [...sortedPlayers].reverse().slice(0, 5);
+
+  const longest = (rows: any[]) => [...rows].sort((a, b) => (b.streak_length ?? 0) - (a.streak_length ?? 0))[0];
+  const bestWinRun = longest((d.streaks as any[]).filter((r) => r.outcome === "W"));
+  const bestUnbeatenRun = longest(d.unbeaten ?? []);
+  const worstWinlessRun = longest(d.winless ?? []);
+  const worstLosingRun = longest(d.losing ?? []);
+
+  // Clubs aggregation
+  const clubAgg = new Map<string, number>();
+  for (const r of (d.history as any[])) {
+    if (!r.club) continue;
+    clubAgg.set(r.club, (clubAgg.get(r.club) ?? 0) + Number(r.fantasy_points ?? 0));
+  }
+  // include unused clubs with 0
+  for (const c of (d.allClubs as string[])) if (!clubAgg.has(c)) clubAgg.set(c, 0);
+  const clubsRanked = [...clubAgg.entries()].map(([club, pts]) => ({ club, pts })).sort((a, b) => b.pts - a.pts);
+  const top5Clubs = clubsRanked.slice(0, 5);
+  const bottom5Clubs = [...clubsRanked].reverse().slice(0, 5);
+
+  // All-time XI in legal formation
+  const posMap: Record<string, "GK" | "DEF" | "MID" | "FWD"> = { G: "GK", GK: "GK", GKP: "GK", D: "DEF", DEF: "DEF", M: "MID", MID: "MID", F: "FWD", FWD: "FWD" };
+  const byPos: Record<string, any[]> = { GK: [], DEF: [], MID: [], FWD: [] };
+  for (const p of sortedPlayers) {
+    const k = posMap[p.position];
+    if (k) byPos[k].push(p);
+  }
+  const formations: Array<[number, number, number]> = [
+    [3, 4, 3], [3, 5, 2], [4, 3, 3], [4, 4, 2], [4, 5, 1], [5, 3, 2], [5, 4, 1],
+  ];
+  let bestXI: any[] = [];
+  let bestXISum = -1;
+  let bestFormation: [number, number, number] = [4, 4, 2];
+  for (const [nd, nm, nf] of formations) {
+    if (byPos.GK.length < 1 || byPos.DEF.length < nd || byPos.MID.length < nm || byPos.FWD.length < nf) continue;
+    const xi = [
+      ...byPos.GK.slice(0, 1),
+      ...byPos.DEF.slice(0, nd),
+      ...byPos.MID.slice(0, nm),
+      ...byPos.FWD.slice(0, nf),
+    ];
+    const sum = xi.reduce((a, p) => a + (p.total_fantasy_points ?? 0), 0);
+    if (sum > bestXISum) {
+      bestXISum = sum;
+      bestXI = xi;
+      bestFormation = [nd, nm, nf];
+    }
+  }
+  // normalize positions for FormationPitch
+  const bestXIForPitch = bestXI.map((p) => ({ ...p, position: posMap[p.position] ?? p.position }));
 
   const branding = getBranding(managerId);
   const brandStyle = branding
@@ -263,6 +327,43 @@ function TeamPage() {
           <StatCard label="Heaviest Defeat" value={heaviestDef?.margin ?? 0} sub={heaviestDef ? `vs ${mById(heaviestDef.home_manager_id === managerId ? heaviestDef.away_manager_id : heaviestDef.home_manager_id)?.name}` : ""} icon={<TrendingDown className="w-5 h-5" />} />
           <StatCard label="Longest Losing Streak" value={lossStreak?.streak_length ?? 0} icon={<TrendingDown className="w-5 h-5" />} />
         </div>
+      </section>
+
+      {/* Highs and Lows */}
+      <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
+        <SectionTitle kicker="The Highs and Lows" title="Records and Statistics" />
+
+        <div className="grid lg:grid-cols-2 gap-6 mt-8">
+          <PlayerLeaderboard title="Top 5 Players" subtitle="By all-time fantasy points" players={top5Players} icon={<Crown className="w-4 h-4" />} accent />
+          <PlayerLeaderboard title="Worst 5 Players" subtitle="By all-time fantasy points" players={bottom5Players} icon={<Skull className="w-4 h-4" />} />
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-8">
+          <StatCard align="center" label="Greatest Winning Run" value={bestWinRun?.streak_length ?? 0} sub={bestWinRun ? `${bestWinRun.season_name} · GW${bestWinRun.streak_start_gw}–${bestWinRun.streak_end_gw}` : undefined} icon={<Zap className="w-5 h-5" />} />
+          <StatCard align="center" label="Greatest Unbeaten Run" value={bestUnbeatenRun?.streak_length ?? 0} sub={bestUnbeatenRun ? `${bestUnbeatenRun.season_name} · GW${bestUnbeatenRun.streak_start_gw}–${bestUnbeatenRun.streak_end_gw}` : undefined} icon={<Award className="w-5 h-5" />} />
+          <StatCard align="center" label="Worst Winless Run" value={worstWinlessRun?.streak_length ?? 0} sub={worstWinlessRun ? `${worstWinlessRun.season_name} · GW${worstWinlessRun.streak_start_gw}–${worstWinlessRun.streak_end_gw}` : undefined} icon={<ShieldOff className="w-5 h-5" />} />
+          <StatCard align="center" label="Worst Losing Run" value={worstLosingRun?.streak_length ?? 0} sub={worstLosingRun ? `${worstLosingRun.season_name} · GW${worstLosingRun.streak_start_gw}–${worstLosingRun.streak_end_gw}` : undefined} icon={<TrendingDown className="w-5 h-5" />} />
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-6 mt-8">
+          <ClubLeaderboard title="Top 5 PL Clubs Relied On" subtitle="By total fantasy points contributed" rows={top5Clubs} accent />
+          <ClubLeaderboard title="Bottom 5 PL Clubs Trusted" subtitle="Includes never-used clubs (2022/23–2025/26)" rows={bottom5Clubs} />
+        </div>
+
+        {bestXI.length === 11 && (
+          <div className="mt-12">
+            <div className="flex items-baseline justify-between flex-wrap gap-2 mb-4">
+              <div>
+                <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">All-Time XI</div>
+                <h3 className="font-display text-2xl md:text-3xl">Best Eleven · {bestFormation.join("-")}</h3>
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Combined Points · <span className="text-gold font-display text-lg">{bestXISum.toFixed(0)}</span>
+              </div>
+            </div>
+            <FormationPitch players={bestXIForPitch} />
+          </div>
+        )}
       </section>
 
       {/* H2H */}
@@ -412,4 +513,52 @@ function SectionTitle({ kicker, title }: { kicker: string; title: string }) {
 
 function Skel() {
   return <div className="max-w-7xl mx-auto px-4 py-20 space-y-4"><Skeleton className="h-32" /><Skeleton className="h-96" /></div>;
+}
+
+function PlayerLeaderboard({ title, subtitle, players, icon, accent }: { title: string; subtitle?: string; players: any[]; icon?: React.ReactNode; accent?: boolean }) {
+  return (
+    <div className="premium-card rounded-lg overflow-hidden">
+      <div className="p-5 border-b border-border/50">
+        <div className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-gold mb-1">{icon}{title}</div>
+        {subtitle && <div className="text-xs text-muted-foreground">{subtitle}</div>}
+      </div>
+      <table className="w-full text-sm">
+        <tbody>
+          {players.map((p, i) => (
+            <tr key={`${p.player_id ?? p.player_name}-${i}`} className="border-t border-border/40">
+              <td className="p-3 w-10 font-display text-gold">{i + 1}</td>
+              <td className="p-3 font-medium">{p.player_name ?? p.name}</td>
+              <td className="p-3 text-xs uppercase text-muted-foreground w-12 text-center">{p.position}</td>
+              <td className="p-3 text-right font-display text-gold">{Number(p.total_fantasy_points ?? 0).toFixed(0)}</td>
+            </tr>
+          ))}
+          {players.length === 0 && (
+            <tr><td colSpan={4} className="p-6 text-center text-muted-foreground text-sm">No data</td></tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ClubLeaderboard({ title, subtitle, rows, accent }: { title: string; subtitle?: string; rows: { club: string; pts: number }[]; accent?: boolean }) {
+  return (
+    <div className="premium-card rounded-lg overflow-hidden">
+      <div className="p-5 border-b border-border/50">
+        <div className="text-xs uppercase tracking-[0.25em] text-gold mb-1">{title}</div>
+        {subtitle && <div className="text-xs text-muted-foreground">{subtitle}</div>}
+      </div>
+      <table className="w-full text-sm">
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={r.club} className="border-t border-border/40">
+              <td className="p-3 w-10 font-display text-gold">{i + 1}</td>
+              <td className="p-3 font-display tracking-wider">{r.club}</td>
+              <td className="p-3 text-right font-display text-gold">{r.pts > 0 ? r.pts.toFixed(0) : <span className="text-muted-foreground/60">Never used</span>}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
