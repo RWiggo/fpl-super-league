@@ -119,47 +119,6 @@ function TeamPage() {
     return n + (s[(v - 20) % 10] || s[v] || s[0]);
   };
 
-      {/* Highs and Lows */}
-      <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-        <SectionTitle kicker="The Highs and Lows" title="Records and Statistics" />
-
-        {/* Top & Bottom Players */}
-        <div className="grid lg:grid-cols-2 gap-6 mt-8">
-          <PlayerLeaderboard title="Top 5 Players" subtitle="By all-time fantasy points" players={top5Players} icon={<Crown className="w-4 h-4" />} accent />
-          <PlayerLeaderboard title="Worst 5 Players" subtitle="By all-time fantasy points" players={bottom5Players} icon={<Skull className="w-4 h-4" />} />
-        </div>
-
-        {/* Streaks */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-8">
-          <StatCard align="center" label="Greatest Winning Run" value={bestWinRun?.streak_length ?? 0} sub={bestWinRun ? `${bestWinRun.season_name} · GW${bestWinRun.streak_start_gw}–${bestWinRun.streak_end_gw}` : undefined} icon={<Zap className="w-5 h-5" />} />
-          <StatCard align="center" label="Greatest Unbeaten Run" value={bestUnbeatenRun?.streak_length ?? 0} sub={bestUnbeatenRun ? `${bestUnbeatenRun.season_name} · GW${bestUnbeatenRun.streak_start_gw}–${bestUnbeatenRun.streak_end_gw}` : undefined} icon={<Award className="w-5 h-5" />} />
-          <StatCard align="center" label="Worst Winless Run" value={worstWinlessRun?.streak_length ?? 0} sub={worstWinlessRun ? `${worstWinlessRun.season_name} · GW${worstWinlessRun.streak_start_gw}–${worstWinlessRun.streak_end_gw}` : undefined} icon={<ShieldOff className="w-5 h-5" />} />
-          <StatCard align="center" label="Worst Losing Run" value={worstLosingRun?.streak_length ?? 0} sub={worstLosingRun ? `${worstLosingRun.season_name} · GW${worstLosingRun.streak_start_gw}–${worstLosingRun.streak_end_gw}` : undefined} icon={<TrendingDown className="w-5 h-5" />} />
-        </div>
-
-        {/* Clubs */}
-        <div className="grid lg:grid-cols-2 gap-6 mt-8">
-          <ClubLeaderboard title="Top 5 PL Clubs Relied On" subtitle="By total fantasy points contributed" rows={top5Clubs} accent />
-          <ClubLeaderboard title="Bottom 5 PL Clubs Trusted" subtitle="Includes never-used clubs (2022/23–2025/26)" rows={bottom5Clubs} />
-        </div>
-
-        {/* All-Time XI */}
-        {bestXI.length === 11 && (
-          <div className="mt-12">
-            <div className="flex items-baseline justify-between flex-wrap gap-2 mb-4">
-              <div>
-                <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">All-Time XI</div>
-                <h3 className="font-display text-2xl md:text-3xl">Best Eleven · {bestFormation.join("-")}</h3>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Combined Points · <span className="text-gold font-display text-lg">{bestXISum.toFixed(0)}</span>
-              </div>
-            </div>
-            <FormationPitch players={bestXIForPitch} />
-          </div>
-        )}
-      </section>
-
 
   // personal records
   const myFixtures = d.fixtures;
