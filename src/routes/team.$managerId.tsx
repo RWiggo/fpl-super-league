@@ -6,6 +6,8 @@ import { StatCard, Skeleton } from "@/components/StatCard";
 import { FormationPitch } from "@/components/FormationPitch";
 import { Trophy, Crown, Flame, Target, Zap, TrendingDown, Award, ShieldOff, Flag, Skull, ChevronLeft, ChevronRight } from "lucide-react";
 import { getBranding } from "@/lib/managerBranding";
+import { getNickname } from "@/lib/managerNicknames";
+import { getPlClubBadge } from "@/lib/plClubBadges";
 
 export const Route = createFileRoute("/team/$managerId")({
   component: TeamPage,
@@ -167,7 +169,24 @@ function TeamPage() {
   const totsPlayers = d.tots.filter((p: any) => p.season_name === totsSeason);
 
   // Highs & Lows
-  const sortedPlayers = [...(d.alltimePlayers as any[])].sort((a, b) => (b.total_fantasy_points ?? 0) - (a.total_fantasy_points ?? 0));
+  // Map each player to their most-used club (by fantasy points contributed).
+  const playerClubAgg = new Map<string, Map<string, number>>();
+  for (const r of (d.history as any[])) {
+    if (!r.player_name || !r.club) continue;
+    const inner = playerClubAgg.get(r.player_name) ?? new Map<string, number>();
+    inner.set(r.club, (inner.get(r.club) ?? 0) + Number(r.fantasy_points ?? 0));
+    playerClubAgg.set(r.player_name, inner);
+  }
+  const topClubFor = (name: string): string | undefined => {
+    const inner = playerClubAgg.get(name);
+    if (!inner) return undefined;
+    return [...inner.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+  };
+  const enrichedPlayers = (d.alltimePlayers as any[]).map((p) => ({
+    ...p,
+    club: p.club ?? topClubFor(p.player_name),
+  }));
+  const sortedPlayers = [...enrichedPlayers].sort((a, b) => (b.total_fantasy_points ?? 0) - (a.total_fantasy_points ?? 0));
   const top5Players = sortedPlayers.slice(0, 5);
   const bottom5Players = [...sortedPlayers].reverse().slice(0, 5);
 
@@ -252,6 +271,7 @@ function TeamPage() {
         teamName={currentTeamName}
         badge={branding?.badge}
         primary={branding?.primary}
+        nickname={getNickname(managerId)}
         seasonsBadges={d.mst.map((t: any) => ({
           season: sById(t.season_id)?.name ?? "",
           team: t.team_name,
@@ -513,11 +533,19 @@ function TeamPage() {
 
                 {selectedPlayerData && (
                   <div className="premium-card rounded-lg p-6">
-                    <div className="flex items-baseline justify-between flex-wrap gap-2 mb-4">
-                      <div>
-                        <div className="font-display text-2xl">{searchPlayer}</div>
-                        <div className="text-xs uppercase tracking-wider text-muted-foreground mt-1">
-                          {selectedPlayerData.position} · {selectedPlayerData.clubs} · {selectedPlayerData.seasons}
+                    <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+                      <div className="flex items-center gap-4">
+                        {(() => {
+                          const headerCrest = getPlClubBadge(searchClub);
+                          return headerCrest ? (
+                            <img src={headerCrest} alt={searchClub} className="w-12 h-12 object-contain shrink-0" />
+                          ) : null;
+                        })()}
+                        <div>
+                          <div className="font-display text-2xl">{searchPlayer}</div>
+                          <div className="text-xs uppercase tracking-wider text-muted-foreground mt-1">
+                            {selectedPlayerData.position} · {selectedPlayerData.clubs} · {selectedPlayerData.seasons}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -540,15 +568,23 @@ function TeamPage() {
                             </tr>
                           </thead>
                           <tbody>
-                            {selectedPlayerData.rows.map((r: any, i: number) => (
-                              <tr key={i} className="border-t border-border/40">
-                                <td className="p-2">{r.season_name}</td>
-                                <td className="p-2">{r.club}</td>
-                                <td className="text-center p-2">{r.games_played ?? "—"}</td>
-                                <td className="text-right p-2 font-display text-gold">{Number(r.fantasy_points ?? 0).toFixed(0)}</td>
-                                <td className="text-right p-2">{r.avg_points_per_game != null ? Number(r.avg_points_per_game).toFixed(1) : "—"}</td>
-                              </tr>
-                            ))}
+                            {selectedPlayerData.rows.map((r: any, i: number) => {
+                              const rowCrest = getPlClubBadge(r.club);
+                              return (
+                                <tr key={i} className="border-t border-border/40">
+                                  <td className="p-2">{r.season_name}</td>
+                                  <td className="p-2">
+                                    <div className="flex items-center gap-2">
+                                      {rowCrest && <img src={rowCrest} alt="" loading="lazy" className="w-5 h-5 object-contain" />}
+                                      <span>{r.club}</span>
+                                    </div>
+                                  </td>
+                                  <td className="text-center p-2">{r.games_played ?? "—"}</td>
+                                  <td className="text-right p-2 font-display text-gold">{Number(r.fantasy_points ?? 0).toFixed(0)}</td>
+                                  <td className="text-right p-2">{r.avg_points_per_game != null ? Number(r.avg_points_per_game).toFixed(1) : "—"}</td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
@@ -609,20 +645,33 @@ function PlayerLeaderboard({ title, subtitle, players, icon, accent }: { title: 
       </div>
       <table className="w-full text-sm">
         <tbody>
-          {players.map((p, i) => (
-            <tr key={`${p.player_id ?? p.player_name}-${i}`} className="border-t border-border/40 odd:bg-card/30 hover:bg-card/60 transition-colors">
-              <td className={`p-3 w-10 font-display text-lg ${RANK_STYLES[i] ?? "text-muted-foreground"}`}>{i + 1}</td>
-              <td className="p-3 font-medium">{p.player_name ?? p.name}</td>
-              <td className="p-3 w-14 text-center">
-                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${POSITION_STYLES[p.position] ?? "bg-muted/20 text-muted-foreground border-border"}`}>
-                  {p.position}
-                </span>
-              </td>
-              <td className={`p-3 text-right font-display ${valueClass}`}>{Number(p.total_fantasy_points ?? 0).toFixed(0)}</td>
-            </tr>
-          ))}
+          {players.map((p, i) => {
+            const crest = getPlClubBadge(p.club);
+            return (
+              <tr key={`${p.player_id ?? p.player_name}-${i}`} className="border-t border-border/40 odd:bg-card/30 hover:bg-card/60 transition-colors">
+                <td className={`p-3 w-10 font-display text-lg ${RANK_STYLES[i] ?? "text-muted-foreground"}`}>{i + 1}</td>
+                <td className="p-3 w-10">
+                  {crest ? (
+                    <img src={crest} alt={p.club ?? ""} loading="lazy" className="w-7 h-7 object-contain" />
+                  ) : (
+                    <span className="w-7 h-7 inline-block rounded-sm bg-muted/30 border border-border/40" aria-hidden />
+                  )}
+                </td>
+                <td className="p-3 font-medium">
+                  <div>{p.player_name ?? p.name}</div>
+                  {p.club && <div className="text-[10px] uppercase tracking-wider text-muted-foreground/80 mt-0.5">{p.club}</div>}
+                </td>
+                <td className="p-3 w-14 text-center">
+                  <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${POSITION_STYLES[p.position] ?? "bg-muted/20 text-muted-foreground border-border"}`}>
+                    {p.position}
+                  </span>
+                </td>
+                <td className={`p-3 text-right font-display ${valueClass}`}>{Number(p.total_fantasy_points ?? 0).toFixed(0)}</td>
+              </tr>
+            );
+          })}
           {players.length === 0 && (
-            <tr><td colSpan={4} className="p-6 text-center text-muted-foreground text-sm">No data</td></tr>
+            <tr><td colSpan={5} className="p-6 text-center text-muted-foreground text-sm">No data</td></tr>
           )}
         </tbody>
       </table>
@@ -641,15 +690,33 @@ function ClubLeaderboard({ title, subtitle, rows, accent }: { title: string; sub
       </div>
       <table className="w-full text-sm">
         <tbody>
-          {rows.map((r, i) => (
-            <tr key={r.club} className="border-t border-border/40 odd:bg-card/30 hover:bg-card/60 transition-colors">
-              <td className={`p-3 w-10 font-display text-lg ${RANK_STYLES[i] ?? "text-muted-foreground"}`}>{i + 1}</td>
-              <td className="p-3 font-display tracking-wider">{r.club}</td>
-              <td className={`p-3 text-right font-display ${valueClass}`}>
-                {r.pts > 0 ? r.pts.toFixed(0) : <span className="text-muted-foreground/60 text-xs italic">Never used</span>}
-              </td>
-            </tr>
-          ))}
+          {rows.map((r, i) => {
+            const crest = getPlClubBadge(r.club);
+            const muted = !(r.pts > 0);
+            return (
+              <tr key={r.club} className="border-t border-border/40 odd:bg-card/30 hover:bg-card/60 transition-colors">
+                <td className={`p-3 w-10 font-display text-lg ${RANK_STYLES[i] ?? "text-muted-foreground"}`}>{i + 1}</td>
+                <td className="p-3">
+                  <div className="flex items-center gap-3">
+                    {crest ? (
+                      <img
+                        src={crest}
+                        alt=""
+                        loading="lazy"
+                        className={`w-7 h-7 object-contain shrink-0 ${muted ? "opacity-40 grayscale" : ""}`}
+                      />
+                    ) : (
+                      <span className="w-7 h-7 shrink-0 rounded-sm bg-muted/30 border border-border/40" aria-hidden />
+                    )}
+                    <span className="font-display tracking-wider">{r.club}</span>
+                  </div>
+                </td>
+                <td className={`p-3 text-right font-display ${valueClass}`}>
+                  {r.pts > 0 ? r.pts.toFixed(0) : <span className="text-muted-foreground/60 text-xs italic">Never used</span>}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
