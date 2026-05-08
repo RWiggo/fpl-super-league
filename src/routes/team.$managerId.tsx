@@ -644,15 +644,33 @@ function ClubLeaderboard({ title, subtitle, rows, accent }: { title: string; sub
       </div>
       <table className="w-full text-sm">
         <tbody>
-          {rows.map((r, i) => (
-            <tr key={r.club} className="border-t border-border/40 odd:bg-card/30 hover:bg-card/60 transition-colors">
-              <td className={`p-3 w-10 font-display text-lg ${RANK_STYLES[i] ?? "text-muted-foreground"}`}>{i + 1}</td>
-              <td className="p-3 font-display tracking-wider">{r.club}</td>
-              <td className={`p-3 text-right font-display ${valueClass}`}>
-                {r.pts > 0 ? r.pts.toFixed(0) : <span className="text-muted-foreground/60 text-xs italic">Never used</span>}
-              </td>
-            </tr>
-          ))}
+          {rows.map((r, i) => {
+            const crest = getPlClubBadge(r.club);
+            const muted = !(r.pts > 0);
+            return (
+              <tr key={r.club} className="border-t border-border/40 odd:bg-card/30 hover:bg-card/60 transition-colors">
+                <td className={`p-3 w-10 font-display text-lg ${RANK_STYLES[i] ?? "text-muted-foreground"}`}>{i + 1}</td>
+                <td className="p-3">
+                  <div className="flex items-center gap-3">
+                    {crest ? (
+                      <img
+                        src={crest}
+                        alt=""
+                        loading="lazy"
+                        className={`w-7 h-7 object-contain shrink-0 ${muted ? "opacity-40 grayscale" : ""}`}
+                      />
+                    ) : (
+                      <span className="w-7 h-7 shrink-0 rounded-sm bg-muted/30 border border-border/40" aria-hidden />
+                    )}
+                    <span className="font-display tracking-wider">{r.club}</span>
+                  </div>
+                </td>
+                <td className={`p-3 text-right font-display ${valueClass}`}>
+                  {r.pts > 0 ? r.pts.toFixed(0) : <span className="text-muted-foreground/60 text-xs italic">Never used</span>}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
