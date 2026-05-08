@@ -1046,7 +1046,7 @@ function FixturesPanel({ fixtures, managers, maxGW }: any) {
 
 function Mini({ label, value, sub }: { label: string; value: any; sub?: any }) {
   return (
-    <div className="border-l-2 border-gold pl-3">
+    <div className="border-l-0 sm:border-l-2 border-gold sm:pl-3 text-center sm:text-left">
       <div className="font-display text-2xl md:text-3xl text-gold leading-none">{value}</div>
       <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">{label}</div>
       {sub && <div className="text-[10px] text-muted-foreground/80 truncate">{sub}</div>}
