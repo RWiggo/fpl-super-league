@@ -81,6 +81,15 @@ export function TeamHero({
               {teamName}
             </h1>
             <div className="mt-4 h-[2px] w-20" style={{ background: tint }} />
+            {nickname && (
+              <div
+                className="mt-4 inline-flex items-center gap-2 text-sm md:text-base uppercase tracking-[0.32em] font-display"
+                style={{ color: tint }}
+              >
+                <span aria-hidden className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: tint }} />
+                Known as <span className="text-foreground">{nickname}</span>
+              </div>
+            )}
             {seasonsBadges && seasonsBadges.length > 0 && (
               <div className="mt-5 flex flex-wrap gap-2">
                 {seasonsBadges.map((b, i) => (
