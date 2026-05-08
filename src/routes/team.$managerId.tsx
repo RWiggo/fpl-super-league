@@ -15,7 +15,8 @@ function TeamPage() {
   const { managerId } = Route.useParams();
   const [d, setD] = useState<any>(null);
   const [seasonFilter, setSeasonFilter] = useState<string>("");
-  const [posFilter, setPosFilter] = useState<string>("");
+  const [searchClub, setSearchClub] = useState<string>("");
+  const [searchPlayer, setSearchPlayer] = useState<string>("");
 
   useEffect(() => {
     setD(null);
