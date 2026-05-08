@@ -296,6 +296,13 @@ function RecordsSection({
   mostAssists,
   mostYellows,
 }: any) {
+  // Helpers to resolve a manager (and hence their badge) from various row shapes
+  const mByName = (name?: string) => name ? d.managers.find((m: any) => m.name === name) : null;
+  const mByTeam = (team?: string) => team ? d.managers.find((m: any) => m.team_name === team)
+    ?? (() => { const r = d.mst.find((x: any) => x.team_name === team); return r ? mById(r.manager_id) : null; })() : null;
+  const badgeByManager = (name?: string) => { const m = mByName(name); return m ? getBranding(m.id)?.badge ?? null : null; };
+  const badgeByTeam = (team?: string) => { const m = mByTeam(team); return m ? getBranding(m.id)?.badge ?? null : null; };
+
   // Per-team weekly score entries from fixtures
   const teamScores = useMemo(() => {
     const out: { manager: string; team: string; gw: number; score: number; opp_team: string; opp_score: number }[] = [];
@@ -325,7 +332,7 @@ function RecordsSection({
         const their = isHome ? f.away_score : f.home_score;
         const opp = isHome ? f.away_team : f.home_team;
         const result = my > their ? "W" : my < their ? "L" : "D";
-        return { rank: i + 1, name: opp, sub: `GW${f.gameweek} · ${isHome ? "Home" : "Away"}`, value: `${my}-${their} ${result}` };
+        return { rank: i + 1, name: opp, sub: `GW${f.gameweek} · ${isHome ? "Home" : "Away"}`, value: `${my}-${their} ${result}`, badge: badgeByTeam(opp) };
       });
   };
 
@@ -352,12 +359,12 @@ function RecordsSection({
   })();
 
   // Team stat rankings
-  const rankByStat = (key: string, label: string) =>
+  const rankByStat = (key: string, _label: string) =>
     [...d.teamStats]
       .filter((t: any) => t[key] != null)
       .sort((a: any, b: any) => (b[key] ?? 0) - (a[key] ?? 0))
       .slice(0, 5)
-      .map((t: any, i: number) => ({ rank: i + 1, name: t.team_name, sub: t.manager_name, value: Number(t[key]).toFixed(0) }));
+      .map((t: any, i: number) => ({ rank: i + 1, name: t.team_name, sub: t.manager_name, value: Number(t[key]).toFixed(0), badge: badgeByManager(t.manager_name) }));
 
   // Position counts top 5
   const positionTop5 = (target: "first" | "last") => {
