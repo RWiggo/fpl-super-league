@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { StatCard, Skeleton } from "@/components/StatCard";
 import { FormationPitch } from "@/components/FormationPitch";
 import { getBranding } from "@/lib/managerBranding";
-import { Trophy, Crown, Flame, Target, Zap, Skull, Shield, TrendingUp, TrendingDown, Users, Swords, Star } from "lucide-react";
+import { Trophy, Crown, Flame, Target, Zap, Skull, Shield, TrendingUp, TrendingDown, Users, Swords, Star, Goal, HandHelping, ArrowDown, AlertOctagon } from "lucide-react";
 
 export const Route = createFileRoute("/season/$seasonId")({
   component: SeasonPage,
@@ -429,7 +429,7 @@ function RecordsSection({
           label="Most Goals"
           value={mostGoals?.out_goals ?? "—"}
           sub={mostGoals?.team_name}
-          icon={<Zap className="w-5 h-5" />}
+          icon={<Goal className="w-5 h-5" />}
           dialogTitle="Top 5 · Most Goals"
           valueHeader="Goals"
           rows={rankByStat("out_goals", "Goals")}
@@ -438,7 +438,7 @@ function RecordsSection({
           label="Most Assists"
           value={mostAssists?.out_assists ?? "—"}
           sub={mostAssists?.team_name}
-          icon={<Users className="w-5 h-5" />}
+          icon={<HandHelping className="w-5 h-5" />}
           dialogTitle="Top 5 · Most Assists"
           valueHeader="Assists"
           rows={rankByStat("out_assists", "Assists")}
@@ -456,7 +456,7 @@ function RecordsSection({
           label="Most Yellow Cards"
           value={mostYellows?.combined_yellow_cards ?? "—"}
           sub={mostYellows?.team_name}
-          icon={<Flag className="w-5 h-5" />}
+          icon={<CardIcon color="yellow" />}
           dialogTitle="Top 5 · Most Yellow Cards"
           valueHeader="Yellows"
           rows={rankByStat("combined_yellow_cards", "Yellows")}
@@ -465,7 +465,7 @@ function RecordsSection({
           label="Most Red Cards"
           value={rankByStat("out_red_cards", "Reds")[0]?.value ?? "—"}
           sub={rankByStat("out_red_cards", "Reds")[0]?.name}
-          icon={<Flag className="w-5 h-5" />}
+          icon={<CardIcon color="red" />}
           dialogTitle="Top 5 · Most Red Cards"
           valueHeader="Reds"
           rows={rankByStat("out_red_cards", "Reds")}
@@ -474,7 +474,7 @@ function RecordsSection({
           label="Most Own Goals"
           value={rankByStat("out_own_goals", "OG")[0]?.value ?? "—"}
           sub={rankByStat("out_own_goals", "OG")[0]?.name}
-          icon={<Skull className="w-5 h-5" />}
+          icon={<AlertOctagon className="w-5 h-5" />}
           dialogTitle="Top 5 · Most Own Goals"
           valueHeader="OG"
           rows={rankByStat("out_own_goals", "OG")}
@@ -492,14 +492,14 @@ function RecordsSection({
           label="Most GWs at the Bottom"
           value={positionCounts.botId?.[1] ?? "—"}
           sub={positionCounts.botId ? mById(positionCounts.botId[0])?.team_name : ""}
-          icon={<Skull className="w-5 h-5" />}
+          icon={<ArrowDown className="w-5 h-5" />}
           dialogTitle="Top 5 · Most Gameweeks in Last"
           valueHeader="Gameweeks"
           rows={positionTop5("last")}
         />
       </div>
 
-      <StatExplorer teamStats={d.teamStats} />
+      <StatExplorer teamStats={d.teamStats} managers={d.managers} />
     </section>
   );
 }
@@ -553,8 +553,9 @@ const STAT_OPTIONS: { key: string; label: string; group: string }[] = [
   { group: "Workload", key: "out_subs_on", label: "Substitutions On" },
 ];
 
-function StatExplorer({ teamStats }: { teamStats: any[] }) {
+function StatExplorer({ teamStats, managers }: { teamStats: any[]; managers: any[] }) {
   const [stat, setStat] = useState<string>("out_goals");
+  const mByName = (name: string) => managers.find((m: any) => m.name === name);
   const ranked = useMemo(() => {
     return [...teamStats]
       .filter((t) => t[stat] != null)
@@ -595,14 +596,23 @@ function StatExplorer({ teamStats }: { teamStats: any[] }) {
             </tr>
           </thead>
           <tbody>
-            {ranked.map((r) => (
-              <tr key={r.rank} className="border-t border-border/40 hover:bg-gold/5">
-                <td className="p-3 font-display text-gold">{r.rank}</td>
-                <td className="p-3 font-medium">{r.team}</td>
-                <td className="p-3 text-muted-foreground capitalize">{r.manager}</td>
-                <td className="p-3 text-right font-display text-gold tabular-nums">{r.value.toLocaleString()}</td>
-              </tr>
-            ))}
+            {ranked.map((r) => {
+              const m = mByName(r.manager);
+              const b = m ? getBranding(m.id) : null;
+              return (
+                <tr key={r.rank} className="border-t border-border/40 hover:bg-gold/5">
+                  <td className="p-3 font-display text-gold">{r.rank}</td>
+                  <td className="p-3 font-medium">
+                    <div className="flex items-center gap-3">
+                      {b?.badge && <img src={b.badge} alt="" className="w-7 h-7 object-contain" />}
+                      <span>{r.team}</span>
+                    </div>
+                  </td>
+                  <td className="p-3 text-muted-foreground capitalize">{r.manager}</td>
+                  <td className="p-3 text-right font-display text-gold tabular-nums">{r.value.toLocaleString()}</td>
+                </tr>
+              );
+            })}
             {ranked.length === 0 && <tr><td colSpan={4} className="p-6 text-center text-muted-foreground">No data.</td></tr>}
           </tbody>
         </table>
@@ -883,11 +893,24 @@ function PositionChart({ gwTable, managers, maxGW }: any) {
                 strokeOpacity={hover && hover !== l.id ? 0.15 : 0.95}
                 strokeLinejoin="round" strokeLinecap="round" />
         ))}
-        {/* Final position end-caps */}
-        {lines.map((l: any) => (
-          <circle key={l.id} cx={xFor(l.final.gameweek)} cy={yFor(l.final.position)} r={hover === l.id ? 5 : 3}
-                  fill={l.color} stroke="oklch(0.13 0.04 265)" strokeWidth="1" opacity={hover && hover !== l.id ? 0.2 : 1} />
-        ))}
+        {/* Final position end-caps with team badges */}
+        {lines.map((l: any) => {
+          const m = managers.find((x: any) => String(x.id) === l.id);
+          const badge = m ? getBranding(m.id)?.badge : null;
+          const cx = xFor(l.final.gameweek);
+          const cy = yFor(l.final.position);
+          const size = hover === l.id ? 18 : 14;
+          return (
+            <g key={l.id} opacity={hover && hover !== l.id ? 0.25 : 1}>
+              <circle cx={cx} cy={cy} r={size / 2 + 1} fill="oklch(0.13 0.04 265)" stroke={l.color} strokeWidth="1.5" />
+              {badge ? (
+                <image href={badge} x={cx - size / 2} y={cy - size / 2} width={size} height={size} />
+              ) : (
+                <circle cx={cx} cy={cy} r={3} fill={l.color} />
+              )}
+            </g>
+          );
+        })}
       </svg>
     </div>
   );
@@ -999,9 +1022,13 @@ function SectionTitle({ kicker, title }: { kicker: string; title: string }) {
   );
 }
 
-function Flag({ className }: { className?: string }) {
-  // tiny icon shim so we don't need another import
-  return <span className={className}>🟨</span>;
+function CardIcon({ color, className = "w-5 h-5" }: { color: "yellow" | "red"; className?: string }) {
+  const fill = color === "yellow" ? "#facc15" : "#dc2626";
+  return (
+    <svg viewBox="0 0 16 22" className={className} aria-hidden>
+      <rect x="1" y="1" width="14" height="20" rx="2" fill={fill} stroke="rgba(0,0,0,0.25)" strokeWidth="0.6" />
+    </svg>
+  );
 }
 
 function Skel() {
