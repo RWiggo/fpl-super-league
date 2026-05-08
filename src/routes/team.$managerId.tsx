@@ -368,6 +368,77 @@ function TeamPage() {
               </div>
             </div>
             <FormationPitch players={bestXIForPitch} />
+
+            {clubsInSquad.length > 0 && (
+              <div className="mt-10">
+                <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">Squad History</div>
+                <h4 className="font-display text-xl md:text-2xl mb-4">Player Search</h4>
+                <div className="flex flex-wrap gap-3 mb-6">
+                  <select
+                    value={searchClub}
+                    onChange={(e) => { setSearchClub(e.target.value); setSearchPlayer(""); }}
+                    className="bg-input border border-border rounded px-3 py-2 text-sm min-w-[180px]"
+                  >
+                    <option value="">Select a club…</option>
+                    {clubsInSquad.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                  <select
+                    value={searchPlayer}
+                    onChange={(e) => setSearchPlayer(e.target.value)}
+                    disabled={!searchClub}
+                    className="bg-input border border-border rounded px-3 py-2 text-sm min-w-[220px] disabled:opacity-50"
+                  >
+                    <option value="">{searchClub ? "Select a player…" : "Pick a club first"}</option>
+                    {playersForClub.map((p) => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                </div>
+
+                {selectedPlayerData && (
+                  <div className="premium-card rounded-lg p-6">
+                    <div className="flex items-baseline justify-between flex-wrap gap-2 mb-4">
+                      <div>
+                        <div className="font-display text-2xl">{searchPlayer}</div>
+                        <div className="text-xs uppercase tracking-wider text-muted-foreground mt-1">
+                          {selectedPlayerData.position} · {selectedPlayerData.clubs} · {selectedPlayerData.seasons}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <StatCard align="center" label="Total Points" value={selectedPlayerData.totalPts.toFixed(0)} />
+                      <StatCard align="center" label="Games Played" value={selectedPlayerData.totalGames} />
+                      <StatCard align="center" label="Points / Game" value={selectedPlayerData.ppg.toFixed(1)} />
+                      <StatCard align="center" label="Minutes" value={selectedPlayerData.totalMins} />
+                    </div>
+                    {selectedPlayerData.rows.length > 1 && (
+                      <div className="mt-6 overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead className="bg-card/60 text-xs uppercase tracking-wider text-muted-foreground">
+                            <tr>
+                              <th className="p-2 text-left">Season</th>
+                              <th className="p-2 text-left">Club</th>
+                              <th className="p-2 text-center">GP</th>
+                              <th className="p-2 text-right">Pts</th>
+                              <th className="p-2 text-right">PPG</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {selectedPlayerData.rows.map((r: any, i: number) => (
+                              <tr key={i} className="border-t border-border/40">
+                                <td className="p-2">{r.season_name}</td>
+                                <td className="p-2">{r.club}</td>
+                                <td className="text-center p-2">{r.games_played ?? "—"}</td>
+                                <td className="text-right p-2 font-display text-gold">{Number(r.fantasy_points ?? 0).toFixed(0)}</td>
+                                <td className="text-right p-2">{r.avg_points_per_game != null ? Number(r.avg_points_per_game).toFixed(1) : "—"}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </section>
