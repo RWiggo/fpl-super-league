@@ -605,3 +605,122 @@ function ClubLeaderboard({ title, subtitle, rows, accent }: { title: string; sub
     </div>
   );
 }
+
+function H2HCard({
+  opponentId, opponentName, opponentBadge, opponentTint,
+  wins, draws, losses, pf, pa, fixtures, selfId,
+}: {
+  opponentId: string;
+  opponentName: string;
+  opponentBadge?: string;
+  opponentTint?: string;
+  wins: number;
+  draws: number;
+  losses: number;
+  pf: number;
+  pa: number;
+  fixtures: any[];
+  selfId: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const total = wins + draws + losses;
+  const wp = total ? Math.round((wins / total) * 100) : 0;
+  const recent = fixtures.slice(0, 5);
+  const tint = opponentTint ?? "var(--color-primary)";
+  const resultLetter = (my: number, op: number) => (my > op ? "W" : my < op ? "L" : "D");
+  const resultClass = (r: string) =>
+    r === "W" ? "bg-emerald-600/80 text-white" : r === "L" ? "bg-red-600/80 text-white" : "bg-yellow-500/80 text-black";
+
+  return (
+    <div className={`relative shrink-0 snap-start premium-card rounded-lg overflow-hidden transition-all ${open ? "w-[520px]" : "w-[300px]"}`}>
+      {/* Top tint accent */}
+      <div className="h-1 w-full" style={{ background: tint }} />
+      <button onClick={() => setOpen((o) => !o)} className="w-full text-left">
+        <div className="p-4 flex items-center gap-3 border-b border-border/40">
+          {opponentBadge && (
+            <img src={opponentBadge} alt="" className="w-12 h-12 shrink-0 drop-shadow" />
+          )}
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] uppercase tracking-[0.25em] text-silver/60">Opponent</div>
+            <div className="font-display text-lg uppercase truncate">{opponentName}</div>
+          </div>
+          <div className="text-right">
+            <div className="text-[10px] uppercase tracking-wider text-silver/60">Win %</div>
+            <div className="font-display text-2xl" style={{ color: tint }}>{wp}%</div>
+          </div>
+        </div>
+        <div className="grid grid-cols-3 divide-x divide-border/40 text-center">
+          <div className="py-3">
+            <div className="text-[10px] uppercase tracking-wider text-silver/60">W</div>
+            <div className="font-display text-xl text-emerald-400">{wins}</div>
+          </div>
+          <div className="py-3">
+            <div className="text-[10px] uppercase tracking-wider text-silver/60">D</div>
+            <div className="font-display text-xl text-yellow-400">{draws}</div>
+          </div>
+          <div className="py-3">
+            <div className="text-[10px] uppercase tracking-wider text-silver/60">L</div>
+            <div className="font-display text-xl text-red-400">{losses}</div>
+          </div>
+        </div>
+        <div className="px-4 pb-3 grid grid-cols-2 gap-2 text-xs">
+          <div className="text-muted-foreground">PF <span className="text-foreground font-display ml-1">{pf.toFixed(0)}</span></div>
+          <div className="text-muted-foreground text-right">PA <span className="text-foreground font-display ml-1">{pa.toFixed(0)}</span></div>
+        </div>
+        <div className="px-4 pb-4">
+          <div className="text-[10px] uppercase tracking-[0.25em] text-silver/60 mb-2">Recent Form</div>
+          <div className="flex gap-1.5">
+            {recent.length === 0 && <span className="text-xs text-muted-foreground">No fixtures yet</span>}
+            {recent.map((f, i) => {
+              const r = resultLetter(f.my, f.op);
+              return (
+                <span key={i} className={`w-7 h-7 rounded text-[11px] font-display flex items-center justify-center ${resultClass(r)}`} title={`${f.seasonName} GW${f.gameweek}: ${f.my}-${f.op}`}>
+                  {r}
+                </span>
+              );
+            })}
+          </div>
+          <div className="mt-3 text-[10px] uppercase tracking-wider text-silver/50 flex items-center gap-1">
+            {open ? "Hide all results" : "Tap for every result"}
+            <span className="ml-auto" style={{ color: tint }}>{open ? "−" : "+"}</span>
+          </div>
+        </div>
+      </button>
+      {open && (
+        <div className="border-t border-border/40 bg-black/20 max-h-72 overflow-y-auto">
+          <table className="w-full text-xs">
+            <thead className="bg-card/60 text-[10px] uppercase tracking-wider text-muted-foreground sticky top-0">
+              <tr>
+                <th className="p-2 text-left">Season</th>
+                <th className="p-2 text-center">GW</th>
+                <th className="p-2 text-right">Score</th>
+                <th className="p-2 text-center w-8">R</th>
+              </tr>
+            </thead>
+            <tbody>
+              {fixtures.map((f, i) => {
+                const r = resultLetter(f.my, f.op);
+                return (
+                  <tr key={i} className="border-t border-border/40">
+                    <td className="p-2">{f.seasonName}</td>
+                    <td className="p-2 text-center text-muted-foreground">{f.gameweek}</td>
+                    <td className="p-2 text-right font-display">
+                      <span className={r === "W" ? "text-emerald-400" : r === "L" ? "text-red-400" : "text-yellow-400"}>
+                        {Number(f.my).toFixed(0)}
+                      </span>
+                      <span className="text-muted-foreground mx-1">–</span>
+                      <span className="text-muted-foreground">{Number(f.op).toFixed(0)}</span>
+                    </td>
+                    <td className="p-2 text-center">
+                      <span className={`inline-flex w-5 h-5 rounded text-[10px] font-display items-center justify-center ${resultClass(r)}`}>{r}</span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
