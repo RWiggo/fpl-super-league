@@ -452,49 +452,6 @@ function TeamPage() {
       )}
 
 
-      {/* Player History */}
-      {d.alltimePlayers.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-          <SectionTitle kicker="Squad History" title="Every Player" />
-          <div className="flex gap-2 mt-6 mb-4 flex-wrap">
-            <select value={posFilter} onChange={(e) => setPosFilter(e.target.value)} className="bg-input border border-border rounded px-3 py-2 text-sm">
-              <option value="">All Positions</option>
-              {["GK", "DEF", "MID", "FWD"].map((p) => <option key={p} value={p}>{p}</option>)}
-            </select>
-          </div>
-          <div className="premium-card rounded-lg overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-card/60 text-xs uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="p-3 text-left">#</th>
-                  <th className="p-3 text-left">Player</th>
-                  <th className="p-3 text-center">Pos</th>
-                  <th className="p-3 text-center">Sea</th>
-                  <th className="p-3 text-center">GP</th>
-                  <th className="p-3 text-right">Pts</th>
-                  <th className="p-3 text-right">PPG</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredPlayers.map((p: any, i: number) => (
-                  <tr key={`${p.player_id ?? p.player_name}-${i}`} className="border-t border-border/40 hover:bg-gold/5">
-                    <td className="p-3 font-display text-gold">{i + 1}</td>
-                    <td className="p-3 flex items-center gap-2">
-                      {i === 0 && <Crown className="w-4 h-4 text-gold" />}
-                      <span className="font-medium">{p.player_name ?? p.name}</span>
-                    </td>
-                    <td className="p-3 text-center text-xs uppercase text-muted-foreground">{p.position}</td>
-                    <td className="text-center p-3">{p.seasons_played ?? p.seasons ?? "—"}</td>
-                    <td className="text-center p-3">{p.games_played ?? "—"}</td>
-                    <td className="text-right p-3 font-display text-gold">{Number(p.total_fantasy_points ?? 0).toFixed(0)}</td>
-                    <td className="text-right p-3">{p.ppg != null ? Number(p.ppg).toFixed(1) : (p.avg_points_per_game != null ? Number(p.avg_points_per_game).toFixed(1) : "—")}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
     </div>
   );
 }
