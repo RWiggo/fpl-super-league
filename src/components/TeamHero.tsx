@@ -96,11 +96,11 @@ export function TeamHero({
         {/* Quick facts strip — UCL "club info" row */}
         {facts.length > 0 && (
           <div className="relative mt-10 md:mt-14 -mx-4 sm:-mx-6 lg:-mx-8 border-t border-white/10 bg-black/30 backdrop-blur-sm">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 divide-x divide-white/10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 divide-x divide-white/10">
               {facts.map((f, i) => (
-                <div key={i} className="py-4 md:py-5 px-3 first:pl-0 md:px-6">
-                  <div className="text-[10px] uppercase tracking-[0.25em] text-silver/60">{f.label}</div>
-                  <div className="font-display text-2xl md:text-3xl mt-1" style={{ color: tint }}>
+                <div key={i} className="py-4 md:py-5 px-2 md:px-3 first:pl-0">
+                  <div className="text-[9px] md:text-[10px] uppercase tracking-[0.2em] text-silver/60 leading-tight">{f.label}</div>
+                  <div className="font-display text-xl md:text-2xl lg:text-3xl mt-1" style={{ color: tint }}>
                     {f.value}
                   </div>
                 </div>
