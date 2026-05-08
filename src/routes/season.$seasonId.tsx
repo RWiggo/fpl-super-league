@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { StatCard, Skeleton } from "@/components/StatCard";
+import { Skeleton } from "@/components/StatCard";
 import { FormationPitch } from "@/components/FormationPitch";
 import { getBranding } from "@/lib/managerBranding";
 import { Trophy, Crown, Flame, Target, Zap, Skull, Shield, TrendingUp, TrendingDown, Users, Swords, Star, Goal, HandHelping, ArrowDown, AlertOctagon } from "lucide-react";
@@ -211,13 +211,14 @@ function SeasonPage() {
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-type RankRow = { rank: number; name: string; sub?: string; value: React.ReactNode };
+type RankRow = { rank: number; name: string; sub?: string; value: React.ReactNode; badge?: string | null };
 
 function RecordCard({
   label,
   value,
   sub,
   icon,
+  badge,
   dialogTitle,
   rows,
   valueHeader = "Value",
@@ -226,6 +227,7 @@ function RecordCard({
   value: React.ReactNode;
   sub?: React.ReactNode;
   icon?: React.ReactNode;
+  badge?: string | null;
   dialogTitle: string;
   rows: RankRow[];
   valueHeader?: string;
@@ -234,24 +236,39 @@ function RecordCard({
     <Dialog>
       <DialogTrigger asChild>
         <button className="text-left w-full focus:outline-none focus:ring-2 focus:ring-gold/50 rounded-lg">
-          <StatCard label={label} value={value} sub={sub} icon={icon} />
+          <div className="premium-card rounded-lg p-4 sm:p-6 group hover:border-gold/50 transition-all hover:-translate-y-1 text-center sm:text-left">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground">{label}</span>
+              {icon && <span className="text-gold opacity-60 group-hover:opacity-100 transition shrink-0">{icon}</span>}
+            </div>
+            <div className="flex items-center justify-center sm:justify-start gap-3">
+              {badge && <img src={badge} alt="" className="w-10 h-10 sm:w-12 sm:h-12 object-contain shrink-0" />}
+              <div className="min-w-0">
+                <div className="font-display text-3xl sm:text-4xl gold-gradient leading-none">{value}</div>
+                {sub && <div className="text-[11px] sm:text-xs text-muted-foreground mt-1.5 truncate">{sub}</div>}
+              </div>
+            </div>
+          </div>
         </button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-display text-2xl gold-gradient">{dialogTitle}</DialogTitle>
+          <DialogTitle className="font-display text-xl sm:text-2xl gold-gradient">{dialogTitle}</DialogTitle>
         </DialogHeader>
         <div className="mt-2">
-          <div className="grid grid-cols-[auto_1fr_auto] gap-x-4 gap-y-2 text-sm">
+          <div className="grid grid-cols-[auto_1fr_auto] gap-x-3 gap-y-2 text-sm items-center">
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground">#</div>
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Team</div>
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground text-right">{valueHeader}</div>
             {rows.map((r) => (
               <React.Fragment key={r.rank}>
                 <div className="font-display text-gold">{r.rank}</div>
-                <div className="min-w-0">
-                  <div className="font-medium truncate">{r.name}</div>
-                  {r.sub && <div className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">{r.sub}</div>}
+                <div className="min-w-0 flex items-center gap-2">
+                  {r.badge && <img src={r.badge} alt="" className="w-7 h-7 object-contain shrink-0" />}
+                  <div className="min-w-0">
+                    <div className="font-medium truncate">{r.name}</div>
+                    {r.sub && <div className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">{r.sub}</div>}
+                  </div>
                 </div>
                 <div className="font-display text-gold text-right tabular-nums">{r.value}</div>
               </React.Fragment>
@@ -279,6 +296,13 @@ function RecordsSection({
   mostAssists,
   mostYellows,
 }: any) {
+  // Helpers to resolve a manager (and hence their badge) from various row shapes
+  const mByName = (name?: string) => name ? d.managers.find((m: any) => m.name === name) : null;
+  const mByTeam = (team?: string) => team ? d.managers.find((m: any) => m.team_name === team)
+    ?? (() => { const r = d.mst.find((x: any) => x.team_name === team); return r ? mById(r.manager_id) : null; })() : null;
+  const badgeByManager = (name?: string) => { const m = mByName(name); return m ? getBranding(m.id)?.badge ?? null : null; };
+  const badgeByTeam = (team?: string) => { const m = mByTeam(team); return m ? getBranding(m.id)?.badge ?? null : null; };
+
   // Per-team weekly score entries from fixtures
   const teamScores = useMemo(() => {
     const out: { manager: string; team: string; gw: number; score: number; opp_team: string; opp_score: number }[] = [];
@@ -308,7 +332,7 @@ function RecordsSection({
         const their = isHome ? f.away_score : f.home_score;
         const opp = isHome ? f.away_team : f.home_team;
         const result = my > their ? "W" : my < their ? "L" : "D";
-        return { rank: i + 1, name: opp, sub: `GW${f.gameweek} · ${isHome ? "Home" : "Away"}`, value: `${my}-${their} ${result}` };
+        return { rank: i + 1, name: opp, sub: `GW${f.gameweek} · ${isHome ? "Home" : "Away"}`, value: `${my}-${their} ${result}`, badge: badgeByTeam(opp) };
       });
   };
 
@@ -335,12 +359,12 @@ function RecordsSection({
   })();
 
   // Team stat rankings
-  const rankByStat = (key: string, label: string) =>
+  const rankByStat = (key: string, _label: string) =>
     [...d.teamStats]
       .filter((t: any) => t[key] != null)
       .sort((a: any, b: any) => (b[key] ?? 0) - (a[key] ?? 0))
       .slice(0, 5)
-      .map((t: any, i: number) => ({ rank: i + 1, name: t.team_name, sub: t.manager_name, value: Number(t[key]).toFixed(0) }));
+      .map((t: any, i: number) => ({ rank: i + 1, name: t.team_name, sub: t.manager_name, value: Number(t[key]).toFixed(0), badge: badgeByManager(t.manager_name) }));
 
   // Position counts top 5
   const positionTop5 = (target: "first" | "last") => {
@@ -357,7 +381,7 @@ function RecordsSection({
     });
     return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([id, n], i) => {
       const m = mById(id);
-      return { rank: i + 1, name: m?.team_name ?? "—", sub: m?.name, value: `${n} GW${n === 1 ? "" : "s"}` };
+      return { rank: i + 1, name: m?.team_name ?? "—", sub: m?.name, value: `${n} GW${n === 1 ? "" : "s"}`, badge: m ? getBranding(m.id)?.badge ?? null : null };
     });
   };
 
@@ -366,39 +390,43 @@ function RecordsSection({
       <SectionTitle kicker="Highlights" title="Season Records" />
 
       <h3 className="font-display text-2xl text-gold mt-8 mb-4">Points & Performance</h3>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <RecordCard
           label="Highest Single GW"
           value={topWeekly?.score ?? top5HighGW[0]?.score ?? "—"}
           sub={top5HighGW[0] ? `${top5HighGW[0].team} · GW${top5HighGW[0].gw}` : ""}
           icon={<Flame className="w-5 h-5" />}
+          badge={badgeByManager(top5HighGW[0]?.manager)}
           dialogTitle="Top 5 Single Gameweek Scores"
           valueHeader="Score"
-          rows={top5HighGW.map((r, i) => ({ rank: i + 1, name: r.team, sub: `GW${r.gw} vs ${r.opp_team}`, value: r.score }))}
+          rows={top5HighGW.map((r, i) => ({ rank: i + 1, name: r.team, sub: `GW${r.gw} vs ${r.opp_team}`, value: r.score, badge: badgeByManager(r.manager) }))}
         />
         <RecordCard
           label="Biggest Win"
           value={biggestWin?.margin ?? "—"}
           sub={biggestWin ? `${biggestWin.winner_team} bt ${biggestWin.loser_team}` : ""}
           icon={<Swords className="w-5 h-5" />}
+          badge={badgeByTeam(biggestWin?.winner_team)}
           dialogTitle="Top 5 Biggest Wins"
           valueHeader="Margin"
-          rows={top5Margin.map((f: any, i: number) => ({ rank: i + 1, name: f.winner_team, sub: `bt ${f.loser_team} · GW${f.gameweek}`, value: f.margin }))}
+          rows={top5Margin.map((f: any, i: number) => ({ rank: i + 1, name: f.winner_team, sub: `bt ${f.loser_team} · GW${f.gameweek}`, value: f.margin, badge: badgeByTeam(f.winner_team) }))}
         />
         <RecordCard
           label="Lowest GW Score"
           value={top5LowGW[0]?.score ?? "—"}
           sub={top5LowGW[0] ? `${top5LowGW[0].team} · GW${top5LowGW[0].gw}` : ""}
           icon={<TrendingDown className="w-5 h-5" />}
+          badge={badgeByManager(top5LowGW[0]?.manager)}
           dialogTitle="5 Lowest Gameweek Scores"
           valueHeader="Score"
-          rows={top5LowGW.map((r, i) => ({ rank: i + 1, name: r.team, sub: `GW${r.gw} vs ${r.opp_team}`, value: r.score }))}
+          rows={top5LowGW.map((r, i) => ({ rank: i + 1, name: r.team, sub: `GW${r.gw} vs ${r.opp_team}`, value: r.score, badge: badgeByManager(r.manager) }))}
         />
         <RecordCard
           label="Longest Win Streak"
           value={longestWin?.streak_length ?? "—"}
           sub={longestWin ? `${longestWin.team_name} · GW${longestWin.streak_start_gw}–${longestWin.streak_end_gw}` : ""}
           icon={<TrendingUp className="w-5 h-5" />}
+          badge={badgeByTeam(longestWin?.team_name)}
           dialogTitle={longestWin ? `${longestWin.team_name}'s Win Streak (${longestWin.streak_length})` : "Longest Win Streak"}
           valueHeader="Result"
           rows={streakFixtures(longestWin)}
@@ -408,6 +436,7 @@ function RecordsSection({
           value={longestLose?.streak_length ?? "—"}
           sub={longestLose ? `${longestLose.team_name} · GW${longestLose.streak_start_gw}–${longestLose.streak_end_gw}` : ""}
           icon={<Skull className="w-5 h-5" />}
+          badge={badgeByTeam(longestLose?.team_name)}
           dialogTitle={longestLose ? `${longestLose.team_name}'s Losing Streak (${longestLose.streak_length})` : "Longest Losing Streak"}
           valueHeader="Result"
           rows={streakFixtures(longestLose)}
@@ -417,19 +446,21 @@ function RecordsSection({
           value={dominantH2H ? `${dominantH2H.wins}-${dominantH2H.losses}` : "—"}
           sub={dominantH2H ? `${dominantH2H.winner} over ${dominantH2H.loser}` : ""}
           icon={<Crown className="w-5 h-5" />}
+          badge={badgeByManager(dominantH2H?.winner)}
           dialogTitle="Top 5 Most Dominant Head-to-Heads"
           valueHeader="Record"
-          rows={top5H2H.map((h, i) => ({ rank: i + 1, name: h.winner, sub: `over ${h.loser}`, value: `${h.wins}-${h.losses}` }))}
+          rows={top5H2H.map((h, i) => ({ rank: i + 1, name: h.winner, sub: `over ${h.loser}`, value: `${h.wins}-${h.losses}`, badge: badgeByManager(h.winner) }))}
         />
       </div>
 
       <h3 className="font-display text-2xl text-gold mt-12 mb-4">Players & Possession</h3>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <RecordCard
           label="Most Goals"
           value={mostGoals?.out_goals ?? "—"}
           sub={mostGoals?.team_name}
           icon={<Goal className="w-5 h-5" />}
+          badge={badgeByManager(mostGoals?.manager_name)}
           dialogTitle="Top 5 · Most Goals"
           valueHeader="Goals"
           rows={rankByStat("out_goals", "Goals")}
@@ -439,6 +470,7 @@ function RecordsSection({
           value={mostAssists?.out_assists ?? "—"}
           sub={mostAssists?.team_name}
           icon={<HandHelping className="w-5 h-5" />}
+          badge={badgeByManager(mostAssists?.manager_name)}
           dialogTitle="Top 5 · Most Assists"
           valueHeader="Assists"
           rows={rankByStat("out_assists", "Assists")}
@@ -448,6 +480,7 @@ function RecordsSection({
           value={mostCS?.combined_clean_sheets ?? "—"}
           sub={mostCS?.team_name}
           icon={<Shield className="w-5 h-5" />}
+          badge={badgeByManager(mostCS?.manager_name)}
           dialogTitle="Top 5 · Most Clean Sheets"
           valueHeader="CS"
           rows={rankByStat("combined_clean_sheets", "CS")}
@@ -457,6 +490,7 @@ function RecordsSection({
           value={mostYellows?.combined_yellow_cards ?? "—"}
           sub={mostYellows?.team_name}
           icon={<CardIcon color="yellow" />}
+          badge={badgeByManager(mostYellows?.manager_name)}
           dialogTitle="Top 5 · Most Yellow Cards"
           valueHeader="Yellows"
           rows={rankByStat("combined_yellow_cards", "Yellows")}
@@ -466,6 +500,7 @@ function RecordsSection({
           value={rankByStat("out_red_cards", "Reds")[0]?.value ?? "—"}
           sub={rankByStat("out_red_cards", "Reds")[0]?.name}
           icon={<CardIcon color="red" />}
+          badge={rankByStat("out_red_cards", "Reds")[0]?.badge}
           dialogTitle="Top 5 · Most Red Cards"
           valueHeader="Reds"
           rows={rankByStat("out_red_cards", "Reds")}
@@ -475,6 +510,7 @@ function RecordsSection({
           value={rankByStat("out_own_goals", "OG")[0]?.value ?? "—"}
           sub={rankByStat("out_own_goals", "OG")[0]?.name}
           icon={<AlertOctagon className="w-5 h-5" />}
+          badge={rankByStat("out_own_goals", "OG")[0]?.badge}
           dialogTitle="Top 5 · Most Own Goals"
           valueHeader="OG"
           rows={rankByStat("out_own_goals", "OG")}
@@ -484,6 +520,7 @@ function RecordsSection({
           value={positionCounts.topId?.[1] ?? "—"}
           sub={positionCounts.topId ? mById(positionCounts.topId[0])?.team_name : ""}
           icon={<Trophy className="w-5 h-5" />}
+          badge={positionCounts.topId ? getBranding(positionCounts.topId[0])?.badge : null}
           dialogTitle="Top 5 · Most Gameweeks in 1st"
           valueHeader="Gameweeks"
           rows={positionTop5("first")}
@@ -493,6 +530,7 @@ function RecordsSection({
           value={positionCounts.botId?.[1] ?? "—"}
           sub={positionCounts.botId ? mById(positionCounts.botId[0])?.team_name : ""}
           icon={<ArrowDown className="w-5 h-5" />}
+          badge={positionCounts.botId ? getBranding(positionCounts.botId[0])?.badge : null}
           dialogTitle="Top 5 · Most Gameweeks in Last"
           valueHeader="Gameweeks"
           rows={positionTop5("last")}
@@ -585,14 +623,14 @@ function StatExplorer({ teamStats, managers }: { teamStats: any[]; managers: any
           ))}
         </select>
       </div>
-      <div className="premium-card rounded-lg overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-card/60 text-xs uppercase tracking-wider text-muted-foreground">
+      <div className="premium-card rounded-lg overflow-hidden">
+        <table className="w-full text-xs sm:text-sm">
+          <thead className="bg-card/60 text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground">
             <tr>
-              <th className="p-3 text-left">#</th>
-              <th className="p-3 text-left">Team</th>
-              <th className="p-3 text-left">Manager</th>
-              <th className="p-3 text-right">{current?.label ?? "Value"}</th>
+              <th className="p-2 sm:p-3 text-left w-8">#</th>
+              <th className="p-2 sm:p-3 text-left">Team</th>
+              <th className="hidden sm:table-cell p-3 text-left">Manager</th>
+              <th className="p-2 sm:p-3 text-right">{current?.label ?? "Value"}</th>
             </tr>
           </thead>
           <tbody>
@@ -601,15 +639,18 @@ function StatExplorer({ teamStats, managers }: { teamStats: any[]; managers: any
               const b = m ? getBranding(m.id) : null;
               return (
                 <tr key={r.rank} className="border-t border-border/40 hover:bg-gold/5">
-                  <td className="p-3 font-display text-gold">{r.rank}</td>
-                  <td className="p-3 font-medium">
-                    <div className="flex items-center gap-3">
-                      {b?.badge && <img src={b.badge} alt="" className="w-7 h-7 object-contain" />}
-                      <span>{r.team}</span>
+                  <td className="p-2 sm:p-3 font-display text-gold">{r.rank}</td>
+                  <td className="p-2 sm:p-3 font-medium">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                      {b?.badge && <img src={b.badge} alt="" className="w-6 h-6 sm:w-7 sm:h-7 object-contain shrink-0" />}
+                      <div className="min-w-0">
+                        <div className="truncate">{r.team}</div>
+                        <div className="sm:hidden text-[10px] text-muted-foreground capitalize truncate">{r.manager}</div>
+                      </div>
                     </div>
                   </td>
-                  <td className="p-3 text-muted-foreground capitalize">{r.manager}</td>
-                  <td className="p-3 text-right font-display text-gold tabular-nums">{r.value.toLocaleString()}</td>
+                  <td className="hidden sm:table-cell p-3 text-muted-foreground capitalize">{r.manager}</td>
+                  <td className="p-2 sm:p-3 text-right font-display text-gold tabular-nums">{r.value.toLocaleString()}</td>
                 </tr>
               );
             })}
@@ -769,21 +810,21 @@ function LeagueTable({ standings, managers, mst, gwTable, maxGW }: any) {
   }, [gwTable, managers]);
 
   return (
-    <div className="premium-card rounded-lg overflow-x-auto mt-6">
-      <table className="w-full text-sm">
-        <thead className="bg-card/60 text-xs uppercase tracking-wider text-muted-foreground">
+    <div className="premium-card rounded-lg mt-6 overflow-hidden">
+      <table className="w-full text-xs sm:text-sm">
+        <thead className="bg-card/60 text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground">
           <tr>
-            <th className="p-3 text-left">#</th>
-            <th className="p-3 text-left">Team</th>
-            <th className="p-3 text-center">P</th>
-            <th className="p-3 text-center">W</th>
-            <th className="p-3 text-center">D</th>
-            <th className="p-3 text-center">L</th>
-            <th className="p-3 text-right">PF</th>
-            <th className="p-3 text-right">PA</th>
-            <th className="p-3 text-right">PD</th>
-            <th className="p-3 text-right">Pts</th>
-            <th className="p-3 text-center">Form</th>
+            <th className="p-2 sm:p-3 text-left">#</th>
+            <th className="p-2 sm:p-3 text-left">Team</th>
+            <th className="p-2 sm:p-3 text-center">P</th>
+            <th className="p-2 sm:p-3 text-center">W</th>
+            <th className="hidden sm:table-cell p-3 text-center">D</th>
+            <th className="hidden sm:table-cell p-3 text-center">L</th>
+            <th className="hidden md:table-cell p-3 text-right">PF</th>
+            <th className="hidden md:table-cell p-3 text-right">PA</th>
+            <th className="hidden lg:table-cell p-3 text-right">PD</th>
+            <th className="p-2 sm:p-3 text-right">Pts</th>
+            <th className="hidden md:table-cell p-3 text-center">Form</th>
           </tr>
         </thead>
         <tbody>
@@ -795,26 +836,26 @@ function LeagueTable({ standings, managers, mst, gwTable, maxGW }: any) {
             const form = formByManager[String(row.manager_id)] ?? [];
             return (
               <tr key={row.id} className={`border-t border-border/40 hover:bg-gold/5 ${isChamp ? "bg-gold/5" : ""}`}>
-                <td className="p-3 font-display text-lg text-gold">{row.position}</td>
-                <td className="p-3">
-                  <Link to="/team/$managerId" params={{ managerId: String(row.manager_id) }} className="flex items-center gap-3 hover:text-gold">
-                    {branding?.badge && <img src={branding.badge} alt="" className="w-8 h-8 object-contain" />}
-                    {isChamp && <Trophy className="w-4 h-4 text-gold" />}
-                    <div>
-                      <div className="font-medium">{teamNameFor(row.manager_id)}</div>
-                      <div className="text-xs text-muted-foreground capitalize">{m?.name}</div>
+                <td className="p-2 sm:p-3 font-display text-base sm:text-lg text-gold">{row.position}</td>
+                <td className="p-2 sm:p-3">
+                  <Link to="/team/$managerId" params={{ managerId: String(row.manager_id) }} className="flex items-center gap-2 sm:gap-3 hover:text-gold min-w-0">
+                    {branding?.badge && <img src={branding.badge} alt="" className="w-7 h-7 sm:w-8 sm:h-8 object-contain shrink-0" />}
+                    {isChamp && <Trophy className="hidden sm:inline w-4 h-4 text-gold shrink-0" />}
+                    <div className="min-w-0">
+                      <div className="font-medium truncate">{teamNameFor(row.manager_id)}</div>
+                      <div className="text-[10px] sm:text-xs text-muted-foreground capitalize truncate">{m?.name}</div>
                     </div>
                   </Link>
                 </td>
-                <td className="text-center p-3">{games}</td>
-                <td className="text-center p-3">{row.wins}</td>
-                <td className="text-center p-3">{row.draws}</td>
-                <td className="text-center p-3">{row.losses}</td>
-                <td className="text-right p-3 tabular-nums">{Number(row.points_for ?? 0).toFixed(0)}</td>
-                <td className="text-right p-3 tabular-nums">{Number(row.points_against ?? 0).toFixed(0)}</td>
-                <td className="text-right p-3 tabular-nums">{Number(row.points_difference ?? 0).toFixed(0)}</td>
-                <td className="text-right p-3 font-display text-gold text-base">{row.total_points}</td>
-                <td className="p-3">
+                <td className="text-center p-2 sm:p-3">{games}</td>
+                <td className="text-center p-2 sm:p-3">{row.wins}</td>
+                <td className="hidden sm:table-cell text-center p-3">{row.draws}</td>
+                <td className="hidden sm:table-cell text-center p-3">{row.losses}</td>
+                <td className="hidden md:table-cell text-right p-3 tabular-nums">{Number(row.points_for ?? 0).toFixed(0)}</td>
+                <td className="hidden md:table-cell text-right p-3 tabular-nums">{Number(row.points_against ?? 0).toFixed(0)}</td>
+                <td className="hidden lg:table-cell text-right p-3 tabular-nums">{Number(row.points_difference ?? 0).toFixed(0)}</td>
+                <td className="text-right p-2 sm:p-3 font-display text-gold text-sm sm:text-base">{row.total_points}</td>
+                <td className="hidden md:table-cell p-3">
                   <div className="flex justify-center gap-1">
                     {form.map((r, i) => (
                       <span key={i} className={`w-5 h-5 rounded-sm flex items-center justify-center text-[10px] font-bold ${
@@ -1005,7 +1046,7 @@ function FixturesPanel({ fixtures, managers, maxGW }: any) {
 
 function Mini({ label, value, sub }: { label: string; value: any; sub?: any }) {
   return (
-    <div className="border-l-2 border-gold pl-3">
+    <div className="border-l-0 sm:border-l-2 border-gold sm:pl-3 text-center sm:text-left">
       <div className="font-display text-2xl md:text-3xl text-gold leading-none">{value}</div>
       <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">{label}</div>
       {sub && <div className="text-[10px] text-muted-foreground/80 truncate">{sub}</div>}
