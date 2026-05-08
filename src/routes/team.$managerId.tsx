@@ -629,18 +629,31 @@ function PlayerLeaderboard({ title, subtitle, players, icon, accent }: { title: 
       </div>
       <table className="w-full text-sm">
         <tbody>
-          {players.map((p, i) => (
-            <tr key={`${p.player_id ?? p.player_name}-${i}`} className="border-t border-border/40 odd:bg-card/30 hover:bg-card/60 transition-colors">
-              <td className={`p-3 w-10 font-display text-lg ${RANK_STYLES[i] ?? "text-muted-foreground"}`}>{i + 1}</td>
-              <td className="p-3 font-medium">{p.player_name ?? p.name}</td>
-              <td className="p-3 w-14 text-center">
-                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${POSITION_STYLES[p.position] ?? "bg-muted/20 text-muted-foreground border-border"}`}>
-                  {p.position}
-                </span>
-              </td>
-              <td className={`p-3 text-right font-display ${valueClass}`}>{Number(p.total_fantasy_points ?? 0).toFixed(0)}</td>
-            </tr>
-          ))}
+          {players.map((p, i) => {
+            const crest = getPlClubBadge(p.club);
+            return (
+              <tr key={`${p.player_id ?? p.player_name}-${i}`} className="border-t border-border/40 odd:bg-card/30 hover:bg-card/60 transition-colors">
+                <td className={`p-3 w-10 font-display text-lg ${RANK_STYLES[i] ?? "text-muted-foreground"}`}>{i + 1}</td>
+                <td className="p-3 w-10">
+                  {crest ? (
+                    <img src={crest} alt={p.club ?? ""} loading="lazy" className="w-7 h-7 object-contain" />
+                  ) : (
+                    <span className="w-7 h-7 inline-block rounded-sm bg-muted/30 border border-border/40" aria-hidden />
+                  )}
+                </td>
+                <td className="p-3 font-medium">
+                  <div>{p.player_name ?? p.name}</div>
+                  {p.club && <div className="text-[10px] uppercase tracking-wider text-muted-foreground/80 mt-0.5">{p.club}</div>}
+                </td>
+                <td className="p-3 w-14 text-center">
+                  <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${POSITION_STYLES[p.position] ?? "bg-muted/20 text-muted-foreground border-border"}`}>
+                    {p.position}
+                  </span>
+                </td>
+                <td className={`p-3 text-right font-display ${valueClass}`}>{Number(p.total_fantasy_points ?? 0).toFixed(0)}</td>
+              </tr>
+            );
+          })}
           {players.length === 0 && (
             <tr><td colSpan={4} className="p-6 text-center text-muted-foreground text-sm">No data</td></tr>
           )}
