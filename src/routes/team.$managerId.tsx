@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { TeamHero } from "@/components/TeamHero";
 import { StatCard, Skeleton } from "@/components/StatCard";
 import { FormationPitch } from "@/components/FormationPitch";
-import { Trophy, Crown, Flame, Target, Zap, TrendingDown, Award, ShieldOff, Flag, Skull } from "lucide-react";
+import { Trophy, Crown, Flame, Target, Zap, TrendingDown, Award, ShieldOff, Flag, Skull, ChevronLeft, ChevronRight } from "lucide-react";
 import { getBranding } from "@/lib/managerBranding";
 
 export const Route = createFileRoute("/team/$managerId")({
@@ -75,6 +75,7 @@ function TeamPage() {
   const [statSeason, setStatSeason] = useState<string>("");
   useEffect(() => { if (d?.standings?.length && !statSeason) setStatSeason(d.seasons.find((x: any) => x.id === d.standings[d.standings.length - 1].season_id)?.name ?? ""); }, [d]);
   const [totsSeason, setTotsSeason] = useState<string>("");
+  const [h2hPage, setH2hPage] = useState(0);
   useEffect(() => { if (d?.tots?.length && !totsSeason) setTotsSeason(d.tots[0].season_name); }, [d]);
 
   // Player search: club -> players from history; selected player aggregated stats
