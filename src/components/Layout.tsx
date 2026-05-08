@@ -94,7 +94,7 @@ export function Layout() {
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform ${teamsOpen ? "rotate-180" : ""}`} />
               </button>
               {teamsOpen && (
-                <div className="absolute top-full left-0 w-64 bg-[#0a1130] border border-cyan-500/20 rounded-b-md py-2 max-h-[420px] overflow-auto shadow-2xl shadow-black/50">
+                <div className="absolute top-full left-0 w-64 bg-[#15164a] border border-cyan-500/20 rounded-b-md py-2 max-h-[420px] overflow-auto shadow-2xl shadow-black/50">
                   {teamsList.map((m) => (
                     <Link
                       key={m.id}
@@ -119,7 +119,7 @@ export function Layout() {
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform ${seasonsOpen ? "rotate-180" : ""}`} />
               </button>
               {seasonsOpen && (
-                <div className="absolute top-full left-0 w-52 bg-[#0a1130] border border-cyan-500/20 rounded-b-md py-2 shadow-2xl shadow-black/50">
+                <div className="absolute top-full left-0 w-52 bg-[#15164a] border border-cyan-500/20 rounded-b-md py-2 shadow-2xl shadow-black/50">
                   {seasons.map((s, i) => (
                     <Link
                       key={s.id}
@@ -166,7 +166,7 @@ export function Layout() {
         <div className="relative h-[2px] bg-gradient-to-r from-transparent via-cyan-400/70 to-transparent" />
 
         {open && (
-          <div className="relative md:hidden border-t border-cyan-500/20 bg-[#070b24]">
+          <div className="relative md:hidden border-t border-cyan-500/20 bg-[#0f0a30]">
             <div className="px-4 py-4 space-y-1">
               {navLinks.map((l) => (
                 <Link
