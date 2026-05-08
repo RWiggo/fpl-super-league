@@ -49,11 +49,13 @@ export function Layout() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-50 bg-[#020617] text-white border-b border-cyan-500/20 shadow-[0_4px_24px_rgba(0,0,0,0.5)]">
-        {/* Deep navy gradient base */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a1130] via-[#070b24] to-[#020617] pointer-events-none" />
-        {/* Subtle radial accent */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(56,189,248,0.12),transparent_60%)] pointer-events-none" />
+      <header className="sticky top-0 z-50 text-white border-b border-cyan-500/25 shadow-[0_6px_28px_rgba(0,0,0,0.6)]">
+        {/* Distinct UCL-inspired gradient: deep purple → indigo → midnight, set apart from the page's blue body */}
+        <div className="absolute inset-0 bg-[linear-gradient(110deg,#1a0b3d_0%,#15164a_38%,#0a1850_62%,#040a26_100%)] pointer-events-none" />
+        {/* Cyan halo behind logo */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_500px_180px_at_8%_50%,rgba(56,189,248,0.22),transparent_70%)] pointer-events-none" />
+        {/* Faint star/grid texture for UCL feel */}
+        <div className="absolute inset-0 opacity-[0.18] pointer-events-none bg-[radial-gradient(circle_at_25%_30%,#ffffff_0.5px,transparent_1px),radial-gradient(circle_at_70%_60%,#ffffff_0.5px,transparent_1px),radial-gradient(circle_at_45%_80%,#ffffff_0.4px,transparent_1px)] bg-[size:140px_140px,180px_180px,220px_220px]" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[68px] flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
@@ -92,7 +94,7 @@ export function Layout() {
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform ${teamsOpen ? "rotate-180" : ""}`} />
               </button>
               {teamsOpen && (
-                <div className="absolute top-full left-0 w-64 bg-[#0a1130] border border-cyan-500/20 rounded-b-md py-2 max-h-[420px] overflow-auto shadow-2xl shadow-black/50">
+                <div className="absolute top-full left-0 w-64 bg-[#15164a] border border-cyan-500/20 rounded-b-md py-2 max-h-[420px] overflow-auto shadow-2xl shadow-black/50">
                   {teamsList.map((m) => (
                     <Link
                       key={m.id}
@@ -117,7 +119,7 @@ export function Layout() {
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform ${seasonsOpen ? "rotate-180" : ""}`} />
               </button>
               {seasonsOpen && (
-                <div className="absolute top-full left-0 w-52 bg-[#0a1130] border border-cyan-500/20 rounded-b-md py-2 shadow-2xl shadow-black/50">
+                <div className="absolute top-full left-0 w-52 bg-[#15164a] border border-cyan-500/20 rounded-b-md py-2 shadow-2xl shadow-black/50">
                   {seasons.map((s, i) => (
                     <Link
                       key={s.id}
@@ -164,7 +166,7 @@ export function Layout() {
         <div className="relative h-[2px] bg-gradient-to-r from-transparent via-cyan-400/70 to-transparent" />
 
         {open && (
-          <div className="relative md:hidden border-t border-cyan-500/20 bg-[#070b24]">
+          <div className="relative md:hidden border-t border-cyan-500/20 bg-[#0f0a30]">
             <div className="px-4 py-4 space-y-1">
               {navLinks.map((l) => (
                 <Link
