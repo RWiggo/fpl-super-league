@@ -254,10 +254,15 @@ function TeamPage() {
           team: t.team_name,
         }))}
         facts={[
-          { label: "Seasons", value: d.mst.length },
+          { label: "Seasons", value: d.standings.length },
           { label: "Titles", value: titles },
           { label: "All-Time Rank", value: allTimeRank > 0 ? ordinal(allTimeRank) : "—" },
+          { label: "Wins", value: totalWins },
+          { label: "Draws", value: totalDraws },
+          { label: "Losses", value: totalLosses },
           { label: "Win %", value: `${winPct}%` },
+          { label: "Pts Diff", value: `${pointsDiff >= 0 ? "+" : ""}${pointsDiff.toFixed(0)}` },
+          { label: "FPL Points", value: totalPoints.toLocaleString() },
         ]}
       />
 
