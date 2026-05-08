@@ -575,7 +575,7 @@ function TeamPage() {
                                   <td className="p-2">{r.season_name}</td>
                                   <td className="p-2">
                                     <div className="flex items-center gap-2">
-                                      {rowCrest && <img src={rowCrest} alt="" loading="lazy" className="w-5 h-5 object-contain" />}
+                                      {rowCrest && <img src={rowCrest} alt="" loading="lazy" className="w-8 h-8 object-contain" />}
                                       <span>{r.club}</span>
                                     </div>
                                   </td>
