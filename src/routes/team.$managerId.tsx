@@ -517,7 +517,7 @@ function TeamPage() {
             {d.teamStats.map((s: any) => <option key={s.season_name} value={s.season_name}>{s.season_name}</option>)}
           </select>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {Object.entries(seasonStats).filter(([k, v]) => !["id", "season_id", "manager_id"].includes(k) && typeof v === "number").map(([k, v]) => (
+            {Object.entries(seasonStats).filter(([k, v]) => !["id", "season_id", "manager_id", "season_name", "manager_name", "team_name"].includes(k) && typeof v === "number").map(([k, v]) => (
               <div key={k} className="premium-card rounded p-3">
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">{k.replace(/_/g, " ")}</div>
                 <div className="font-display text-xl text-gold">{v != null ? Number(v).toFixed(Number(v) % 1 === 0 ? 0 : 1) : <span className="text-muted-foreground/40 text-sm" title="This stat was introduced in Season 3">N/A</span>}</div>
