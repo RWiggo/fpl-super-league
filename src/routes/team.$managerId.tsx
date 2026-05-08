@@ -329,7 +329,7 @@ function TeamPage() {
                     <td className={`text-right p-3 ${diff >= 0 ? "text-emerald-400/90" : "text-red-400/90"}`}>
                       {diff >= 0 ? "+" : ""}{diff.toFixed(0)}
                     </td>
-                    <td className="text-right p-3 font-display text-gold">{s.total_points}</td>
+                    <td className="text-right p-3 font-display text-foreground">{s.total_points}</td>
                     <td className={`p-3 text-center font-display text-lg ${posClass}`}>
                       {pos === 1 && <Trophy className="inline w-4 h-4 mr-1 text-gold" />}
                       {pos}
