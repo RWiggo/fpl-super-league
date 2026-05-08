@@ -807,21 +807,21 @@ function LeagueTable({ standings, managers, mst, gwTable, maxGW }: any) {
   }, [gwTable, managers]);
 
   return (
-    <div className="premium-card rounded-lg overflow-x-auto mt-6">
-      <table className="w-full text-sm">
-        <thead className="bg-card/60 text-xs uppercase tracking-wider text-muted-foreground">
+    <div className="premium-card rounded-lg mt-6 overflow-hidden">
+      <table className="w-full text-xs sm:text-sm">
+        <thead className="bg-card/60 text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground">
           <tr>
-            <th className="p-3 text-left">#</th>
-            <th className="p-3 text-left">Team</th>
-            <th className="p-3 text-center">P</th>
-            <th className="p-3 text-center">W</th>
-            <th className="p-3 text-center">D</th>
-            <th className="p-3 text-center">L</th>
-            <th className="p-3 text-right">PF</th>
-            <th className="p-3 text-right">PA</th>
-            <th className="p-3 text-right">PD</th>
-            <th className="p-3 text-right">Pts</th>
-            <th className="p-3 text-center">Form</th>
+            <th className="p-2 sm:p-3 text-left">#</th>
+            <th className="p-2 sm:p-3 text-left">Team</th>
+            <th className="p-2 sm:p-3 text-center">P</th>
+            <th className="p-2 sm:p-3 text-center">W</th>
+            <th className="hidden sm:table-cell p-3 text-center">D</th>
+            <th className="hidden sm:table-cell p-3 text-center">L</th>
+            <th className="hidden md:table-cell p-3 text-right">PF</th>
+            <th className="hidden md:table-cell p-3 text-right">PA</th>
+            <th className="hidden lg:table-cell p-3 text-right">PD</th>
+            <th className="p-2 sm:p-3 text-right">Pts</th>
+            <th className="hidden md:table-cell p-3 text-center">Form</th>
           </tr>
         </thead>
         <tbody>
@@ -833,26 +833,26 @@ function LeagueTable({ standings, managers, mst, gwTable, maxGW }: any) {
             const form = formByManager[String(row.manager_id)] ?? [];
             return (
               <tr key={row.id} className={`border-t border-border/40 hover:bg-gold/5 ${isChamp ? "bg-gold/5" : ""}`}>
-                <td className="p-3 font-display text-lg text-gold">{row.position}</td>
-                <td className="p-3">
-                  <Link to="/team/$managerId" params={{ managerId: String(row.manager_id) }} className="flex items-center gap-3 hover:text-gold">
-                    {branding?.badge && <img src={branding.badge} alt="" className="w-8 h-8 object-contain" />}
-                    {isChamp && <Trophy className="w-4 h-4 text-gold" />}
-                    <div>
-                      <div className="font-medium">{teamNameFor(row.manager_id)}</div>
-                      <div className="text-xs text-muted-foreground capitalize">{m?.name}</div>
+                <td className="p-2 sm:p-3 font-display text-base sm:text-lg text-gold">{row.position}</td>
+                <td className="p-2 sm:p-3">
+                  <Link to="/team/$managerId" params={{ managerId: String(row.manager_id) }} className="flex items-center gap-2 sm:gap-3 hover:text-gold min-w-0">
+                    {branding?.badge && <img src={branding.badge} alt="" className="w-7 h-7 sm:w-8 sm:h-8 object-contain shrink-0" />}
+                    {isChamp && <Trophy className="hidden sm:inline w-4 h-4 text-gold shrink-0" />}
+                    <div className="min-w-0">
+                      <div className="font-medium truncate">{teamNameFor(row.manager_id)}</div>
+                      <div className="text-[10px] sm:text-xs text-muted-foreground capitalize truncate">{m?.name}</div>
                     </div>
                   </Link>
                 </td>
-                <td className="text-center p-3">{games}</td>
-                <td className="text-center p-3">{row.wins}</td>
-                <td className="text-center p-3">{row.draws}</td>
-                <td className="text-center p-3">{row.losses}</td>
-                <td className="text-right p-3 tabular-nums">{Number(row.points_for ?? 0).toFixed(0)}</td>
-                <td className="text-right p-3 tabular-nums">{Number(row.points_against ?? 0).toFixed(0)}</td>
-                <td className="text-right p-3 tabular-nums">{Number(row.points_difference ?? 0).toFixed(0)}</td>
-                <td className="text-right p-3 font-display text-gold text-base">{row.total_points}</td>
-                <td className="p-3">
+                <td className="text-center p-2 sm:p-3">{games}</td>
+                <td className="text-center p-2 sm:p-3">{row.wins}</td>
+                <td className="hidden sm:table-cell text-center p-3">{row.draws}</td>
+                <td className="hidden sm:table-cell text-center p-3">{row.losses}</td>
+                <td className="hidden md:table-cell text-right p-3 tabular-nums">{Number(row.points_for ?? 0).toFixed(0)}</td>
+                <td className="hidden md:table-cell text-right p-3 tabular-nums">{Number(row.points_against ?? 0).toFixed(0)}</td>
+                <td className="hidden lg:table-cell text-right p-3 tabular-nums">{Number(row.points_difference ?? 0).toFixed(0)}</td>
+                <td className="text-right p-2 sm:p-3 font-display text-gold text-sm sm:text-base">{row.total_points}</td>
+                <td className="hidden md:table-cell p-3">
                   <div className="flex justify-center gap-1">
                     {form.map((r, i) => (
                       <span key={i} className={`w-5 h-5 rounded-sm flex items-center justify-center text-[10px] font-bold ${
