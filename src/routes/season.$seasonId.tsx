@@ -211,13 +211,14 @@ function SeasonPage() {
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-type RankRow = { rank: number; name: string; sub?: string; value: React.ReactNode };
+type RankRow = { rank: number; name: string; sub?: string; value: React.ReactNode; badge?: string | null };
 
 function RecordCard({
   label,
   value,
   sub,
   icon,
+  badge,
   dialogTitle,
   rows,
   valueHeader = "Value",
@@ -226,6 +227,7 @@ function RecordCard({
   value: React.ReactNode;
   sub?: React.ReactNode;
   icon?: React.ReactNode;
+  badge?: string | null;
   dialogTitle: string;
   rows: RankRow[];
   valueHeader?: string;
@@ -234,24 +236,39 @@ function RecordCard({
     <Dialog>
       <DialogTrigger asChild>
         <button className="text-left w-full focus:outline-none focus:ring-2 focus:ring-gold/50 rounded-lg">
-          <StatCard label={label} value={value} sub={sub} icon={icon} />
+          <div className="premium-card rounded-lg p-4 sm:p-6 group hover:border-gold/50 transition-all hover:-translate-y-1 text-center sm:text-left">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground">{label}</span>
+              {icon && <span className="text-gold opacity-60 group-hover:opacity-100 transition shrink-0">{icon}</span>}
+            </div>
+            <div className="flex items-center justify-center sm:justify-start gap-3">
+              {badge && <img src={badge} alt="" className="w-10 h-10 sm:w-12 sm:h-12 object-contain shrink-0" />}
+              <div className="min-w-0">
+                <div className="font-display text-3xl sm:text-4xl gold-gradient leading-none">{value}</div>
+                {sub && <div className="text-[11px] sm:text-xs text-muted-foreground mt-1.5 truncate">{sub}</div>}
+              </div>
+            </div>
+          </div>
         </button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-display text-2xl gold-gradient">{dialogTitle}</DialogTitle>
+          <DialogTitle className="font-display text-xl sm:text-2xl gold-gradient">{dialogTitle}</DialogTitle>
         </DialogHeader>
         <div className="mt-2">
-          <div className="grid grid-cols-[auto_1fr_auto] gap-x-4 gap-y-2 text-sm">
+          <div className="grid grid-cols-[auto_1fr_auto] gap-x-3 gap-y-2 text-sm items-center">
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground">#</div>
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Team</div>
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground text-right">{valueHeader}</div>
             {rows.map((r) => (
               <React.Fragment key={r.rank}>
                 <div className="font-display text-gold">{r.rank}</div>
-                <div className="min-w-0">
-                  <div className="font-medium truncate">{r.name}</div>
-                  {r.sub && <div className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">{r.sub}</div>}
+                <div className="min-w-0 flex items-center gap-2">
+                  {r.badge && <img src={r.badge} alt="" className="w-7 h-7 object-contain shrink-0" />}
+                  <div className="min-w-0">
+                    <div className="font-medium truncate">{r.name}</div>
+                    {r.sub && <div className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">{r.sub}</div>}
+                  </div>
                 </div>
                 <div className="font-display text-gold text-right tabular-nums">{r.value}</div>
               </React.Fragment>
