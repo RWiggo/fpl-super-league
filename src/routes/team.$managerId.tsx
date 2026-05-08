@@ -514,7 +514,7 @@ function TeamPage() {
         <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
           <SectionTitle kicker="Deep Dive" title="Season Stats" />
           <select value={statSeason} onChange={(e) => setStatSeason(e.target.value)} className="bg-input border border-border rounded px-4 py-2 mt-6 mb-6">
-            {d.teamStats.map((s: any) => <option key={s.id} value={s.season_id}>{sById(s.season_id)?.name}</option>)}
+            {d.teamStats.map((s: any) => <option key={s.season_name} value={s.season_name}>{s.season_name}</option>)}
           </select>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {Object.entries(seasonStats).filter(([k, v]) => !["id", "season_id", "manager_id"].includes(k) && typeof v === "number").map(([k, v]) => (
