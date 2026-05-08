@@ -703,10 +703,10 @@ function ClubLeaderboard({ title, subtitle, rows, accent }: { title: string; sub
                         src={crest}
                         alt=""
                         loading="lazy"
-                        className={`w-7 h-7 object-contain shrink-0 ${muted ? "opacity-40 grayscale" : ""}`}
+                        className={`w-8 h-8 object-contain shrink-0 ${muted ? "opacity-40 grayscale" : ""}`}
                       />
                     ) : (
-                      <span className="w-7 h-7 shrink-0 rounded-sm bg-muted/30 border border-border/40" aria-hidden />
+                      <span className="w-8 h-8 shrink-0 rounded-sm bg-muted/30 border border-border/40" aria-hidden />
                     )}
                     <span className="font-display tracking-wider">{r.club}</span>
                   </div>
