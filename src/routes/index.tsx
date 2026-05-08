@@ -3,13 +3,14 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { StatCard, Skeleton } from "@/components/StatCard";
 import { Trophy, Flame, Target, Crown, TrendingUp, Zap } from "lucide-react";
+import logo from "@/assets/fpl-super-league-logo.png";
 
 export const Route = createFileRoute("/")({
   component: Home,
   head: () => ({
     meta: [
-      { title: "The League — Fantasy Football Archive" },
-      { name: "description", content: "Champions, records, and history of our Premier League fantasy draft league." },
+      { title: "The FPL Super League" },
+      { name: "description", content: "Champions, records, and history of the FPL Super League." },
     ],
   }),
 });
@@ -101,27 +102,42 @@ function Home() {
   return (
     <div>
       {/* HERO */}
-      <section className="relative overflow-hidden border-b border-border/50 min-h-[80vh] flex items-center">
-        <div className="absolute inset-0 pitch-lines opacity-20" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/40 to-background" />
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-gold/15 blur-3xl pointer-events-none animate-pulse" />
+      <section className="relative overflow-hidden border-b border-silver/20 min-h-[80vh] flex items-center">
+        <div className="absolute inset-0 ucl-stars opacity-60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full blur-3xl pointer-events-none animate-pulse"
+             style={{ background: "radial-gradient(circle, var(--color-primary) 0%, transparent 65%)", opacity: 0.35 }} />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
-          <div className="text-xs uppercase tracking-[0.4em] text-gold mb-6 animate-fade-in">EST. 2022 · A FANTASY ARCHIVE</div>
-          <h1 className="font-display text-6xl sm:text-8xl md:text-[10rem] leading-[0.85] mb-6 animate-fade-in">
-            THE<br /><span className="gold-gradient">LEAGUE</span>
-          </h1>
-          <p className="text-lg md:text-2xl text-muted-foreground max-w-2xl mb-10">
-            Three seasons. One archive. Every champion, every record, every legend.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link to="/history" className="px-6 py-3 bg-gold text-primary-foreground font-medium uppercase tracking-wider text-sm rounded hover:bg-gold-bright transition gold-glow">
-              Enter The Archive
-            </Link>
-            {currentSeason && (
-              <Link to="/season/$seasonId" params={{ seasonId: currentSeason.id }} className="px-6 py-3 border border-border hover:border-gold hover:text-gold font-medium uppercase tracking-wider text-sm rounded transition">
-                Live Season →
-              </Link>
-            )}
+          <div className="grid lg:grid-cols-[1fr_auto] gap-12 items-center">
+            <div>
+              <div className="text-xs uppercase tracking-[0.4em] text-silver mb-6">EST. 2022 · The Official Archive</div>
+              <h1 className="font-display text-6xl sm:text-7xl md:text-8xl lg:text-[8.5rem] leading-[0.85] mb-4">
+                THE<br />
+                <span className="silver-gradient">FPL SUPER</span><br />
+                <span className="silver-gradient">LEAGUE</span>
+              </h1>
+              <div className="h-px w-32 bg-silver/50 my-6" />
+              <p className="text-lg md:text-2xl text-muted-foreground max-w-2xl mb-10">
+                Three seasons. One archive. Every champion, every record, every legend.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link to="/history" className="px-7 py-3 bg-primary text-primary-foreground font-semibold uppercase tracking-[0.18em] text-xs rounded hover:opacity-90 transition primary-glow">
+                  Enter The Archive
+                </Link>
+                {currentSeason && (
+                  <Link to="/season/$seasonId" params={{ seasonId: currentSeason.id }} className="px-7 py-3 border border-silver/50 hover:border-primary hover:text-primary font-semibold uppercase tracking-[0.18em] text-xs rounded transition">
+                    Live Season →
+                  </Link>
+                )}
+              </div>
+            </div>
+            <img
+              src={logo}
+              alt="FPL Super League crest"
+              width={420}
+              height={420}
+              className="hidden lg:block w-[320px] xl:w-[420px] h-auto drop-shadow-[0_0_60px_rgba(80,140,255,0.45)]"
+            />
           </div>
         </div>
       </section>
