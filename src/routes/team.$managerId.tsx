@@ -533,11 +533,19 @@ function TeamPage() {
 
                 {selectedPlayerData && (
                   <div className="premium-card rounded-lg p-6">
-                    <div className="flex items-baseline justify-between flex-wrap gap-2 mb-4">
-                      <div>
-                        <div className="font-display text-2xl">{searchPlayer}</div>
-                        <div className="text-xs uppercase tracking-wider text-muted-foreground mt-1">
-                          {selectedPlayerData.position} · {selectedPlayerData.clubs} · {selectedPlayerData.seasons}
+                    <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+                      <div className="flex items-center gap-4">
+                        {(() => {
+                          const headerCrest = getPlClubBadge(searchClub);
+                          return headerCrest ? (
+                            <img src={headerCrest} alt={searchClub} className="w-12 h-12 object-contain shrink-0" />
+                          ) : null;
+                        })()}
+                        <div>
+                          <div className="font-display text-2xl">{searchPlayer}</div>
+                          <div className="text-xs uppercase tracking-wider text-muted-foreground mt-1">
+                            {selectedPlayerData.position} · {selectedPlayerData.clubs} · {selectedPlayerData.seasons}
+                          </div>
                         </div>
                       </div>
                     </div>
