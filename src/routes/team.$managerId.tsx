@@ -6,6 +6,8 @@ import { StatCard, Skeleton } from "@/components/StatCard";
 import { FormationPitch } from "@/components/FormationPitch";
 import { Trophy, Crown, Flame, Target, Zap, TrendingDown, Award, ShieldOff, Flag, Skull, ChevronLeft, ChevronRight } from "lucide-react";
 import { getBranding } from "@/lib/managerBranding";
+import { getNickname } from "@/lib/managerNicknames";
+import { getPlClubBadge } from "@/lib/plClubBadges";
 
 export const Route = createFileRoute("/team/$managerId")({
   component: TeamPage,
