@@ -538,7 +538,7 @@ function TeamPage() {
                         {(() => {
                           const headerCrest = getPlClubBadge(searchClub);
                           return headerCrest ? (
-                            <img src={headerCrest} alt={searchClub} className="w-12 h-12 object-contain shrink-0" />
+                            <img src={headerCrest} alt={searchClub} className="w-8 h-8 object-contain shrink-0" />
                           ) : null;
                         })()}
                         <div>
@@ -575,7 +575,7 @@ function TeamPage() {
                                   <td className="p-2">{r.season_name}</td>
                                   <td className="p-2">
                                     <div className="flex items-center gap-2">
-                                      {rowCrest && <img src={rowCrest} alt="" loading="lazy" className="w-5 h-5 object-contain" />}
+                                      {rowCrest && <img src={rowCrest} alt="" loading="lazy" className="w-8 h-8 object-contain" />}
                                       <span>{r.club}</span>
                                     </div>
                                   </td>
@@ -652,9 +652,9 @@ function PlayerLeaderboard({ title, subtitle, players, icon, accent }: { title: 
                 <td className={`p-3 w-10 font-display text-lg ${RANK_STYLES[i] ?? "text-muted-foreground"}`}>{i + 1}</td>
                 <td className="p-3 w-10">
                   {crest ? (
-                    <img src={crest} alt={p.club ?? ""} loading="lazy" className="w-7 h-7 object-contain" />
+                    <img src={crest} alt={p.club ?? ""} loading="lazy" className="w-8 h-8 object-contain" />
                   ) : (
-                    <span className="w-7 h-7 inline-block rounded-sm bg-muted/30 border border-border/40" aria-hidden />
+                    <span className="w-8 h-8 inline-block rounded-sm bg-muted/30 border border-border/40" aria-hidden />
                   )}
                 </td>
                 <td className="p-3 font-medium">
@@ -703,10 +703,10 @@ function ClubLeaderboard({ title, subtitle, rows, accent }: { title: string; sub
                         src={crest}
                         alt=""
                         loading="lazy"
-                        className={`w-7 h-7 object-contain shrink-0 ${muted ? "opacity-40 grayscale" : ""}`}
+                        className={`w-8 h-8 object-contain shrink-0 ${muted ? "opacity-40 grayscale" : ""}`}
                       />
                     ) : (
-                      <span className="w-7 h-7 shrink-0 rounded-sm bg-muted/30 border border-border/40" aria-hidden />
+                      <span className="w-8 h-8 shrink-0 rounded-sm bg-muted/30 border border-border/40" aria-hidden />
                     )}
                     <span className="font-display tracking-wider">{r.club}</span>
                   </div>
