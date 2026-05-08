@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { PageHero } from "@/components/PageHero";
 import { StatCard, Skeleton } from "@/components/StatCard";
 import { FormationPitch } from "@/components/FormationPitch";
-import { Trophy, Crown, Flame, Target, Zap } from "lucide-react";
+import { getBranding } from "@/lib/managerBranding";
+import { Trophy, Crown, Flame, Target, Zap, Skull, Shield, TrendingUp, TrendingDown, Users, Swords, Star } from "lucide-react";
 
 export const Route = createFileRoute("/season/$seasonId")({
   component: SeasonPage,
@@ -13,304 +13,623 @@ export const Route = createFileRoute("/season/$seasonId")({
 function SeasonPage() {
   const { seasonId } = Route.useParams();
   const [d, setD] = useState<any>(null);
-  const [gw, setGw] = useState<number>(38);
-  const [statTab, setStatTab] = useState<"overall" | "gk" | "out">("overall");
-  const [showTeamTOTS, setShowTeamTOTS] = useState<string>("");
 
   useEffect(() => {
     setD(null);
     (async () => {
-      const [season, managers, standings, fixtures, gwTable, streaks, teamStats, overallTOTS, teamTOTS, weeklyHi] = await Promise.all([
-        supabase.from("seasons").select("*").eq("id", seasonId).single(),
+      const seasonRes = await supabase.from("seasons").select("*").eq("id", seasonId).single();
+      const sname = seasonRes.data?.name;
+      const [managers, mst, standings, fixtures, gwTable, winS, loseS, unbeatenS, winlessS, teamStats, overallTOTS, weeklyHi] = await Promise.all([
         supabase.from("managers").select("*"),
+        supabase.from("manager_season_teams").select("*").eq("season_id", seasonId),
         supabase.from("season_standings").select("*").eq("season_id", seasonId),
         supabase.from("fixture_records").select("*").eq("season_id", seasonId),
         supabase.from("gameweek_table").select("*").eq("season_id", seasonId),
-        supabase.from("win_streaks").select("*").eq("season_id", seasonId),
-        supabase.from("team_season_stats_full").select("*").eq("season_id", seasonId),
-        supabase.from("overall_team_of_the_season").select("*").eq("season_id", seasonId),
-        supabase.from("team_of_the_season").select("*").eq("season_id", seasonId),
+        supabase.from("win_streaks").select("*").eq("season_name", sname),
+        supabase.from("losing_streaks").select("*").eq("season_name", sname),
+        supabase.from("unbeaten_streaks").select("*").eq("season_name", sname),
+        supabase.from("winless_streaks").select("*").eq("season_name", sname),
+        supabase.from("team_season_stats_full").select("*").eq("season_name", sname),
+        supabase.from("overall_team_of_the_season").select("*").eq("season_name", sname),
         supabase.from("weekly_high_scores").select("*").eq("season_id", seasonId),
       ]);
-      const fixedGW = Math.max(...(fixtures.data?.map((f: any) => f.gameweek) ?? [38]));
-      setGw(fixedGW);
       setD({
-        season: season.data,
+        season: seasonRes.data,
         managers: managers.data ?? [],
+        mst: mst.data ?? [],
         standings: (standings.data ?? []).sort((a: any, b: any) => a.position - b.position),
         fixtures: fixtures.data ?? [],
         gwTable: gwTable.data ?? [],
-        streaks: streaks.data ?? [],
+        winS: winS.data ?? [],
+        loseS: loseS.data ?? [],
+        unbeatenS: unbeatenS.data ?? [],
+        winlessS: winlessS.data ?? [],
         teamStats: teamStats.data ?? [],
         overallTOTS: overallTOTS.data ?? [],
-        teamTOTS: teamTOTS.data ?? [],
         weeklyHi: weeklyHi.data ?? [],
       });
-      const firstM = managers.data?.[0]?.id;
-      if (firstM) setShowTeamTOTS(firstM);
     })();
   }, [seasonId]);
 
   if (!d || !d.season) return <Skel />;
 
-  const mById = (id: string) => d.managers.find((m: any) => m.id === id);
+  const mById = (id: any) => d.managers.find((m: any) => String(m.id) === String(id));
+  const mByName = (name: string) => d.managers.find((m: any) => m.name === name);
   const champ = mById(d.season.champion_manager_id);
 
+  // Participants in this season
+  const participants = d.mst
+    .map((row: any) => ({ ...mById(row.manager_id), team_name: row.team_name }))
+    .filter((m: any) => m && m.id);
+
   const maxGW = Math.max(...d.fixtures.map((f: any) => f.gameweek), 1);
-  const gwStandings = d.gwTable
-    .filter((r: any) => r.gameweek === gw)
-    .sort((a: any, b: any) => a.position - b.position);
 
-  // records
-  const sortedFix = [...d.fixtures].filter((f: any) => f.home_score != null);
-  const highest = [...sortedFix].sort((a: any, b: any) => Math.max(b.home_score, b.away_score) - Math.max(a.home_score, a.away_score))[0];
-  const lowest = [...sortedFix].sort((a: any, b: any) => Math.min(a.home_score, a.away_score) - Math.min(b.home_score, b.away_score))[0];
-  const biggestMargin = [...sortedFix].sort((a: any, b: any) => (b.margin ?? 0) - (a.margin ?? 0))[0];
-  const longestWin = [...d.streaks].filter((s: any) => (s.streak_type ?? s.type) === "win" || (s.streak_type ?? s.type) === "W").sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
+  // Records
+  const completed = d.fixtures.filter((f: any) => f.home_score != null);
+  const highest = [...completed].sort((a: any, b: any) =>
+    Math.max(b.home_score, b.away_score) - Math.max(a.home_score, a.away_score)
+  )[0];
+  const lowest = [...completed].sort((a: any, b: any) =>
+    Math.min(a.home_score, a.away_score) - Math.min(b.home_score, b.away_score)
+  )[0];
+  const biggestWin = [...completed].sort((a: any, b: any) => (b.margin ?? 0) - (a.margin ?? 0))[0];
+  const closestGame = [...completed].filter((f: any) => f.home_score !== f.away_score)
+    .sort((a: any, b: any) => (a.margin ?? 0) - (b.margin ?? 0))[0];
 
-  const totalGoals = d.fixtures.reduce((acc: number, f: any) => acc + (f.home_score ?? 0) + (f.away_score ?? 0), 0);
-  const avgScore = sortedFix.length ? (totalGoals / (sortedFix.length * 2)) : 0;
+  const longestWin = [...d.winS].filter((s: any) => s.outcome === "W").sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
+  const longestLose = [...d.loseS].filter((s: any) => s.outcome === "L").sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
+  const longestUnbeaten = [...d.unbeatenS].sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
+  const longestWinless = [...d.winlessS].sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
 
-  // h2h grid
-  const grid = useMemo(() => {
-    const g: Record<string, Record<string, any>> = {};
-    d.managers.forEach((m: any) => { g[m.id] = {}; });
-    d.fixtures.forEach((f: any) => {
-      if (!g[f.home_manager_id]) g[f.home_manager_id] = {};
-      g[f.home_manager_id][f.away_manager_id] = `${f.home_score}-${f.away_score}`;
+  // Top scoring team / most clean sheets
+  const topScorer = [...d.teamStats].sort((a: any, b: any) => (b.total_fpts ?? 0) - (a.total_fpts ?? 0))[0];
+  const mostCS = [...d.teamStats].sort((a: any, b: any) => (b.combined_clean_sheets ?? 0) - (a.combined_clean_sheets ?? 0))[0];
+  const mostGoals = [...d.teamStats].sort((a: any, b: any) => (b.out_goals ?? 0) - (a.out_goals ?? 0))[0];
+  const mostYellows = [...d.teamStats].sort((a: any, b: any) => (b.combined_yellow_cards ?? 0) - (a.combined_yellow_cards ?? 0))[0];
+  const mostAssists = [...d.teamStats].sort((a: any, b: any) => (b.out_assists ?? 0) - (a.out_assists ?? 0))[0];
+
+  // Highest GW score by single team
+  const topWeekly = [...d.weeklyHi].sort((a: any, b: any) => (b.score ?? 0) - (a.score ?? 0))[0];
+
+  // Time at top / bottom of league (gw_table)
+  const positionCounts = useMemo(() => {
+    const top: Record<string, number> = {};
+    const bot: Record<string, number> = {};
+    d.gwTable.forEach((row: any) => {
+      if (row.position === 1) top[row.manager_id] = (top[row.manager_id] ?? 0) + 1;
+      const lastPos = Math.max(...d.gwTable.filter((r: any) => r.gameweek === row.gameweek).map((r: any) => r.position));
+      if (row.position === lastPos) bot[row.manager_id] = (bot[row.manager_id] ?? 0) + 1;
     });
-    return g;
-  }, [d]);
+    const topId = Object.entries(top).sort((a, b) => b[1] - a[1])[0];
+    const botId = Object.entries(bot).sort((a, b) => b[1] - a[1])[0];
+    return { topId, botId };
+  }, [d.gwTable]);
 
-  const statKeys = useMemo(() => {
-    if (!d.teamStats[0]) return [];
-    const skip = new Set(["id", "season_id", "manager_id", "created_at", "updated_at"]);
-    return Object.keys(d.teamStats[0]).filter((k) => !skip.has(k) && typeof d.teamStats[0][k] === "number");
-  }, [d.teamStats]);
-
-  const filteredStatKeys = statKeys.filter((k) => {
-    if (statTab === "gk") return k.toLowerCase().includes("gk") || k.toLowerCase().includes("save") || k.toLowerCase().includes("clean");
-    if (statTab === "out") return !k.toLowerCase().includes("gk") && !k.toLowerCase().includes("save") && !k.toLowerCase().includes("clean");
-    return true;
-  });
+  // Most dominant H2H from fixtures
+  const dominantH2H = useMemo(() => {
+    const records: Record<string, { winner: string; loser: string; w: number; total: number; pf: number; pa: number }> = {};
+    completed.forEach((f: any) => {
+      const a = f.home_manager < f.away_manager ? f.home_manager : f.away_manager;
+      const b = f.home_manager < f.away_manager ? f.away_manager : f.home_manager;
+      const key = `${a}|${b}`;
+      if (!records[key]) records[key] = { winner: a, loser: b, w: 0, total: 0, pf: 0, pa: 0 };
+      records[key].total++;
+      const aWon = (f.winner_name === a);
+      if (aWon) records[key].w++;
+    });
+    const arr = Object.values(records).map((r) => {
+      const aWon = r.w;
+      const bWon = r.total - r.w;
+      const dominant = aWon >= bWon
+        ? { winner: r.winner, loser: r.loser, wins: aWon, losses: bWon, total: r.total }
+        : { winner: r.loser, loser: r.winner, wins: bWon, losses: aWon, total: r.total };
+      return dominant;
+    });
+    return arr.sort((a, b) => (b.wins - b.losses) - (a.wins - a.losses))[0];
+  }, [completed]);
 
   return (
     <div>
-      <PageHero
-        kicker="Season Archive"
-        title={<><span className="gold-gradient">{d.season.name}</span></>}
-        subtitle={champ ? <span className="capitalize"><Crown className="inline w-5 h-5 text-gold mr-2" />Champion: <span className="text-gold font-medium">{champ.name}</span> · {champ.team_name}</span> : "Season in progress"}
-      >
-        <div className="grid grid-cols-3 gap-4 max-w-xl">
-          <Mini label="Fixtures" value={d.fixtures.length} />
-          <Mini label="Total Pts" value={totalGoals.toFixed(0)} />
-          <Mini label="Avg Score" value={avgScore.toFixed(1)} />
-        </div>
-      </PageHero>
+      <SeasonHero
+        season={d.season}
+        champ={champ}
+        topScorer={topScorer ? mByName(topScorer.manager_name) : null}
+        topScorerPts={topScorer?.total_fpts ?? 0}
+        longestWin={longestWin}
+        longestLose={longestLose}
+        mostCS={mostCS ? { name: mostCS.manager_name, value: mostCS.combined_clean_sheets } : null}
+      />
 
-      {/* Final Table */}
+      <ParticipantsCarousel participants={participants} />
+
+      {/* League Table */}
       <section className="max-w-7xl mx-auto px-4 py-12">
-        <SectionTitle kicker="Final Standings" title="League Table" />
-        <div className="premium-card rounded-lg overflow-x-auto mt-6">
-          <table className="w-full text-sm">
-            <thead className="bg-card/60 text-xs uppercase tracking-wider text-muted-foreground">
-              <tr>
-                <th className="p-3 text-left">#</th>
-                <th className="p-3 text-left">Manager / Team</th>
-                <th className="p-3 text-center">P</th>
-                <th className="p-3 text-center">W</th>
-                <th className="p-3 text-center">D</th>
-                <th className="p-3 text-center">L</th>
-                <th className="p-3 text-right">PF</th>
-                <th className="p-3 text-right">PA</th>
-                <th className="p-3 text-right">PD</th>
-                <th className="p-3 text-right">Pts</th>
-              </tr>
-            </thead>
-            <tbody>
-              {d.standings.map((row: any) => {
-                const m = mById(row.manager_id);
-                const games = (row.wins ?? 0) + (row.draws ?? 0) + (row.losses ?? 0);
-                const isChamp = row.position === 1;
-                return (
-                  <tr key={row.id} className={`border-t border-border/40 hover:bg-gold/5 ${isChamp ? "bg-gold/5" : ""}`}>
-                    <td className="p-3 font-display text-lg text-gold">{row.position}</td>
-                    <td className="p-3 capitalize">
-                      <Link to="/team/$managerId" params={{ managerId: row.manager_id }} className="hover:text-gold flex items-center gap-2">
-                        {isChamp && <Trophy className="w-4 h-4 text-gold" />}
-                        <div>
-                          <div className="font-medium">{m?.name}</div>
-                          <div className="text-xs text-muted-foreground">{m?.team_name}</div>
-                        </div>
-                      </Link>
-                    </td>
-                    <td className="text-center p-3">{games}</td>
-                    <td className="text-center p-3">{row.wins}</td>
-                    <td className="text-center p-3">{row.draws}</td>
-                    <td className="text-center p-3">{row.losses}</td>
-                    <td className="text-right p-3">{Number(row.points_for ?? 0).toFixed(0)}</td>
-                    <td className="text-right p-3">{Number(row.points_against ?? 0).toFixed(0)}</td>
-                    <td className="text-right p-3">{Number(row.points_difference ?? 0).toFixed(0)}</td>
-                    <td className="text-right p-3 font-display text-gold">{row.total_points}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <SectionTitle kicker="Standings" title="The League Table" />
+        <LeagueTable standings={d.standings} managers={d.managers} mst={d.mst} gwTable={d.gwTable} maxGW={maxGW} />
+        <PositionChart gwTable={d.gwTable} managers={d.managers} maxGW={maxGW} />
       </section>
 
-      {/* GW Slider */}
-      {d.gwTable.length > 0 && (
+      {/* Fixtures */}
+      <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
+        <SectionTitle kicker="Match Centre" title="Fixtures & Results" />
+        <FixturesPanel fixtures={d.fixtures} managers={d.managers} maxGW={maxGW} />
+      </section>
+
+      {/* Team of the Season */}
+      {d.overallTOTS.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-          <SectionTitle kicker="Time Machine" title="Standings by Gameweek" />
-          <div className="mt-6 flex items-center gap-4 mb-4 flex-wrap">
-            <div className="text-xs uppercase tracking-widest text-muted-foreground">Gameweek</div>
-            <input type="range" min={1} max={maxGW} value={gw} onChange={(e) => setGw(Number(e.target.value))} className="flex-1 accent-[var(--gold)]" />
-            <div className="font-display text-3xl text-gold w-12 text-center">{gw}</div>
-          </div>
-          <div className="premium-card rounded-lg overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-card/60 text-xs uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="p-3 text-left">#</th>
-                  <th className="p-3 text-left">Manager</th>
-                  <th className="p-3 text-center">W</th>
-                  <th className="p-3 text-center">D</th>
-                  <th className="p-3 text-center">L</th>
-                  <th className="p-3 text-right">Pts</th>
-                </tr>
-              </thead>
-              <tbody>
-                {gwStandings.map((row: any) => (
-                  <tr key={`${row.manager_id}-${row.gameweek}`} className="border-t border-border/40">
-                    <td className="p-3 font-display text-gold">{row.position}</td>
-                    <td className="p-3 capitalize">{mById(row.manager_id)?.name}</td>
-                    <td className="text-center p-3">{row.wins}</td>
-                    <td className="text-center p-3">{row.draws}</td>
-                    <td className="text-center p-3">{row.losses}</td>
-                    <td className="text-right p-3 font-display text-gold">{row.total_points}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <SectionTitle kicker="The Best XI" title="Team of the Season" />
+          <p className="text-sm text-muted-foreground mt-2 mb-6">Top point-scorers from across the league in a legal formation.</p>
+          <FormationPitch players={d.overallTOTS} getManagerName={(id) => mById(id)?.name ?? ""} />
         </section>
       )}
 
       {/* Records */}
       <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
         <SectionTitle kicker="Highlights" title="Season Records" />
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-          <StatCard label="Highest Score" value={highest ? Math.max(highest.home_score, highest.away_score) : 0} sub={highest ? `${mById(highest.home_score >= highest.away_score ? highest.home_manager_id : highest.away_manager_id)?.name} GW${highest.gameweek}` : ""} icon={<Flame className="w-5 h-5" />} />
-          <StatCard label="Biggest Margin" value={biggestMargin?.margin ?? 0} sub={biggestMargin ? `GW${biggestMargin.gameweek}` : ""} icon={<Target className="w-5 h-5" />} />
-          <StatCard label="Lowest Score" value={lowest ? Math.min(lowest.home_score, lowest.away_score) : 0} sub={lowest ? `GW${lowest.gameweek}` : ""} icon={<Zap className="w-5 h-5" />} />
-          <StatCard label="Longest Win Streak" value={longestWin?.streak_length ?? 0} sub={longestWin ? mById(longestWin.manager_id)?.name : ""} icon={<Trophy className="w-5 h-5" />} />
+
+        <h3 className="font-display text-2xl text-gold mt-8 mb-4">Points & Performance</h3>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            label="Highest Single GW"
+            value={topWeekly?.score ?? "—"}
+            sub={topWeekly ? `${topWeekly.team_name} · GW${topWeekly.gameweek}` : ""}
+            icon={<Flame className="w-5 h-5" />}
+          />
+          <StatCard
+            label="Biggest Win"
+            value={biggestWin?.margin ?? "—"}
+            sub={biggestWin ? `${biggestWin.winner_team} bt ${biggestWin.loser_team} · GW${biggestWin.gameweek}` : ""}
+            icon={<Swords className="w-5 h-5" />}
+          />
+          <StatCard
+            label="Closest Game"
+            value={closestGame?.margin ?? "—"}
+            sub={closestGame ? `${closestGame.home_team} v ${closestGame.away_team} · GW${closestGame.gameweek}` : ""}
+            icon={<Target className="w-5 h-5" />}
+          />
+          <StatCard
+            label="Lowest Single Score"
+            value={lowest ? Math.min(lowest.home_score, lowest.away_score) : "—"}
+            sub={lowest ? `GW${lowest.gameweek}` : ""}
+            icon={<TrendingDown className="w-5 h-5" />}
+          />
+          <StatCard
+            label="Longest Win Streak"
+            value={longestWin?.streak_length ?? "—"}
+            sub={longestWin ? `${longestWin.team_name} · GW${longestWin.streak_start_gw}–${longestWin.streak_end_gw}` : ""}
+            icon={<TrendingUp className="w-5 h-5" />}
+          />
+          <StatCard
+            label="Longest Losing Streak"
+            value={longestLose?.streak_length ?? "—"}
+            sub={longestLose ? `${longestLose.team_name} · GW${longestLose.streak_start_gw}–${longestLose.streak_end_gw}` : ""}
+            icon={<Skull className="w-5 h-5" />}
+          />
+          <StatCard
+            label="Longest Unbeaten"
+            value={longestUnbeaten?.streak_length ?? "—"}
+            sub={longestUnbeaten ? `${longestUnbeaten.team_name}` : ""}
+            icon={<Shield className="w-5 h-5" />}
+          />
+          <StatCard
+            label="Most Dominant H2H"
+            value={dominantH2H ? `${dominantH2H.wins}-${dominantH2H.losses}` : "—"}
+            sub={dominantH2H ? `${dominantH2H.winner} over ${dominantH2H.loser}` : ""}
+            icon={<Crown className="w-5 h-5" />}
+          />
+        </div>
+
+        <h3 className="font-display text-2xl text-gold mt-12 mb-4">Fun & Quirky</h3>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            label="Top Scorers"
+            value={topScorer ? Number(topScorer.total_fpts).toFixed(0) : "—"}
+            sub={topScorer?.team_name}
+            icon={<Star className="w-5 h-5" />}
+          />
+          <StatCard
+            label="Most Clean Sheets"
+            value={mostCS?.combined_clean_sheets ?? "—"}
+            sub={mostCS?.team_name}
+            icon={<Shield className="w-5 h-5" />}
+          />
+          <StatCard
+            label="Most Goals (outfield)"
+            value={mostGoals?.out_goals ?? "—"}
+            sub={mostGoals?.team_name}
+            icon={<Zap className="w-5 h-5" />}
+          />
+          <StatCard
+            label="Most Assists"
+            value={mostAssists?.out_assists ?? "—"}
+            sub={mostAssists?.team_name}
+            icon={<Users className="w-5 h-5" />}
+          />
+          <StatCard
+            label="Most Yellow Cards"
+            value={mostYellows?.combined_yellow_cards ?? "—"}
+            sub={mostYellows?.team_name}
+            icon={<Flag className="w-5 h-5" />}
+          />
+          <StatCard
+            label="Longest Winless Run"
+            value={longestWinless?.streak_length ?? "—"}
+            sub={longestWinless?.team_name}
+            icon={<TrendingDown className="w-5 h-5" />}
+          />
+          <StatCard
+            label="Most GWs at #1"
+            value={positionCounts.topId?.[1] ?? "—"}
+            sub={positionCounts.topId ? mById(positionCounts.topId[0])?.team_name : ""}
+            icon={<Trophy className="w-5 h-5" />}
+          />
+          <StatCard
+            label="Most GWs at the Bottom"
+            value={positionCounts.botId?.[1] ?? "—"}
+            sub={positionCounts.botId ? mById(positionCounts.botId[0])?.team_name : ""}
+            icon={<Skull className="w-5 h-5" />}
+          />
         </div>
       </section>
-
-      {/* H2H Grid */}
-      {d.managers.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-          <SectionTitle kicker="The Matrix" title="Head to Head Grid" />
-          <div className="premium-card rounded-lg overflow-x-auto mt-6">
-            <table className="text-xs">
-              <thead>
-                <tr>
-                  <th className="p-2"></th>
-                  {d.managers.map((m: any) => (
-                    <th key={m.id} className="p-2 text-[10px] uppercase tracking-wider text-muted-foreground capitalize">{m.name?.slice(0, 4)}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {d.managers.map((row: any) => (
-                  <tr key={row.id}>
-                    <td className="p-2 text-[10px] uppercase tracking-wider text-muted-foreground capitalize whitespace-nowrap">{row.name}</td>
-                    {d.managers.map((col: any) => (
-                      <td key={col.id} className="p-2 text-center border border-border/30">
-                        {row.id === col.id ? <span className="text-muted-foreground">—</span> : (grid[row.id]?.[col.id] ?? <span className="text-muted-foreground">·</span>)}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
-
-      {/* Stats Table */}
-      {filteredStatKeys.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-          <SectionTitle kicker="The Numbers" title="Season Stats" />
-          <div className="flex gap-2 mt-6 mb-4">
-            {(["overall", "gk", "out"] as const).map((t) => (
-              <button key={t} onClick={() => setStatTab(t)} className={`px-4 py-2 text-xs uppercase tracking-wider rounded ${statTab === t ? "bg-gold text-primary-foreground" : "bg-card border border-border hover:border-gold"}`}>
-                {t === "overall" ? "Overall" : t === "gk" ? "GK Stats" : "Outfield"}
-              </button>
-            ))}
-          </div>
-          <div className="premium-card rounded-lg overflow-x-auto">
-            <table className="text-xs">
-              <thead className="bg-card/60">
-                <tr>
-                  <th className="p-2 text-left sticky left-0 bg-card">Manager</th>
-                  {filteredStatKeys.slice(0, 12).map((k) => (
-                    <th key={k} className="p-2 text-right uppercase tracking-wider text-muted-foreground whitespace-nowrap">{k.replace(/_/g, " ")}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {d.teamStats.map((s: any) => (
-                  <tr key={s.id} className="border-t border-border/40">
-                    <td className="p-2 sticky left-0 bg-card capitalize whitespace-nowrap">{mById(s.manager_id)?.name}</td>
-                    {filteredStatKeys.slice(0, 12).map((k) => (
-                      <td key={k} className="p-2 text-right tabular-nums">{s[k] != null ? Number(s[k]).toFixed(s[k] % 1 === 0 ? 0 : 1) : <span className="text-muted-foreground/40">—</span>}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
-
-      {/* Overall TOTS */}
-      {d.overallTOTS.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-          <SectionTitle kicker="The Best XI" title="Team of the Season" />
-          <div className="mt-8">
-            <FormationPitch players={d.overallTOTS} getManagerName={(id) => mById(id)?.name ?? ""} />
-          </div>
-        </section>
-      )}
-
-      {/* Per-team TOTS */}
-      {d.teamTOTS.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-          <SectionTitle kicker="Per Manager" title="Each Team's Best XI" />
-          <div className="flex flex-wrap gap-2 mt-6 mb-6">
-            {d.managers.map((m: any) => (
-              <button key={m.id} onClick={() => setShowTeamTOTS(m.id)} className={`px-3 py-2 text-xs uppercase tracking-wider rounded capitalize ${showTeamTOTS === m.id ? "bg-gold text-primary-foreground" : "bg-card border border-border hover:border-gold"}`}>
-                {m.name}
-              </button>
-            ))}
-          </div>
-          {showTeamTOTS && (
-            <FormationPitch players={d.teamTOTS.filter((p: any) => p.manager_id === showTeamTOTS)} />
-          )}
-        </section>
-      )}
     </div>
   );
 }
 
-function Mini({ label, value }: { label: string; value: any }) {
+/* ======================= Hero ======================= */
+
+function SeasonHero({ season, champ, topScorer, topScorerPts, longestWin, longestLose, mostCS }: any) {
+  const [yA, yB] = season.name.split("/");
+  const champBranding = champ ? getBranding(champ.id) : null;
+
+  return (
+    <section className="relative overflow-hidden border-b border-border/50">
+      <div className="absolute inset-0 ucl-stars opacity-70" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
+      <div
+        className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full blur-3xl pointer-events-none opacity-50"
+        style={{ background: "radial-gradient(circle, var(--color-primary) 0%, transparent 65%)" }}
+      />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+        <div className="grid lg:grid-cols-[auto_1fr] gap-10 lg:gap-16 items-center">
+          {/* Bespoke logo */}
+          <div className="relative mx-auto lg:mx-0">
+            <div className="relative w-[260px] h-[260px] sm:w-[300px] sm:h-[300px] flex items-center justify-center">
+              {/* concentric rings */}
+              <div className="absolute inset-0 rounded-full border-2 border-gold/30" />
+              <div className="absolute inset-4 rounded-full border border-gold/20" />
+              <div className="absolute inset-0 rounded-full"
+                   style={{ background: "conic-gradient(from 90deg, var(--color-gold) 0%, transparent 25%, var(--color-primary) 50%, transparent 75%, var(--color-gold) 100%)", opacity: 0.18 }}/>
+              <Crown className="absolute -top-2 left-1/2 -translate-x-1/2 w-10 h-10 text-gold drop-shadow" />
+              <div className="text-center">
+                <div className="text-[10px] uppercase tracking-[0.5em] text-gold/80">Season</div>
+                <div className="font-display text-7xl sm:text-8xl gold-gradient leading-none">{yA}</div>
+                <div className="h-px w-16 bg-gold/60 mx-auto my-2" />
+                <div className="font-display text-7xl sm:text-8xl gold-gradient leading-none">{yB}</div>
+                <div className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground mt-2">FPL Super League</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Headline + meta */}
+          <div>
+            <div className="text-xs uppercase tracking-[0.35em] text-gold mb-3">Season Hub</div>
+            <h1 className="font-display text-5xl md:text-7xl leading-none mb-4">
+              <span className="gold-gradient">{season.name}</span>
+            </h1>
+            <div className="h-px w-24 bg-gold/60 my-6" />
+
+            {champ && (
+              <Link to="/team/$managerId" params={{ managerId: String(champ.id) }}
+                    className="group inline-flex items-center gap-4 premium-card rounded-lg pl-3 pr-5 py-3 mb-6 hover:border-gold/60 transition">
+                {champBranding?.badge && (
+                  <img src={champBranding.badge} alt="" className="w-12 h-12 object-contain" />
+                )}
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Champion</div>
+                  <div className="font-display text-2xl text-gold leading-none capitalize group-hover:underline">{champ.name}</div>
+                  <div className="text-xs text-muted-foreground">{champ.team_name}</div>
+                </div>
+                <Trophy className="w-7 h-7 text-gold ml-2" />
+              </Link>
+            )}
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <Mini label="Top Scorers" value={topScorerPts ? Number(topScorerPts).toFixed(0) : "—"} sub={topScorer?.team_name} />
+              <Mini label="Best Win Run" value={longestWin?.streak_length ?? "—"} sub={longestWin?.team_name} />
+              <Mini label="Worst Losing Run" value={longestLose?.streak_length ?? "—"} sub={longestLose?.team_name} />
+              <Mini label="Most Clean Sheets" value={mostCS?.value ?? "—"} sub={mostCS?.name} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ======================= Participants Carousel ======================= */
+
+function ParticipantsCarousel({ participants }: { participants: any[] }) {
+  if (!participants.length) return null;
+  // Duplicate the list so the marquee loops seamlessly
+  const items = [...participants, ...participants];
+  return (
+    <section className="border-y border-border/50 bg-card/40 py-8 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 mb-4">
+        <div className="text-[10px] uppercase tracking-[0.3em] text-gold">Participating Teams</div>
+      </div>
+      <div className="relative">
+        <div className="flex gap-12 marquee w-max items-center">
+          {items.map((m, i) => {
+            const branding = getBranding(m.id);
+            return (
+              <Link key={i} to="/team/$managerId" params={{ managerId: String(m.id) }}
+                    className="flex flex-col items-center gap-2 min-w-[110px] group">
+                {branding?.badge ? (
+                  <img src={branding.badge} alt={m.team_name}
+                       className="w-20 h-20 object-contain drop-shadow-lg group-hover:scale-110 transition-transform" />
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center text-2xl">{m.name?.[0]}</div>
+                )}
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground group-hover:text-gold text-center max-w-[110px] truncate">
+                  {m.team_name}
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ======================= League Table ======================= */
+
+function LeagueTable({ standings, managers, mst, gwTable, maxGW }: any) {
+  const mById = (id: any) => managers.find((m: any) => String(m.id) === String(id));
+  const teamNameFor = (mid: any) => mst.find((r: any) => String(r.manager_id) === String(mid))?.team_name ?? mById(mid)?.team_name;
+
+  // Form: last 5 results from gameweek_table per manager (W/D/L derived from cumulative wins/draws/losses)
+  const formByManager = useMemo(() => {
+    const out: Record<string, ("W" | "D" | "L")[]> = {};
+    managers.forEach((m: any) => {
+      const rows = gwTable.filter((r: any) => String(r.manager_id) === String(m.id))
+        .sort((a: any, b: any) => a.gameweek - b.gameweek);
+      const results: ("W" | "D" | "L")[] = [];
+      for (let i = 1; i < rows.length; i++) {
+        if (rows[i].wins > rows[i - 1].wins) results.push("W");
+        else if (rows[i].draws > rows[i - 1].draws) results.push("D");
+        else if (rows[i].losses > rows[i - 1].losses) results.push("L");
+      }
+      out[String(m.id)] = results.slice(-5);
+    });
+    return out;
+  }, [gwTable, managers]);
+
+  return (
+    <div className="premium-card rounded-lg overflow-x-auto mt-6">
+      <table className="w-full text-sm">
+        <thead className="bg-card/60 text-xs uppercase tracking-wider text-muted-foreground">
+          <tr>
+            <th className="p-3 text-left">#</th>
+            <th className="p-3 text-left">Team</th>
+            <th className="p-3 text-center">P</th>
+            <th className="p-3 text-center">W</th>
+            <th className="p-3 text-center">D</th>
+            <th className="p-3 text-center">L</th>
+            <th className="p-3 text-right">PF</th>
+            <th className="p-3 text-right">PA</th>
+            <th className="p-3 text-right">PD</th>
+            <th className="p-3 text-right">Pts</th>
+            <th className="p-3 text-center">Form</th>
+          </tr>
+        </thead>
+        <tbody>
+          {standings.map((row: any) => {
+            const m = mById(row.manager_id);
+            const branding = getBranding(row.manager_id);
+            const games = (row.wins ?? 0) + (row.draws ?? 0) + (row.losses ?? 0);
+            const isChamp = row.position === 1;
+            const form = formByManager[String(row.manager_id)] ?? [];
+            return (
+              <tr key={row.id} className={`border-t border-border/40 hover:bg-gold/5 ${isChamp ? "bg-gold/5" : ""}`}>
+                <td className="p-3 font-display text-lg text-gold">{row.position}</td>
+                <td className="p-3">
+                  <Link to="/team/$managerId" params={{ managerId: String(row.manager_id) }} className="flex items-center gap-3 hover:text-gold">
+                    {branding?.badge && <img src={branding.badge} alt="" className="w-8 h-8 object-contain" />}
+                    {isChamp && <Trophy className="w-4 h-4 text-gold" />}
+                    <div>
+                      <div className="font-medium">{teamNameFor(row.manager_id)}</div>
+                      <div className="text-xs text-muted-foreground capitalize">{m?.name}</div>
+                    </div>
+                  </Link>
+                </td>
+                <td className="text-center p-3">{games}</td>
+                <td className="text-center p-3">{row.wins}</td>
+                <td className="text-center p-3">{row.draws}</td>
+                <td className="text-center p-3">{row.losses}</td>
+                <td className="text-right p-3 tabular-nums">{Number(row.points_for ?? 0).toFixed(0)}</td>
+                <td className="text-right p-3 tabular-nums">{Number(row.points_against ?? 0).toFixed(0)}</td>
+                <td className="text-right p-3 tabular-nums">{Number(row.points_difference ?? 0).toFixed(0)}</td>
+                <td className="text-right p-3 font-display text-gold text-base">{row.total_points}</td>
+                <td className="p-3">
+                  <div className="flex justify-center gap-1">
+                    {form.map((r, i) => (
+                      <span key={i} className={`w-5 h-5 rounded-sm flex items-center justify-center text-[10px] font-bold ${
+                        r === "W" ? "bg-success/80 text-background" : r === "D" ? "bg-muted text-foreground" : "bg-destructive/80 text-background"
+                      }`}>{r}</span>
+                    ))}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ======================= Position Chart ======================= */
+
+function PositionChart({ gwTable, managers, maxGW }: any) {
+  const [hover, setHover] = useState<string | null>(null);
+  const W = 800;
+  const H = 320;
+  const PAD_L = 30;
+  const PAD_R = 12;
+  const PAD_T = 16;
+  const PAD_B = 28;
+  const teamCount = managers.length || 12;
+
+  const xFor = (gw: number) => PAD_L + ((gw - 1) / Math.max(maxGW - 1, 1)) * (W - PAD_L - PAD_R);
+  const yFor = (pos: number) => PAD_T + ((pos - 1) / (teamCount - 1)) * (H - PAD_T - PAD_B);
+
+  const lines = managers.map((m: any) => {
+    const rows = gwTable.filter((r: any) => String(r.manager_id) === String(m.id)).sort((a: any, b: any) => a.gameweek - b.gameweek);
+    if (!rows.length) return null;
+    const path = rows.map((r: any, i: number) => `${i === 0 ? "M" : "L"} ${xFor(r.gameweek).toFixed(1)} ${yFor(r.position).toFixed(1)}`).join(" ");
+    const branding = getBranding(m.id);
+    return { id: String(m.id), name: m.team_name, path, color: branding?.primary ?? "#888", final: rows[rows.length - 1] };
+  }).filter(Boolean);
+
+  return (
+    <div className="premium-card rounded-lg p-4 mt-6">
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <div className="text-[10px] uppercase tracking-widest text-gold">Race for the title</div>
+          <div className="font-display text-xl">League Position by Gameweek</div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {lines.map((l: any) => (
+            <button key={l.id} onMouseEnter={() => setHover(l.id)} onMouseLeave={() => setHover(null)}
+                    className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider px-2 py-1 rounded transition ${hover === l.id ? "bg-card border border-gold/40" : "opacity-70 hover:opacity-100"}`}>
+              <span className="w-3 h-3 rounded-full" style={{ background: l.color }} />
+              {l.name}
+            </button>
+          ))}
+        </div>
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto">
+        {/* Y grid (positions) */}
+        {Array.from({ length: teamCount }, (_, i) => i + 1).map((pos) => (
+          <g key={pos}>
+            <line x1={PAD_L} x2={W - PAD_R} y1={yFor(pos)} y2={yFor(pos)} stroke="oklch(1 0 0 / 6%)" strokeWidth="1" />
+            <text x={PAD_L - 6} y={yFor(pos) + 3} textAnchor="end" fontSize="9" fill="oklch(0.7 0.02 250)">{pos}</text>
+          </g>
+        ))}
+        {/* X grid */}
+        {Array.from({ length: Math.ceil(maxGW / 5) + 1 }, (_, i) => i * 5).filter((g) => g >= 1 && g <= maxGW).map((g) => (
+          <g key={g}>
+            <line x1={xFor(g)} x2={xFor(g)} y1={PAD_T} y2={H - PAD_B} stroke="oklch(1 0 0 / 4%)" strokeWidth="1" />
+            <text x={xFor(g)} y={H - PAD_B + 14} textAnchor="middle" fontSize="9" fill="oklch(0.7 0.02 250)">GW{g}</text>
+          </g>
+        ))}
+        {lines.map((l: any) => (
+          <path key={l.id} d={l.path} fill="none" stroke={l.color}
+                strokeWidth={hover === l.id ? 3 : 1.6}
+                strokeOpacity={hover && hover !== l.id ? 0.15 : 0.95}
+                strokeLinejoin="round" strokeLinecap="round" />
+        ))}
+        {/* Final position end-caps */}
+        {lines.map((l: any) => (
+          <circle key={l.id} cx={xFor(l.final.gameweek)} cy={yFor(l.final.position)} r={hover === l.id ? 5 : 3}
+                  fill={l.color} stroke="oklch(0.13 0.04 265)" strokeWidth="1" opacity={hover && hover !== l.id ? 0.2 : 1} />
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+/* ======================= Fixtures ======================= */
+
+function FixturesPanel({ fixtures, managers, maxGW }: any) {
+  const completedGWs = [...new Set(fixtures.filter((f: any) => f.home_score != null).map((f: any) => f.gameweek))] as number[];
+  const latestGW = completedGWs.length ? Math.max(...completedGWs) : maxGW;
+  const [gw, setGw] = useState<number>(latestGW);
+  const [managerFilter, setManagerFilter] = useState<string>("all");
+
+  const mByName = (name: string) => managers.find((m: any) => m.name === name);
+
+  const filteredByGw = fixtures.filter((f: any) => f.gameweek === gw);
+  const teamFixtures = managerFilter !== "all"
+    ? fixtures.filter((f: any) => f.home_manager === managerFilter || f.away_manager === managerFilter)
+        .sort((a: any, b: any) => a.gameweek - b.gameweek)
+    : null;
+
+  const list = teamFixtures ?? filteredByGw;
+
+  return (
+    <div className="mt-6">
+      <div className="flex flex-wrap items-center gap-3 mb-5">
+        <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Gameweek</label>
+        <select value={gw} onChange={(e) => { setGw(Number(e.target.value)); setManagerFilter("all"); }}
+                disabled={managerFilter !== "all"}
+                className="bg-card border border-border rounded px-3 py-2 text-sm font-display text-gold disabled:opacity-40">
+          {Array.from({ length: maxGW }, (_, i) => i + 1).map((g) => (
+            <option key={g} value={g}>GW {g}</option>
+          ))}
+        </select>
+        <span className="text-muted-foreground">·</span>
+        <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Team</label>
+        <select value={managerFilter} onChange={(e) => setManagerFilter(e.target.value)}
+                className="bg-card border border-border rounded px-3 py-2 text-sm">
+          <option value="all">All teams (this gameweek)</option>
+          {managers.map((m: any) => (
+            <option key={m.id} value={m.name}>{m.team_name}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-3">
+        {list.map((f: any) => {
+          const homeM = mByName(f.home_manager);
+          const awayM = mByName(f.away_manager);
+          const hb = homeM ? getBranding(homeM.id) : null;
+          const ab = awayM ? getBranding(awayM.id) : null;
+          const homeWon = f.home_score > f.away_score;
+          const awayWon = f.away_score > f.home_score;
+          return (
+            <div key={f.id} className="premium-card rounded-lg p-4">
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">GW {f.gameweek}</div>
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                <Link to="/team/$managerId" params={{ managerId: String(homeM?.id ?? "") }} className="flex items-center gap-2 justify-end text-right hover:text-gold min-w-0">
+                  <div className="min-w-0">
+                    <div className={`font-medium truncate ${homeWon ? "text-gold" : ""}`}>{f.home_team}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">{f.home_manager}</div>
+                  </div>
+                  {hb?.badge && <img src={hb.badge} alt="" className="w-10 h-10 object-contain" />}
+                </Link>
+                <div className="font-display text-2xl text-center tabular-nums">
+                  <span className={homeWon ? "text-gold" : ""}>{f.home_score ?? "-"}</span>
+                  <span className="mx-2 text-muted-foreground">:</span>
+                  <span className={awayWon ? "text-gold" : ""}>{f.away_score ?? "-"}</span>
+                </div>
+                <Link to="/team/$managerId" params={{ managerId: String(awayM?.id ?? "") }} className="flex items-center gap-2 hover:text-gold min-w-0">
+                  {ab?.badge && <img src={ab.badge} alt="" className="w-10 h-10 object-contain" />}
+                  <div className="min-w-0">
+                    <div className={`font-medium truncate ${awayWon ? "text-gold" : ""}`}>{f.away_team}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">{f.away_manager}</div>
+                  </div>
+                </Link>
+              </div>
+            </div>
+          );
+        })}
+        {list.length === 0 && <div className="col-span-full text-center text-muted-foreground p-8">No fixtures.</div>}
+      </div>
+    </div>
+  );
+}
+
+/* ======================= Helpers ======================= */
+
+function Mini({ label, value, sub }: { label: string; value: any; sub?: any }) {
   return (
     <div className="border-l-2 border-gold pl-3">
-      <div className="font-display text-2xl md:text-3xl text-gold">{value}</div>
-      <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
+      <div className="font-display text-2xl md:text-3xl text-gold leading-none">{value}</div>
+      <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">{label}</div>
+      {sub && <div className="text-[10px] text-muted-foreground/80 truncate">{sub}</div>}
     </div>
   );
 }
@@ -322,6 +641,11 @@ function SectionTitle({ kicker, title }: { kicker: string; title: string }) {
       <h2 className="font-display text-3xl md:text-4xl">{title}</h2>
     </div>
   );
+}
+
+function Flag({ className }: { className?: string }) {
+  // tiny icon shim so we don't need another import
+  return <span className={className}>🟨</span>;
 }
 
 function Skel() {
