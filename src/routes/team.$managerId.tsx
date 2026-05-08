@@ -538,7 +538,7 @@ function TeamPage() {
                         {(() => {
                           const headerCrest = getPlClubBadge(searchClub);
                           return headerCrest ? (
-                            <img src={headerCrest} alt={searchClub} className="w-12 h-12 object-contain shrink-0" />
+                            <img src={headerCrest} alt={searchClub} className="w-8 h-8 object-contain shrink-0" />
                           ) : null;
                         })()}
                         <div>
