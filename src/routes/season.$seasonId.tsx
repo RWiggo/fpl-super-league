@@ -158,7 +158,11 @@ function SeasonPage() {
       {/* Team of the Season */}
       {d.overallTOTS.length > 0 && (() => {
         const posMap: Record<string, "GK" | "DEF" | "MID" | "FWD"> = { G: "GK", GK: "GK", GKP: "GK", D: "DEF", DEF: "DEF", M: "MID", MID: "MID", F: "FWD", FWD: "FWD" };
-        const totsForPitch = d.overallTOTS.map((p: any) => ({ ...p, position: posMap[p.position] ?? p.position }));
+        const totsForPitch = d.overallTOTS.map((p: any) => ({
+          ...p,
+          position: posMap[p.position] ?? p.position,
+          manager_id: p.manager_id ?? mByName(p.manager_name)?.id,
+        }));
         const counts = totsForPitch.reduce((acc: any, p: any) => { acc[p.position] = (acc[p.position] ?? 0) + 1; return acc; }, {});
         const formation = [counts.DEF ?? 0, counts.MID ?? 0, counts.FWD ?? 0].join("-");
         const totalPts = totsForPitch.reduce((s: number, p: any) => s + (Number(p.total_fantasy_points ?? p.fantasy_points ?? 0)), 0);
