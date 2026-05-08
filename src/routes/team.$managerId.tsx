@@ -73,9 +73,9 @@ function TeamPage() {
   }, [managerId]);
 
   const [statSeason, setStatSeason] = useState<string>("");
-  useEffect(() => { if (d?.standings?.length && !statSeason) setStatSeason(d.standings[d.standings.length - 1].season_id); }, [d]);
+  useEffect(() => { if (d?.standings?.length && !statSeason) setStatSeason(d.seasons.find((x: any) => x.id === d.standings[d.standings.length - 1].season_id)?.name ?? ""); }, [d]);
   const [totsSeason, setTotsSeason] = useState<string>("");
-  useEffect(() => { if (d?.tots?.length && !totsSeason) setTotsSeason(d.tots[0].season_id); }, [d]);
+  useEffect(() => { if (d?.tots?.length && !totsSeason) setTotsSeason(d.tots[0].season_name); }, [d]);
 
   // Player search: club -> players from history; selected player aggregated stats
   const clubsInSquad = useMemo(() => {
