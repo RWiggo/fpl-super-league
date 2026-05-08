@@ -278,34 +278,59 @@ function TeamPage() {
               <tr>
                 <th className="p-3 text-left">Season</th>
                 <th className="p-3 text-left">Team</th>
-                <th className="p-3 text-center">Pos</th>
+                <th className="p-3 text-left">Star Player</th>
                 <th className="p-3 text-center">W</th>
                 <th className="p-3 text-center">D</th>
                 <th className="p-3 text-center">L</th>
-                <th className="p-3 text-right">PF</th>
-                <th className="p-3 text-right">PA</th>
+                <th className="p-3 text-right">FPL Diff</th>
                 <th className="p-3 text-right">Pts</th>
+                <th className="p-3 text-center">Pos</th>
               </tr>
             </thead>
             <tbody>
               {d.standings.map((s: any) => {
-                const isBest = s.position === bestFinish;
-                const isWorst = s.position === worstFinish && bestFinish !== worstFinish;
                 const teamName = d.mst.find((t: any) => t.season_id === s.season_id)?.team_name;
+                // Star player: top fantasy_points scorer for this manager that season
+                const seasonHistory = (d.history as any[]).filter((h) => h.season_id === s.season_id);
+                const star = [...seasonHistory].sort(
+                  (a, b) => Number(b.fantasy_points ?? 0) - Number(a.fantasy_points ?? 0)
+                )[0];
+                // Total managers in this season → relative finish bucket
+                const seasonSize = new Set(
+                  (d.allStandings as any[]).filter((x) => x.season_id === s.season_id).map((x) => x.manager_id)
+                ).size;
+                const pos = s.position;
+                let posClass = "text-yellow-400"; // mid-table default
+                if (pos === 1) posClass = "text-emerald-300";
+                else if (pos === 2 || pos === 3) posClass = "text-emerald-600";
+                else if (seasonSize > 0 && pos === seasonSize) posClass = "text-red-700";
+                else if (seasonSize > 0 && pos > seasonSize - 3) posClass = "text-red-500";
+                const diff = Number(s.points_for ?? 0) - Number(s.points_against ?? 0);
                 return (
                   <tr key={s.id} className="border-t border-border/40">
                     <td className="p-3"><Link to="/season/$seasonId" params={{ seasonId: s.season_id }} className="hover:text-gold">{sById(s.season_id)?.name}</Link></td>
                     <td className="p-3 text-muted-foreground">{teamName}</td>
-                    <td className={`p-3 text-center font-display text-lg ${isBest ? "text-success" : isWorst ? "text-destructive/70" : "text-gold"}`}>
-                      {s.position === 1 && <Trophy className="inline w-4 h-4 mr-1" />}
-                      {s.position}
+                    <td className="p-3">
+                      {star ? (
+                        <span>
+                          <span className="font-medium">{star.player_name}</span>
+                          <span className="text-muted-foreground ml-2 text-xs">{Number(star.fantasy_points ?? 0).toFixed(0)} pts</span>
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
                     </td>
                     <td className="text-center p-3">{s.wins}</td>
                     <td className="text-center p-3">{s.draws}</td>
                     <td className="text-center p-3">{s.losses}</td>
-                    <td className="text-right p-3">{Number(s.points_for ?? 0).toFixed(0)}</td>
-                    <td className="text-right p-3">{Number(s.points_against ?? 0).toFixed(0)}</td>
+                    <td className={`text-right p-3 ${diff >= 0 ? "text-emerald-400/90" : "text-red-400/90"}`}>
+                      {diff >= 0 ? "+" : ""}{diff.toFixed(0)}
+                    </td>
                     <td className="text-right p-3 font-display text-gold">{s.total_points}</td>
+                    <td className={`p-3 text-center font-display text-lg ${posClass}`}>
+                      {pos === 1 && <Trophy className="inline w-4 h-4 mr-1 text-gold" />}
+                      {pos}
+                    </td>
                   </tr>
                 );
               })}
