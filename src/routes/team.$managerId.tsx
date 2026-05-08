@@ -346,23 +346,60 @@ function TeamPage() {
       </section>
 
       {/* H2H Carousel */}
-      {d.h2h.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-          <SectionTitle kicker="vs The Field" title="Head to Head" />
-          <p className="text-sm text-muted-foreground mt-3 mb-6">Scroll to view records against every other manager. Click a card to see every result.</p>
-          <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-thin">
-            {[...d.h2h]
-              .map((row: any) => {
-                const isOne = String(row.manager1_id) === String(managerId);
-                const oppId = isOne ? row.manager2_id : row.manager1_id;
-                const myWins = isOne ? row.manager1_wins : row.manager2_wins;
-                const oppWins = isOne ? row.manager2_wins : row.manager1_wins;
-                const myPF = isOne ? row.manager1_points_for : row.manager2_points_for;
-                const oppPF = isOne ? row.manager2_points_for : row.manager1_points_for;
-                return { row, oppId, myWins, oppWins, myPF, oppPF };
-              })
-              .sort((a, b) => (b.myWins + b.oppWins + (b.row.draws ?? 0)) - (a.myWins + a.oppWins + (a.row.draws ?? 0)))
-              .map(({ row, oppId, myWins, oppWins, myPF, oppPF }) => {
+      {d.h2h.length > 0 && (() => {
+        const cards = [...d.h2h]
+          .map((row: any) => {
+            const isOne = String(row.manager1_id) === String(managerId);
+            const oppId = isOne ? row.manager2_id : row.manager1_id;
+            const myWins = isOne ? row.manager1_wins : row.manager2_wins;
+            const oppWins = isOne ? row.manager2_wins : row.manager1_wins;
+            const myPF = isOne ? row.manager1_points_for : row.manager2_points_for;
+            const oppPF = isOne ? row.manager2_points_for : row.manager1_points_for;
+            return { row, oppId, myWins, oppWins, myPF, oppPF };
+          })
+          .sort((a, b) => (b.myWins + b.oppWins + (b.row.draws ?? 0)) - (a.myWins + a.oppWins + (a.row.draws ?? 0)));
+
+        const perPage = 3;
+        const pageCount = Math.max(1, Math.ceil(cards.length / perPage));
+        const page = Math.min(h2hPage, pageCount - 1);
+        const visible = cards.slice(page * perPage, page * perPage + perPage);
+        const canPrev = page > 0;
+        const canNext = page < pageCount - 1;
+
+        return (
+          <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
+            <div className="flex items-end justify-between flex-wrap gap-4">
+              <SectionTitle kicker="vs The Field" title="Head to Head" />
+              <div className="flex items-center gap-2">
+                <span className="text-xs uppercase tracking-[0.25em] text-muted-foreground mr-2 hidden sm:inline">
+                  {page + 1} / {pageCount}
+                </span>
+                <button
+                  type="button"
+                  aria-label="Previous opponents"
+                  onClick={() => canPrev && setH2hPage(page - 1)}
+                  disabled={!canPrev}
+                  className="w-10 h-10 rounded-full border border-gold/40 bg-card/60 hover:bg-gold hover:text-primary-foreground transition flex items-center justify-center disabled:opacity-30 disabled:hover:bg-card/60 disabled:hover:text-current"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Next opponents"
+                  onClick={() => canNext && setH2hPage(page + 1)}
+                  disabled={!canNext}
+                  className="w-10 h-10 rounded-full border border-gold/40 bg-card/60 hover:bg-gold hover:text-primary-foreground transition flex items-center justify-center disabled:opacity-30 disabled:hover:bg-card/60 disabled:hover:text-current"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground mt-3 mb-6">
+              Sorted by total fixtures played. Click a card to see every result.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {visible.map(({ row, oppId, myWins, oppWins, myPF, oppPF }) => {
                 const opp = mById(oppId);
                 const oppName = opp?.name;
                 const oppFixtures = (d.fixtures as any[])
@@ -398,9 +435,23 @@ function TeamPage() {
                   />
                 );
               })}
-          </div>
-        </section>
-      )}
+            </div>
+
+            {/* Page dots */}
+            <div className="flex justify-center gap-2 mt-6">
+              {Array.from({ length: pageCount }).map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  aria-label={`Go to page ${i + 1}`}
+                  onClick={() => setH2hPage(i)}
+                  className={`h-1.5 rounded-full transition-all ${i === page ? "w-8 bg-gold" : "w-2 bg-border hover:bg-muted-foreground"}`}
+                />
+              ))}
+            </div>
+          </section>
+        );
+      })()}
 
       {/* Highs and Lows */}
       <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
