@@ -15,7 +15,8 @@ function TeamPage() {
   const { managerId } = Route.useParams();
   const [d, setD] = useState<any>(null);
   const [seasonFilter, setSeasonFilter] = useState<string>("");
-  const [posFilter, setPosFilter] = useState<string>("");
+  const [searchClub, setSearchClub] = useState<string>("");
+  const [searchPlayer, setSearchPlayer] = useState<string>("");
 
   useEffect(() => {
     setD(null);
@@ -76,12 +77,30 @@ function TeamPage() {
   const [totsSeason, setTotsSeason] = useState<string>("");
   useEffect(() => { if (d?.tots?.length && !totsSeason) setTotsSeason(d.tots[0].season_id); }, [d]);
 
-  const filteredPlayers = useMemo(() => {
-    if (!d) return [];
-    let p = d.alltimePlayers as any[];
-    if (posFilter) p = p.filter((x) => x.position === posFilter);
-    return [...p].sort((a, b) => (b.total_fantasy_points ?? 0) - (a.total_fantasy_points ?? 0));
-  }, [d, posFilter]);
+  // Player search: club -> players from history; selected player aggregated stats
+  const clubsInSquad = useMemo(() => {
+    if (!d) return [] as string[];
+    return [...new Set((d.history as any[]).map((h) => h.club).filter(Boolean))].sort();
+  }, [d]);
+  const playersForClub = useMemo(() => {
+    if (!d || !searchClub) return [] as string[];
+    return [...new Set((d.history as any[]).filter((h) => h.club === searchClub).map((h) => h.player_name))].sort();
+  }, [d, searchClub]);
+  const selectedPlayerData = useMemo(() => {
+    if (!d || !searchPlayer) return null;
+    const rows = (d.history as any[]).filter((h) => h.player_name === searchPlayer);
+    if (!rows.length) return null;
+    const allTime = (d.alltimePlayers as any[]).find((p) => p.player_name === searchPlayer);
+    const totalPts = rows.reduce((a, r) => a + Number(r.fantasy_points ?? 0), 0);
+    const totalGames = rows.reduce((a, r) => a + Number(r.games_played ?? 0), 0);
+    const totalMins = rows.reduce((a, r) => a + Number(r.minutes ?? 0), 0);
+    const ppg = totalGames ? totalPts / totalGames : 0;
+    const seasons = rows.map((r) => r.season_name).join(", ");
+    const clubs = [...new Set(rows.map((r) => r.club))].join(", ");
+    const position = allTime?.position ?? rows[0]?.position;
+    return { totalPts, totalGames, totalMins, ppg, seasons, clubs, position, rows };
+  }, [d, searchPlayer]);
+
 
   if (!d || !d.manager) return <Skel />;
 
@@ -349,6 +368,77 @@ function TeamPage() {
               </div>
             </div>
             <FormationPitch players={bestXIForPitch} />
+
+            {clubsInSquad.length > 0 && (
+              <div className="mt-10">
+                <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">Squad History</div>
+                <h4 className="font-display text-xl md:text-2xl mb-4">Player Search</h4>
+                <div className="flex flex-wrap gap-3 mb-6">
+                  <select
+                    value={searchClub}
+                    onChange={(e) => { setSearchClub(e.target.value); setSearchPlayer(""); }}
+                    className="bg-input border border-border rounded px-3 py-2 text-sm min-w-[180px]"
+                  >
+                    <option value="">Select a club…</option>
+                    {clubsInSquad.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                  <select
+                    value={searchPlayer}
+                    onChange={(e) => setSearchPlayer(e.target.value)}
+                    disabled={!searchClub}
+                    className="bg-input border border-border rounded px-3 py-2 text-sm min-w-[220px] disabled:opacity-50"
+                  >
+                    <option value="">{searchClub ? "Select a player…" : "Pick a club first"}</option>
+                    {playersForClub.map((p) => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                </div>
+
+                {selectedPlayerData && (
+                  <div className="premium-card rounded-lg p-6">
+                    <div className="flex items-baseline justify-between flex-wrap gap-2 mb-4">
+                      <div>
+                        <div className="font-display text-2xl">{searchPlayer}</div>
+                        <div className="text-xs uppercase tracking-wider text-muted-foreground mt-1">
+                          {selectedPlayerData.position} · {selectedPlayerData.clubs} · {selectedPlayerData.seasons}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <StatCard align="center" label="Total Points" value={selectedPlayerData.totalPts.toFixed(0)} />
+                      <StatCard align="center" label="Games Played" value={selectedPlayerData.totalGames} />
+                      <StatCard align="center" label="Points / Game" value={selectedPlayerData.ppg.toFixed(1)} />
+                      <StatCard align="center" label="Minutes" value={selectedPlayerData.totalMins} />
+                    </div>
+                    {selectedPlayerData.rows.length > 1 && (
+                      <div className="mt-6 overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead className="bg-card/60 text-xs uppercase tracking-wider text-muted-foreground">
+                            <tr>
+                              <th className="p-2 text-left">Season</th>
+                              <th className="p-2 text-left">Club</th>
+                              <th className="p-2 text-center">GP</th>
+                              <th className="p-2 text-right">Pts</th>
+                              <th className="p-2 text-right">PPG</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {selectedPlayerData.rows.map((r: any, i: number) => (
+                              <tr key={i} className="border-t border-border/40">
+                                <td className="p-2">{r.season_name}</td>
+                                <td className="p-2">{r.club}</td>
+                                <td className="text-center p-2">{r.games_played ?? "—"}</td>
+                                <td className="text-right p-2 font-display text-gold">{Number(r.fantasy_points ?? 0).toFixed(0)}</td>
+                                <td className="text-right p-2">{r.avg_points_per_game != null ? Number(r.avg_points_per_game).toFixed(1) : "—"}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </section>
@@ -433,49 +523,6 @@ function TeamPage() {
       )}
 
 
-      {/* Player History */}
-      {d.alltimePlayers.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-          <SectionTitle kicker="Squad History" title="Every Player" />
-          <div className="flex gap-2 mt-6 mb-4 flex-wrap">
-            <select value={posFilter} onChange={(e) => setPosFilter(e.target.value)} className="bg-input border border-border rounded px-3 py-2 text-sm">
-              <option value="">All Positions</option>
-              {["GK", "DEF", "MID", "FWD"].map((p) => <option key={p} value={p}>{p}</option>)}
-            </select>
-          </div>
-          <div className="premium-card rounded-lg overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-card/60 text-xs uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="p-3 text-left">#</th>
-                  <th className="p-3 text-left">Player</th>
-                  <th className="p-3 text-center">Pos</th>
-                  <th className="p-3 text-center">Sea</th>
-                  <th className="p-3 text-center">GP</th>
-                  <th className="p-3 text-right">Pts</th>
-                  <th className="p-3 text-right">PPG</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredPlayers.map((p: any, i: number) => (
-                  <tr key={`${p.player_id ?? p.player_name}-${i}`} className="border-t border-border/40 hover:bg-gold/5">
-                    <td className="p-3 font-display text-gold">{i + 1}</td>
-                    <td className="p-3 flex items-center gap-2">
-                      {i === 0 && <Crown className="w-4 h-4 text-gold" />}
-                      <span className="font-medium">{p.player_name ?? p.name}</span>
-                    </td>
-                    <td className="p-3 text-center text-xs uppercase text-muted-foreground">{p.position}</td>
-                    <td className="text-center p-3">{p.seasons_played ?? p.seasons ?? "—"}</td>
-                    <td className="text-center p-3">{p.games_played ?? "—"}</td>
-                    <td className="text-right p-3 font-display text-gold">{Number(p.total_fantasy_points ?? 0).toFixed(0)}</td>
-                    <td className="text-right p-3">{p.ppg != null ? Number(p.ppg).toFixed(1) : (p.avg_points_per_game != null ? Number(p.avg_points_per_game).toFixed(1) : "—")}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
     </div>
   );
 }
