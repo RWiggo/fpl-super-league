@@ -553,8 +553,9 @@ const STAT_OPTIONS: { key: string; label: string; group: string }[] = [
   { group: "Workload", key: "out_subs_on", label: "Substitutions On" },
 ];
 
-function StatExplorer({ teamStats }: { teamStats: any[] }) {
+function StatExplorer({ teamStats, managers }: { teamStats: any[]; managers: any[] }) {
   const [stat, setStat] = useState<string>("out_goals");
+  const mByName = (name: string) => managers.find((m: any) => m.name === name);
   const ranked = useMemo(() => {
     return [...teamStats]
       .filter((t) => t[stat] != null)
@@ -595,14 +596,23 @@ function StatExplorer({ teamStats }: { teamStats: any[] }) {
             </tr>
           </thead>
           <tbody>
-            {ranked.map((r) => (
-              <tr key={r.rank} className="border-t border-border/40 hover:bg-gold/5">
-                <td className="p-3 font-display text-gold">{r.rank}</td>
-                <td className="p-3 font-medium">{r.team}</td>
-                <td className="p-3 text-muted-foreground capitalize">{r.manager}</td>
-                <td className="p-3 text-right font-display text-gold tabular-nums">{r.value.toLocaleString()}</td>
-              </tr>
-            ))}
+            {ranked.map((r) => {
+              const m = mByName(r.manager);
+              const b = m ? getBranding(m.id) : null;
+              return (
+                <tr key={r.rank} className="border-t border-border/40 hover:bg-gold/5">
+                  <td className="p-3 font-display text-gold">{r.rank}</td>
+                  <td className="p-3 font-medium">
+                    <div className="flex items-center gap-3">
+                      {b?.badge && <img src={b.badge} alt="" className="w-7 h-7 object-contain" />}
+                      <span>{r.team}</span>
+                    </div>
+                  </td>
+                  <td className="p-3 text-muted-foreground capitalize">{r.manager}</td>
+                  <td className="p-3 text-right font-display text-gold tabular-nums">{r.value.toLocaleString()}</td>
+                </tr>
+              );
+            })}
             {ranked.length === 0 && <tr><td colSpan={4} className="p-6 text-center text-muted-foreground">No data.</td></tr>}
           </tbody>
         </table>
