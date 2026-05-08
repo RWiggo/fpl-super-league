@@ -655,7 +655,7 @@ function PlayerLeaderboard({ title, subtitle, players, icon, accent }: { title: 
             );
           })}
           {players.length === 0 && (
-            <tr><td colSpan={4} className="p-6 text-center text-muted-foreground text-sm">No data</td></tr>
+            <tr><td colSpan={5} className="p-6 text-center text-muted-foreground text-sm">No data</td></tr>
           )}
         </tbody>
       </table>
