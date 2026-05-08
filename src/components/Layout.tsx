@@ -95,7 +95,8 @@ export function Layout() {
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform ${teamsOpen ? "rotate-180" : ""}`} />
               </button>
               {teamsOpen && (
-                <div className="absolute top-full left-0 w-[640px] bg-[#15164a] border border-cyan-500/20 rounded-b-md p-4 shadow-2xl shadow-black/50">
+                <div className="fixed left-0 right-0 top-[68px] bg-[#15164a] border-y border-cyan-500/20 shadow-2xl shadow-black/60">
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
                   <div className="grid grid-cols-3 gap-2.5">
                     {teamsList.map((m) => {
                       const b = getBranding(m.id);
