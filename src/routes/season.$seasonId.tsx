@@ -138,6 +138,10 @@ function SeasonPage() {
         longestWin={longestWin}
         longestLose={longestLose}
         mostCS={mostCS ? { name: mostCS.manager_name, value: mostCS.combined_clean_sheets } : null}
+        wooden={(() => {
+          const last = d.standings[d.standings.length - 1];
+          return last ? mById(last.manager_id) : null;
+        })()}
       />
 
       <ParticipantsCarousel participants={participants} />
