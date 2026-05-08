@@ -652,9 +652,9 @@ function PlayerLeaderboard({ title, subtitle, players, icon, accent }: { title: 
                 <td className={`p-3 w-10 font-display text-lg ${RANK_STYLES[i] ?? "text-muted-foreground"}`}>{i + 1}</td>
                 <td className="p-3 w-10">
                   {crest ? (
-                    <img src={crest} alt={p.club ?? ""} loading="lazy" className="w-7 h-7 object-contain" />
+                    <img src={crest} alt={p.club ?? ""} loading="lazy" className="w-8 h-8 object-contain" />
                   ) : (
-                    <span className="w-7 h-7 inline-block rounded-sm bg-muted/30 border border-border/40" aria-hidden />
+                    <span className="w-8 h-8 inline-block rounded-sm bg-muted/30 border border-border/40" aria-hidden />
                   )}
                 </td>
                 <td className="p-3 font-medium">
