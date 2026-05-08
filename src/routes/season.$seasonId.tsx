@@ -655,20 +655,36 @@ function SeasonHero({ season, champ, topScorer, topScorerPts, longestWin, longes
             </h1>
             <div className="h-px w-24 bg-gold/60 my-6" />
 
-            {champ && (
-              <Link to="/team/$managerId" params={{ managerId: String(champ.id) }}
-                    className="group inline-flex items-center gap-4 premium-card rounded-lg pl-3 pr-5 py-3 mb-6 hover:border-gold/60 transition">
-                {champBranding?.badge && (
-                  <img src={champBranding.badge} alt="" className="w-12 h-12 object-contain" />
-                )}
-                <div>
-                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Champion</div>
-                  <div className="font-display text-2xl text-gold leading-none capitalize group-hover:underline">{champ.name}</div>
-                  <div className="text-xs text-muted-foreground">{champ.team_name}</div>
-                </div>
-                <Trophy className="w-7 h-7 text-gold ml-2" />
-              </Link>
-            )}
+            <div className="flex flex-wrap gap-3 mb-6">
+              {champ && (
+                <Link to="/team/$managerId" params={{ managerId: String(champ.id) }}
+                      className="group inline-flex items-center gap-4 premium-card rounded-lg pl-3 pr-5 py-3 hover:border-gold/60 transition">
+                  {champBranding?.badge && (
+                    <img src={champBranding.badge} alt="" className="w-12 h-12 object-contain" />
+                  )}
+                  <div>
+                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Champion</div>
+                    <div className="font-display text-2xl text-gold leading-none capitalize group-hover:underline">{champ.name}</div>
+                    <div className="text-xs text-muted-foreground">{champ.team_name}</div>
+                  </div>
+                  <Trophy className="w-7 h-7 text-gold ml-2" />
+                </Link>
+              )}
+              {wooden && (
+                <Link to="/team/$managerId" params={{ managerId: String(wooden.id) }}
+                      className="group inline-flex items-center gap-4 premium-card rounded-lg pl-3 pr-5 py-3 hover:border-amber-700/60 transition">
+                  {woodenBranding?.badge && (
+                    <img src={woodenBranding.badge} alt="" className="w-12 h-12 object-contain opacity-80" />
+                  )}
+                  <div>
+                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Wooden Spoon</div>
+                    <div className="font-display text-2xl text-amber-700 leading-none capitalize group-hover:underline">{wooden.name}</div>
+                    <div className="text-xs text-muted-foreground">{wooden.team_name}</div>
+                  </div>
+                  <span className="text-3xl ml-2" role="img" aria-label="wooden spoon">🥄</span>
+                </Link>
+              )}
+            </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <Mini label="Top Scorers" value={topScorerPts ? Number(topScorerPts).toFixed(0) : "—"} sub={topScorer?.team_name} />
