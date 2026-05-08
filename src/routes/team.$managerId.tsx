@@ -140,19 +140,21 @@ function TeamPage() {
 
 
   // personal records
+  const myName = d.manager.name;
   const myFixtures = d.fixtures;
-  const myScores = myFixtures.map((f: any) => f.home_manager_id === managerId ? f.home_score : f.away_score).filter((x: any) => x != null);
+  const isHome = (f: any) => f.home_manager === myName;
+  const myScores = myFixtures.map((f: any) => isHome(f) ? f.home_score : f.away_score).filter((x: any) => x != null);
   const highestScore = Math.max(...myScores, 0);
   const lowestScore = myScores.length ? Math.min(...myScores) : 0;
   const myWins = myFixtures.filter((f: any) => {
-    const my = f.home_manager_id === managerId ? f.home_score : f.away_score;
-    const opp = f.home_manager_id === managerId ? f.away_score : f.home_score;
+    const my = isHome(f) ? f.home_score : f.away_score;
+    const opp = isHome(f) ? f.away_score : f.home_score;
     return my > opp;
   });
   const biggestWin = [...myWins].sort((a: any, b: any) => (b.margin ?? 0) - (a.margin ?? 0))[0];
   const myLosses = myFixtures.filter((f: any) => {
-    const my = f.home_manager_id === managerId ? f.home_score : f.away_score;
-    const opp = f.home_manager_id === managerId ? f.away_score : f.home_score;
+    const my = isHome(f) ? f.home_score : f.away_score;
+    const opp = isHome(f) ? f.away_score : f.home_score;
     return my < opp;
   });
   const heaviestDef = [...myLosses].sort((a: any, b: any) => (b.margin ?? 0) - (a.margin ?? 0))[0];
