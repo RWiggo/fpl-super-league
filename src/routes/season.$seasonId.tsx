@@ -126,7 +126,7 @@ function SeasonPage() {
       return dominant;
     });
     return arr.sort((a, b) => (b.wins - b.losses) - (a.wins - a.losses))[0];
-  }, [completed]);
+  })();
 
   return (
     <div>
