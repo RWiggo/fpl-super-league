@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase, type Manager, type Season } from "@/lib/supabase";
 import { Menu, X, ChevronDown } from "lucide-react";
 import logo from "@/assets/fpl-super-league-logo.png";
+import { getBranding } from "@/lib/managerBranding";
 
 export function Layout() {
   const [managers, setManagers] = useState<Manager[]>([]);
@@ -94,17 +95,47 @@ export function Layout() {
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform ${teamsOpen ? "rotate-180" : ""}`} />
               </button>
               {teamsOpen && (
-                <div className="absolute top-full left-0 w-64 bg-[#15164a] border border-cyan-500/20 rounded-b-md py-2 max-h-[420px] overflow-auto shadow-2xl shadow-black/50">
-                  {teamsList.map((m) => (
-                    <Link
-                      key={m.id}
-                      to="/team/$managerId"
-                      params={{ managerId: m.id }}
-                      className="block px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white/75 hover:text-white hover:bg-cyan-500/10 border-l-2 border-transparent hover:border-cyan-400 transition-all"
-                    >
-                      {m.displayName}
-                    </Link>
-                  ))}
+                <div className="absolute top-full left-0 w-[640px] bg-[#15164a] border border-cyan-500/20 rounded-b-md p-4 shadow-2xl shadow-black/50">
+                  <div className="grid grid-cols-3 gap-2.5">
+                    {teamsList.map((m) => {
+                      const b = getBranding(m.id);
+                      const tint = b?.primary ?? "#508cff";
+                      return (
+                        <Link
+                          key={m.id}
+                          to="/team/$managerId"
+                          params={{ managerId: m.id }}
+                          className="group relative flex items-center gap-3 px-3 py-2.5 rounded-md overflow-hidden border border-white/10 hover:border-white/40 transition-all hover:scale-[1.02]"
+                          style={{
+                            background: `linear-gradient(120deg, ${tint}38 0%, ${tint}10 55%, rgba(10,17,48,0.6) 100%)`,
+                          }}
+                        >
+                          {/* Tint accent bar */}
+                          <span
+                            className="absolute left-0 top-0 bottom-0 w-[3px]"
+                            style={{ background: tint }}
+                          />
+                          {b?.badge ? (
+                            <img
+                              src={b.badge}
+                              alt=""
+                              className="w-9 h-9 object-contain flex-shrink-0 drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]"
+                            />
+                          ) : (
+                            <div
+                              className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-white"
+                              style={{ background: tint }}
+                            >
+                              {m.displayName.charAt(0)}
+                            </div>
+                          )}
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-white leading-tight">
+                            {m.displayName}
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>
