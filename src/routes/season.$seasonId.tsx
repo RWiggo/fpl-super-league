@@ -381,7 +381,7 @@ function RecordsSection({
     });
     return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([id, n], i) => {
       const m = mById(id);
-      return { rank: i + 1, name: m?.team_name ?? "—", sub: m?.name, value: `${n} GW${n === 1 ? "" : "s"}` };
+      return { rank: i + 1, name: m?.team_name ?? "—", sub: m?.name, value: `${n} GW${n === 1 ? "" : "s"}`, badge: m ? getBranding(m.id)?.badge ?? null : null };
     });
   };
 
