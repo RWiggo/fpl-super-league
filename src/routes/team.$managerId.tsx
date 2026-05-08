@@ -582,21 +582,43 @@ function Skel() {
   return <div className="max-w-7xl mx-auto px-4 py-20 space-y-4"><Skeleton className="h-32" /><Skeleton className="h-96" /></div>;
 }
 
+const RANK_STYLES = [
+  "text-amber-300",       // 1st — gold
+  "text-slate-300",       // 2nd — silver
+  "text-orange-400",      // 3rd — bronze
+  "text-muted-foreground",
+  "text-muted-foreground",
+];
+
+const POSITION_STYLES: Record<string, string> = {
+  GK:  "bg-amber-500/15 text-amber-300 border-amber-500/30",
+  GKP: "bg-amber-500/15 text-amber-300 border-amber-500/30",
+  DEF: "bg-sky-500/15 text-sky-300 border-sky-500/30",
+  MID: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
+  FWD: "bg-rose-500/15 text-rose-300 border-rose-500/30",
+};
+
 function PlayerLeaderboard({ title, subtitle, players, icon, accent }: { title: string; subtitle?: string; players: any[]; icon?: React.ReactNode; accent?: boolean }) {
+  const valueClass = accent ? "text-emerald-300" : "text-rose-300";
+  const headerAccent = accent ? "text-emerald-300" : "text-rose-300";
   return (
     <div className="premium-card rounded-lg overflow-hidden">
       <div className="p-5 border-b border-border/50">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-gold mb-1">{icon}{title}</div>
+        <div className={`flex items-center gap-2 text-xs uppercase tracking-[0.25em] mb-1 ${headerAccent}`}>{icon}{title}</div>
         {subtitle && <div className="text-xs text-muted-foreground">{subtitle}</div>}
       </div>
       <table className="w-full text-sm">
         <tbody>
           {players.map((p, i) => (
-            <tr key={`${p.player_id ?? p.player_name}-${i}`} className="border-t border-border/40">
-              <td className="p-3 w-10 font-display text-gold">{i + 1}</td>
+            <tr key={`${p.player_id ?? p.player_name}-${i}`} className="border-t border-border/40 odd:bg-card/30 hover:bg-card/60 transition-colors">
+              <td className={`p-3 w-10 font-display text-lg ${RANK_STYLES[i] ?? "text-muted-foreground"}`}>{i + 1}</td>
               <td className="p-3 font-medium">{p.player_name ?? p.name}</td>
-              <td className="p-3 text-xs uppercase text-muted-foreground w-12 text-center">{p.position}</td>
-              <td className="p-3 text-right font-display text-gold">{Number(p.total_fantasy_points ?? 0).toFixed(0)}</td>
+              <td className="p-3 w-14 text-center">
+                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${POSITION_STYLES[p.position] ?? "bg-muted/20 text-muted-foreground border-border"}`}>
+                  {p.position}
+                </span>
+              </td>
+              <td className={`p-3 text-right font-display ${valueClass}`}>{Number(p.total_fantasy_points ?? 0).toFixed(0)}</td>
             </tr>
           ))}
           {players.length === 0 && (
@@ -609,19 +631,23 @@ function PlayerLeaderboard({ title, subtitle, players, icon, accent }: { title: 
 }
 
 function ClubLeaderboard({ title, subtitle, rows, accent }: { title: string; subtitle?: string; rows: { club: string; pts: number }[]; accent?: boolean }) {
+  const valueClass = accent ? "text-emerald-300" : "text-rose-300";
+  const headerAccent = accent ? "text-emerald-300" : "text-rose-300";
   return (
     <div className="premium-card rounded-lg overflow-hidden">
       <div className="p-5 border-b border-border/50">
-        <div className="text-xs uppercase tracking-[0.25em] text-gold mb-1">{title}</div>
+        <div className={`text-xs uppercase tracking-[0.25em] mb-1 ${headerAccent}`}>{title}</div>
         {subtitle && <div className="text-xs text-muted-foreground">{subtitle}</div>}
       </div>
       <table className="w-full text-sm">
         <tbody>
           {rows.map((r, i) => (
-            <tr key={r.club} className="border-t border-border/40">
-              <td className="p-3 w-10 font-display text-gold">{i + 1}</td>
+            <tr key={r.club} className="border-t border-border/40 odd:bg-card/30 hover:bg-card/60 transition-colors">
+              <td className={`p-3 w-10 font-display text-lg ${RANK_STYLES[i] ?? "text-muted-foreground"}`}>{i + 1}</td>
               <td className="p-3 font-display tracking-wider">{r.club}</td>
-              <td className="p-3 text-right font-display text-gold">{r.pts > 0 ? r.pts.toFixed(0) : <span className="text-muted-foreground/60">Never used</span>}</td>
+              <td className={`p-3 text-right font-display ${valueClass}`}>
+                {r.pts > 0 ? r.pts.toFixed(0) : <span className="text-muted-foreground/60 text-xs italic">Never used</span>}
+              </td>
             </tr>
           ))}
         </tbody>
