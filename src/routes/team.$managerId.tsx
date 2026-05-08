@@ -344,6 +344,63 @@ function TeamPage() {
         </div>
       </section>
 
+      {/* H2H Carousel */}
+      {d.h2h.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
+          <SectionTitle kicker="vs The Field" title="Head to Head" />
+          <p className="text-sm text-muted-foreground mt-3 mb-6">Scroll to view records against every other manager. Click a card to see every result.</p>
+          <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-thin">
+            {[...d.h2h]
+              .map((row: any) => {
+                const isOne = String(row.manager1_id) === String(managerId);
+                const oppId = isOne ? row.manager2_id : row.manager1_id;
+                const myWins = isOne ? row.manager1_wins : row.manager2_wins;
+                const oppWins = isOne ? row.manager2_wins : row.manager1_wins;
+                const myPF = isOne ? row.manager1_points_for : row.manager2_points_for;
+                const oppPF = isOne ? row.manager2_points_for : row.manager1_points_for;
+                return { row, oppId, myWins, oppWins, myPF, oppPF };
+              })
+              .sort((a, b) => (b.myWins + b.oppWins + (b.row.draws ?? 0)) - (a.myWins + a.oppWins + (a.row.draws ?? 0)))
+              .map(({ row, oppId, myWins, oppWins, myPF, oppPF }) => {
+                const opp = mById(oppId);
+                const oppName = opp?.name;
+                const oppFixtures = (d.fixtures as any[])
+                  .filter((f) => f.home_manager === oppName || f.away_manager === oppName)
+                  .map((f) => {
+                    const meHome = f.home_manager === myName;
+                    const my = meHome ? f.home_score : f.away_score;
+                    const op = meHome ? f.away_score : f.home_score;
+                    const seasonName = f.season_name ?? sById(f.season_id)?.name;
+                    return { ...f, my, op, seasonName };
+                  })
+                  .filter((f) => f.my != null && f.op != null)
+                  .sort((a, b) => {
+                    const sa = d.seasons.find((s: any) => s.id === a.season_id || s.name === a.season_name)?.year_start ?? 0;
+                    const sb = d.seasons.find((s: any) => s.id === b.season_id || s.name === b.season_name)?.year_start ?? 0;
+                    if (sa !== sb) return sb - sa;
+                    return (b.gameweek ?? 0) - (a.gameweek ?? 0);
+                  });
+                return (
+                  <H2HCard
+                    key={oppId}
+                    opponentId={String(oppId)}
+                    opponentName={opp?.name ?? "—"}
+                    opponentBadge={getBranding(oppId)?.badge}
+                    opponentTint={getBranding(oppId)?.primary}
+                    wins={myWins ?? 0}
+                    draws={row.draws ?? 0}
+                    losses={oppWins ?? 0}
+                    pf={Number(myPF ?? 0)}
+                    pa={Number(oppPF ?? 0)}
+                    fixtures={oppFixtures}
+                    selfId={managerId}
+                  />
+                );
+              })}
+          </div>
+        </section>
+      )}
+
       {/* Highs and Lows */}
       <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
         <SectionTitle kicker="The Highs and Lows" title="Records and Statistics" />
@@ -451,63 +508,6 @@ function TeamPage() {
           </div>
         )}
       </section>
-
-      {/* H2H Carousel */}
-      {d.h2h.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-          <SectionTitle kicker="vs The Field" title="Head to Head" />
-          <p className="text-sm text-muted-foreground mt-3 mb-6">Scroll to view records against every other manager. Click a card to see every result.</p>
-          <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-thin">
-            {[...d.h2h]
-              .map((row: any) => {
-                const isOne = String(row.manager1_id) === String(managerId);
-                const oppId = isOne ? row.manager2_id : row.manager1_id;
-                const myWins = isOne ? row.manager1_wins : row.manager2_wins;
-                const oppWins = isOne ? row.manager2_wins : row.manager1_wins;
-                const myPF = isOne ? row.manager1_points_for : row.manager2_points_for;
-                const oppPF = isOne ? row.manager2_points_for : row.manager1_points_for;
-                return { row, oppId, myWins, oppWins, myPF, oppPF };
-              })
-              .sort((a, b) => (b.myWins + b.oppWins + (b.row.draws ?? 0)) - (a.myWins + a.oppWins + (a.row.draws ?? 0)))
-              .map(({ row, oppId, myWins, oppWins, myPF, oppPF }) => {
-                const opp = mById(oppId);
-                const oppName = opp?.name;
-                const oppFixtures = (d.fixtures as any[])
-                  .filter((f) => f.home_manager === oppName || f.away_manager === oppName)
-                  .map((f) => {
-                    const meHome = f.home_manager === myName;
-                    const my = meHome ? f.home_score : f.away_score;
-                    const op = meHome ? f.away_score : f.home_score;
-                    const seasonName = f.season_name ?? sById(f.season_id)?.name;
-                    return { ...f, my, op, seasonName };
-                  })
-                  .filter((f) => f.my != null && f.op != null)
-                  .sort((a, b) => {
-                    const sa = d.seasons.find((s: any) => s.id === a.season_id || s.name === a.season_name)?.year_start ?? 0;
-                    const sb = d.seasons.find((s: any) => s.id === b.season_id || s.name === b.season_name)?.year_start ?? 0;
-                    if (sa !== sb) return sb - sa;
-                    return (b.gameweek ?? 0) - (a.gameweek ?? 0);
-                  });
-                return (
-                  <H2HCard
-                    key={oppId}
-                    opponentId={String(oppId)}
-                    opponentName={opp?.name ?? "—"}
-                    opponentBadge={getBranding(oppId)?.badge}
-                    opponentTint={getBranding(oppId)?.primary}
-                    wins={myWins ?? 0}
-                    draws={row.draws ?? 0}
-                    losses={oppWins ?? 0}
-                    pf={Number(myPF ?? 0)}
-                    pa={Number(oppPF ?? 0)}
-                    fixtures={oppFixtures}
-                    selfId={managerId}
-                  />
-                );
-              })}
-          </div>
-        </section>
-      )}
 
       {/* Season Stats */}
       {d.teamStats.length > 0 && seasonStats && (
