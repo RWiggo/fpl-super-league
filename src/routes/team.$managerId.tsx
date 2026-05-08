@@ -266,23 +266,6 @@ function TeamPage() {
         ]}
       />
 
-      {/* Career */}
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <SectionTitle kicker="A brief history" title={`${currentTeamName} by the numbers`} />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
-          <StatCard label="Seasons in the League" value={d.standings.length} />
-          <StatCard label="League Titles Won" value={titles} icon={titles > 0 ? <Trophy className="w-4 h-4" /> : undefined} />
-          <StatCard label="All-Time League Position" value={allTimeRank > 0 ? ordinal(allTimeRank) : "—"} sub="By points per game" />
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-3">
-          <StatCard label="All-Time Wins" value={totalWins} align="center" />
-          <StatCard label="All-Time Draws" value={totalDraws} align="center" />
-          <StatCard label="All-Time Losses" value={totalLosses} align="center" />
-          <StatCard label="All-Time Win %" value={`${winPct}%`} align="center" />
-          <StatCard label="FPL Points Difference" value={`${pointsDiff >= 0 ? "+" : ""}${pointsDiff.toFixed(0)}`} align="center" />
-          <StatCard label="All-Time Points" value={totalPoints} align="center" />
-        </div>
-      </section>
 
       {/* Season Hist */}
       <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
