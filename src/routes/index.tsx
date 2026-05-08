@@ -3,13 +3,14 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { StatCard, Skeleton } from "@/components/StatCard";
 import { Trophy, Flame, Target, Crown, TrendingUp, Zap } from "lucide-react";
+import logo from "@/assets/fpl-super-league-logo.png";
 
 export const Route = createFileRoute("/")({
   component: Home,
   head: () => ({
     meta: [
-      { title: "The League — Fantasy Football Archive" },
-      { name: "description", content: "Champions, records, and history of our Premier League fantasy draft league." },
+      { title: "The FPL Super League" },
+      { name: "description", content: "Champions, records, and history of the FPL Super League." },
     ],
   }),
 });
