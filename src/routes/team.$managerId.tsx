@@ -29,13 +29,13 @@ function TeamPage() {
         supabase.from("manager_season_teams").select("*").eq("manager_id", managerId),
         supabase.from("season_standings").select("*").eq("manager_id", managerId),
         supabase.from("season_standings").select("*"),
-        supabase.from("fixture_records").select("*").or(`home_manager_id.eq.${managerId},away_manager_id.eq.${managerId}`),
+        supabase.from("fixture_records").select("*").or(`home_manager.eq."${mName}",away_manager.eq."${mName}"`),
         supabase.from("win_streaks").select("*").eq("manager_name", mName),
-        supabase.from("h2h_records").select("*").or(`manager_a_id.eq.${managerId},manager_b_id.eq.${managerId}`),
+        supabase.from("h2h_records").select("*").or(`manager1_id.eq.${managerId},manager2_id.eq.${managerId}`),
         supabase.from("manager_overall_record").select("*").eq("manager_id", managerId).maybeSingle(),
-        supabase.from("team_season_stats_full").select("*").eq("manager_id", managerId),
+        supabase.from("team_season_stats_full").select("*").eq("manager_name", mName),
         supabase.from("team_legends").select("*").eq("manager_id", managerId),
-        supabase.from("team_of_the_season").select("*").eq("manager_id", managerId),
+        supabase.from("team_of_the_season").select("*").eq("manager_name", mName),
         supabase.from("player_team_history").select("*").eq("manager_name", mName),
         supabase.from("player_team_alltime").select("*").eq("manager_id", managerId),
         supabase.from("unbeaten_streaks").select("*").eq("manager_name", mName),
@@ -73,9 +73,9 @@ function TeamPage() {
   }, [managerId]);
 
   const [statSeason, setStatSeason] = useState<string>("");
-  useEffect(() => { if (d?.standings?.length && !statSeason) setStatSeason(d.standings[d.standings.length - 1].season_id); }, [d]);
+  useEffect(() => { if (d?.standings?.length && !statSeason) setStatSeason(d.seasons.find((x: any) => x.id === d.standings[d.standings.length - 1].season_id)?.name ?? ""); }, [d]);
   const [totsSeason, setTotsSeason] = useState<string>("");
-  useEffect(() => { if (d?.tots?.length && !totsSeason) setTotsSeason(d.tots[0].season_id); }, [d]);
+  useEffect(() => { if (d?.tots?.length && !totsSeason) setTotsSeason(d.tots[0].season_name); }, [d]);
 
   // Player search: club -> players from history; selected player aggregated stats
   const clubsInSquad = useMemo(() => {
@@ -140,19 +140,21 @@ function TeamPage() {
 
 
   // personal records
+  const myName = d.manager.name;
   const myFixtures = d.fixtures;
-  const myScores = myFixtures.map((f: any) => f.home_manager_id === managerId ? f.home_score : f.away_score).filter((x: any) => x != null);
+  const isHome = (f: any) => f.home_manager === myName;
+  const myScores = myFixtures.map((f: any) => isHome(f) ? f.home_score : f.away_score).filter((x: any) => x != null);
   const highestScore = Math.max(...myScores, 0);
   const lowestScore = myScores.length ? Math.min(...myScores) : 0;
   const myWins = myFixtures.filter((f: any) => {
-    const my = f.home_manager_id === managerId ? f.home_score : f.away_score;
-    const opp = f.home_manager_id === managerId ? f.away_score : f.home_score;
+    const my = isHome(f) ? f.home_score : f.away_score;
+    const opp = isHome(f) ? f.away_score : f.home_score;
     return my > opp;
   });
   const biggestWin = [...myWins].sort((a: any, b: any) => (b.margin ?? 0) - (a.margin ?? 0))[0];
   const myLosses = myFixtures.filter((f: any) => {
-    const my = f.home_manager_id === managerId ? f.home_score : f.away_score;
-    const opp = f.home_manager_id === managerId ? f.away_score : f.home_score;
+    const my = isHome(f) ? f.home_score : f.away_score;
+    const opp = isHome(f) ? f.away_score : f.home_score;
     return my < opp;
   });
   const heaviestDef = [...myLosses].sort((a: any, b: any) => (b.margin ?? 0) - (a.margin ?? 0))[0];
@@ -160,8 +162,8 @@ function TeamPage() {
   const winStreak = [...d.streaks].filter((s: any) => (s.streak_type ?? s.type ?? s.outcome) === "win" || (s.streak_type ?? s.type ?? s.outcome) === "W").sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
   const lossStreak = [...d.streaks].filter((s: any) => (s.streak_type ?? s.type ?? s.outcome) === "loss" || (s.streak_type ?? s.type ?? s.outcome) === "L").sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
 
-  const seasonStats = d.teamStats.find((s: any) => s.season_id === statSeason);
-  const totsPlayers = d.tots.filter((p: any) => p.season_id === totsSeason);
+  const seasonStats = d.teamStats.find((s: any) => s.season_name === statSeason);
+  const totsPlayers = d.tots.filter((p: any) => p.season_name === totsSeason);
 
   // Highs & Lows
   const sortedPlayers = [...(d.alltimePlayers as any[])].sort((a, b) => (b.total_fantasy_points ?? 0) - (a.total_fantasy_points ?? 0));
@@ -458,35 +460,38 @@ function TeamPage() {
           <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-thin">
             {[...d.h2h]
               .map((row: any) => {
-                const oppId = row.manager_a_id === managerId ? row.manager_b_id : row.manager_a_id;
-                const myWins = row.manager_a_id === managerId ? row.manager_a_wins : row.manager_b_wins;
-                const oppWins = row.manager_a_id === managerId ? row.manager_b_wins : row.manager_a_wins;
-                const myPF = row.manager_a_id === managerId ? row.manager_a_points : row.manager_b_points;
-                const oppPF = row.manager_a_id === managerId ? row.manager_b_points : row.manager_a_points;
+                const isOne = String(row.manager1_id) === String(managerId);
+                const oppId = isOne ? row.manager2_id : row.manager1_id;
+                const myWins = isOne ? row.manager1_wins : row.manager2_wins;
+                const oppWins = isOne ? row.manager2_wins : row.manager1_wins;
+                const myPF = isOne ? row.manager1_points_for : row.manager2_points_for;
+                const oppPF = isOne ? row.manager2_points_for : row.manager1_points_for;
                 return { row, oppId, myWins, oppWins, myPF, oppPF };
               })
               .sort((a, b) => (b.myWins + b.oppWins + (b.row.draws ?? 0)) - (a.myWins + a.oppWins + (a.row.draws ?? 0)))
               .map(({ row, oppId, myWins, oppWins, myPF, oppPF }) => {
                 const opp = mById(oppId);
+                const oppName = opp?.name;
                 const oppFixtures = (d.fixtures as any[])
-                  .filter((f) => f.home_manager_id === oppId || f.away_manager_id === oppId)
+                  .filter((f) => f.home_manager === oppName || f.away_manager === oppName)
                   .map((f) => {
-                    const my = f.home_manager_id === managerId ? f.home_score : f.away_score;
-                    const op = f.home_manager_id === managerId ? f.away_score : f.home_score;
-                    const seasonName = sById(f.season_id)?.name;
+                    const meHome = f.home_manager === myName;
+                    const my = meHome ? f.home_score : f.away_score;
+                    const op = meHome ? f.away_score : f.home_score;
+                    const seasonName = f.season_name ?? sById(f.season_id)?.name;
                     return { ...f, my, op, seasonName };
                   })
                   .filter((f) => f.my != null && f.op != null)
                   .sort((a, b) => {
-                    const sa = d.seasons.find((s: any) => s.id === a.season_id)?.year_start ?? 0;
-                    const sb = d.seasons.find((s: any) => s.id === b.season_id)?.year_start ?? 0;
+                    const sa = d.seasons.find((s: any) => s.id === a.season_id || s.name === a.season_name)?.year_start ?? 0;
+                    const sb = d.seasons.find((s: any) => s.id === b.season_id || s.name === b.season_name)?.year_start ?? 0;
                     if (sa !== sb) return sb - sa;
                     return (b.gameweek ?? 0) - (a.gameweek ?? 0);
                   });
                 return (
                   <H2HCard
                     key={oppId}
-                    opponentId={oppId}
+                    opponentId={String(oppId)}
                     opponentName={opp?.name ?? "—"}
                     opponentBadge={getBranding(oppId)?.badge}
                     opponentTint={getBranding(oppId)?.primary}
@@ -509,10 +514,10 @@ function TeamPage() {
         <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
           <SectionTitle kicker="Deep Dive" title="Season Stats" />
           <select value={statSeason} onChange={(e) => setStatSeason(e.target.value)} className="bg-input border border-border rounded px-4 py-2 mt-6 mb-6">
-            {d.teamStats.map((s: any) => <option key={s.id} value={s.season_id}>{sById(s.season_id)?.name}</option>)}
+            {d.teamStats.map((s: any) => <option key={s.season_name} value={s.season_name}>{s.season_name}</option>)}
           </select>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {Object.entries(seasonStats).filter(([k, v]) => !["id", "season_id", "manager_id"].includes(k) && typeof v === "number").map(([k, v]) => (
+            {Object.entries(seasonStats).filter(([k, v]) => !["id", "season_id", "manager_id", "season_name", "manager_name", "team_name"].includes(k) && typeof v === "number").map(([k, v]) => (
               <div key={k} className="premium-card rounded p-3">
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">{k.replace(/_/g, " ")}</div>
                 <div className="font-display text-xl text-gold">{v != null ? Number(v).toFixed(Number(v) % 1 === 0 ? 0 : 1) : <span className="text-muted-foreground/40 text-sm" title="This stat was introduced in Season 3">N/A</span>}</div>
@@ -527,9 +532,9 @@ function TeamPage() {
         <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
           <SectionTitle kicker="Best XI" title="Team of the Season" />
           <div className="flex flex-wrap gap-2 mt-6 mb-6">
-            {[...new Set(d.tots.map((p: any) => p.season_id))].map((sid: any) => (
-              <button key={sid} onClick={() => setTotsSeason(sid)} className={`px-3 py-2 text-xs uppercase tracking-wider rounded ${totsSeason === sid ? "bg-gold text-primary-foreground" : "bg-card border border-border hover:border-gold"}`}>
-                {sById(sid)?.name}
+            {[...new Set(d.tots.map((p: any) => p.season_name))].map((sname: any) => (
+              <button key={sname} onClick={() => setTotsSeason(sname)} className={`px-3 py-2 text-xs uppercase tracking-wider rounded ${totsSeason === sname ? "bg-gold text-primary-foreground" : "bg-card border border-border hover:border-gold"}`}>
+                {sname}
               </button>
             ))}
           </div>
