@@ -160,8 +160,8 @@ function TeamPage() {
   const winStreak = [...d.streaks].filter((s: any) => (s.streak_type ?? s.type ?? s.outcome) === "win" || (s.streak_type ?? s.type ?? s.outcome) === "W").sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
   const lossStreak = [...d.streaks].filter((s: any) => (s.streak_type ?? s.type ?? s.outcome) === "loss" || (s.streak_type ?? s.type ?? s.outcome) === "L").sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
 
-  const seasonStats = d.teamStats.find((s: any) => s.season_id === statSeason);
-  const totsPlayers = d.tots.filter((p: any) => p.season_id === totsSeason);
+  const seasonStats = d.teamStats.find((s: any) => s.season_name === statSeason);
+  const totsPlayers = d.tots.filter((p: any) => p.season_name === totsSeason);
 
   // Highs & Lows
   const sortedPlayers = [...(d.alltimePlayers as any[])].sort((a, b) => (b.total_fantasy_points ?? 0) - (a.total_fantasy_points ?? 0));
