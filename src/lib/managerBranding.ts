@@ -17,18 +17,18 @@ export type Branding = { badge: string; primary: string; primaryFg?: string };
 
 // Keys are manager IDs (as strings, since route params are strings).
 export const MANAGER_BRANDING: Record<string, Branding> = {
-  "1":  { badge: b1,  primary: "#d00e29" },                       // El Changusto
-  "2":  { badge: b2,  primary: "#b5b6d4", primaryFg: "#0a0a0a" }, // Charleston Athletic
-  "3":  { badge: b3,  primary: "#01f9c9", primaryFg: "#0a0a0a" }, // Wiggo Wanderers
-  "4":  { badge: b4,  primary: "#d06000" },                       // ALS Ajax
-  "5":  { badge: b5,  primary: "#f15a37" },                       // Padleys Piranhas
-  "6":  { badge: b6,  primary: "#964e27" },                       // Fill Her Wycombe
-  "7":  { badge: b7,  primary: "#c69629" },                       // Raybould Eagles
-  "8":  { badge: b8,  primary: "#f8cf2c", primaryFg: "#0a0a0a" }, // Adam All Stars
-  "9":  { badge: b9,  primary: "#f78f1e" },                       // Lallana Rhoades (orange on navy)
-  "10": { badge: b10, primary: "#e4181c" },                       // Send Me Location
-  "11": { badge: b11, primary: "#5f821d" },                       // Not Too Xabi FC
-  "12": { badge: b12, primary: "#ff3131" },                       // Average Team
+  "1":  { badge: b1,  primary: "#0a5c2e" },                              // El Changusto — darker green
+  "2":  { badge: b2,  primary: "#b5b6d4", primaryFg: "#0a0a0a" },        // Charleston Athletic
+  "3":  { badge: b3,  primary: "#01f9c9", primaryFg: "#0a0a0a" },        // Wiggo Wanderers
+  "4":  { badge: b4,  primary: "#169b62" },                              // ALS Ajax — Irish green
+  "5":  { badge: b5,  primary: "#0a1f44" },                              // Padleys Piranhas — Navy Blue
+  "6":  { badge: b6,  primary: "#964e27" },                              // Fill Her Wycombe
+  "7":  { badge: b7,  primary: "#d4af37", primaryFg: "#0a0a0a" },        // Ryans Lions — Gold
+  "8":  { badge: b8,  primary: "#f8cf2c", primaryFg: "#0a0a0a" },        // Adam All Stars — Yellow
+  "9":  { badge: b9,  primary: "#ff7a00" },                              // Jake Toyer — Orange
+  "10": { badge: b10, primary: "#e4181c" },                              // Send Me Location
+  "11": { badge: b11, primary: "#0b1530" },                              // Not Too Xabi FC — almost black blue
+  "12": { badge: b12, primary: "#f5f5f5", primaryFg: "#0a0a0a" },        // Average Team — White
 };
 
 export function getBranding(managerId: string | number): Branding | null {
