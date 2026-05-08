@@ -460,35 +460,38 @@ function TeamPage() {
           <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-thin">
             {[...d.h2h]
               .map((row: any) => {
-                const oppId = row.manager_a_id === managerId ? row.manager_b_id : row.manager_a_id;
-                const myWins = row.manager_a_id === managerId ? row.manager_a_wins : row.manager_b_wins;
-                const oppWins = row.manager_a_id === managerId ? row.manager_b_wins : row.manager_a_wins;
-                const myPF = row.manager_a_id === managerId ? row.manager_a_points : row.manager_b_points;
-                const oppPF = row.manager_a_id === managerId ? row.manager_b_points : row.manager_a_points;
+                const isOne = String(row.manager1_id) === String(managerId);
+                const oppId = isOne ? row.manager2_id : row.manager1_id;
+                const myWins = isOne ? row.manager1_wins : row.manager2_wins;
+                const oppWins = isOne ? row.manager2_wins : row.manager1_wins;
+                const myPF = isOne ? row.manager1_points_for : row.manager2_points_for;
+                const oppPF = isOne ? row.manager2_points_for : row.manager1_points_for;
                 return { row, oppId, myWins, oppWins, myPF, oppPF };
               })
               .sort((a, b) => (b.myWins + b.oppWins + (b.row.draws ?? 0)) - (a.myWins + a.oppWins + (a.row.draws ?? 0)))
               .map(({ row, oppId, myWins, oppWins, myPF, oppPF }) => {
                 const opp = mById(oppId);
+                const oppName = opp?.name;
                 const oppFixtures = (d.fixtures as any[])
-                  .filter((f) => f.home_manager_id === oppId || f.away_manager_id === oppId)
+                  .filter((f) => f.home_manager === oppName || f.away_manager === oppName)
                   .map((f) => {
-                    const my = f.home_manager_id === managerId ? f.home_score : f.away_score;
-                    const op = f.home_manager_id === managerId ? f.away_score : f.home_score;
-                    const seasonName = sById(f.season_id)?.name;
+                    const meHome = f.home_manager === myName;
+                    const my = meHome ? f.home_score : f.away_score;
+                    const op = meHome ? f.away_score : f.home_score;
+                    const seasonName = f.season_name ?? sById(f.season_id)?.name;
                     return { ...f, my, op, seasonName };
                   })
                   .filter((f) => f.my != null && f.op != null)
                   .sort((a, b) => {
-                    const sa = d.seasons.find((s: any) => s.id === a.season_id)?.year_start ?? 0;
-                    const sb = d.seasons.find((s: any) => s.id === b.season_id)?.year_start ?? 0;
+                    const sa = d.seasons.find((s: any) => s.id === a.season_id || s.name === a.season_name)?.year_start ?? 0;
+                    const sb = d.seasons.find((s: any) => s.id === b.season_id || s.name === b.season_name)?.year_start ?? 0;
                     if (sa !== sb) return sb - sa;
                     return (b.gameweek ?? 0) - (a.gameweek ?? 0);
                   });
                 return (
                   <H2HCard
                     key={oppId}
-                    opponentId={oppId}
+                    opponentId={String(oppId)}
                     opponentName={opp?.name ?? "—"}
                     opponentBadge={getBranding(oppId)?.badge}
                     opponentTint={getBranding(oppId)?.primary}
