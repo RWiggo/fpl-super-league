@@ -156,13 +156,28 @@ function SeasonPage() {
       </section>
 
       {/* Team of the Season */}
-      {d.overallTOTS.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-          <SectionTitle kicker="The Best XI" title="Team of the Season" />
-          <p className="text-sm text-muted-foreground mt-2 mb-6">Top point-scorers from across the league in a legal formation.</p>
-          <FormationPitch players={d.overallTOTS} getManagerName={(id) => mById(id)?.name ?? ""} />
-        </section>
-      )}
+      {d.overallTOTS.length > 0 && (() => {
+        const posMap: Record<string, "GK" | "DEF" | "MID" | "FWD"> = { G: "GK", GK: "GK", GKP: "GK", D: "DEF", DEF: "DEF", M: "MID", MID: "MID", F: "FWD", FWD: "FWD" };
+        const totsForPitch = d.overallTOTS.map((p: any) => ({ ...p, position: posMap[p.position] ?? p.position }));
+        const counts = totsForPitch.reduce((acc: any, p: any) => { acc[p.position] = (acc[p.position] ?? 0) + 1; return acc; }, {});
+        const formation = [counts.DEF ?? 0, counts.MID ?? 0, counts.FWD ?? 0].join("-");
+        const totalPts = totsForPitch.reduce((s: number, p: any) => s + (Number(p.total_fantasy_points ?? p.fantasy_points ?? 0)), 0);
+        return (
+          <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
+            <div className="flex items-baseline justify-between flex-wrap gap-2 mb-4">
+              <div>
+                <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">The Best XI</div>
+                <h3 className="font-display text-2xl md:text-3xl">Team of the Season · {formation}</h3>
+                <p className="text-sm text-muted-foreground mt-1">Top point-scorers from across the league in a legal formation.</p>
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Combined Points · <span className="text-gold font-display text-lg">{totalPts.toFixed(0)}</span>
+              </div>
+            </div>
+            <FormationPitch players={totsForPitch} getManagerName={(id) => mById(id)?.name ?? ""} />
+          </section>
+        );
+      })()}
 
       {/* Records */}
       <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
