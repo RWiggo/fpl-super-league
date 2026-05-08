@@ -532,9 +532,9 @@ function TeamPage() {
         <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
           <SectionTitle kicker="Best XI" title="Team of the Season" />
           <div className="flex flex-wrap gap-2 mt-6 mb-6">
-            {[...new Set(d.tots.map((p: any) => p.season_id))].map((sid: any) => (
-              <button key={sid} onClick={() => setTotsSeason(sid)} className={`px-3 py-2 text-xs uppercase tracking-wider rounded ${totsSeason === sid ? "bg-gold text-primary-foreground" : "bg-card border border-border hover:border-gold"}`}>
-                {sById(sid)?.name}
+            {[...new Set(d.tots.map((p: any) => p.season_name))].map((sname: any) => (
+              <button key={sname} onClick={() => setTotsSeason(sname)} className={`px-3 py-2 text-xs uppercase tracking-wider rounded ${totsSeason === sname ? "bg-gold text-primary-foreground" : "bg-card border border-border hover:border-gold"}`}>
+                {sname}
               </button>
             ))}
           </div>
