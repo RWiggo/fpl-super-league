@@ -518,9 +518,12 @@ function TeamPage() {
 
 function SectionTitle({ kicker, title }: { kicker: string; title: string }) {
   return (
-    <div>
-      <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{kicker}</div>
-      <h2 className="font-display text-3xl md:text-4xl">{title}</h2>
+    <div className="flex items-center gap-4">
+      <div className="h-10 w-[3px] rounded-full bg-gold" />
+      <div>
+        <div className="text-[10px] uppercase tracking-[0.4em] text-silver/70 mb-1">{kicker}</div>
+        <h2 className="font-display text-3xl md:text-4xl uppercase">{title}</h2>
+      </div>
     </div>
   );
 }
