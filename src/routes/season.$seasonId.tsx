@@ -893,11 +893,24 @@ function PositionChart({ gwTable, managers, maxGW }: any) {
                 strokeOpacity={hover && hover !== l.id ? 0.15 : 0.95}
                 strokeLinejoin="round" strokeLinecap="round" />
         ))}
-        {/* Final position end-caps */}
-        {lines.map((l: any) => (
-          <circle key={l.id} cx={xFor(l.final.gameweek)} cy={yFor(l.final.position)} r={hover === l.id ? 5 : 3}
-                  fill={l.color} stroke="oklch(0.13 0.04 265)" strokeWidth="1" opacity={hover && hover !== l.id ? 0.2 : 1} />
-        ))}
+        {/* Final position end-caps with team badges */}
+        {lines.map((l: any) => {
+          const m = managers.find((x: any) => String(x.id) === l.id);
+          const badge = m ? getBranding(m.id)?.badge : null;
+          const cx = xFor(l.final.gameweek);
+          const cy = yFor(l.final.position);
+          const size = hover === l.id ? 18 : 14;
+          return (
+            <g key={l.id} opacity={hover && hover !== l.id ? 0.25 : 1}>
+              <circle cx={cx} cy={cy} r={size / 2 + 1} fill="oklch(0.13 0.04 265)" stroke={l.color} strokeWidth="1.5" />
+              {badge ? (
+                <image href={badge} x={cx - size / 2} y={cy - size / 2} width={size} height={size} />
+              ) : (
+                <circle cx={cx} cy={cy} r={3} fill={l.color} />
+              )}
+            </g>
+          );
+        })}
       </svg>
     </div>
   );
