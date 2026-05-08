@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase, type Manager, type Season } from "@/lib/supabase";
 import { Menu, X, ChevronDown } from "lucide-react";
 import logo from "@/assets/fpl-super-league-logo.png";
+import { getBranding } from "@/lib/managerBranding";
 
 export function Layout() {
   const [managers, setManagers] = useState<Manager[]>([]);
