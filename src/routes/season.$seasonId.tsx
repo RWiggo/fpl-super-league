@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { StatCard, Skeleton } from "@/components/StatCard";
 import { FormationPitch } from "@/components/FormationPitch";
@@ -184,113 +184,425 @@ function SeasonPage() {
       })()}
 
       {/* Records */}
-      <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-        <SectionTitle kicker="Highlights" title="Season Records" />
+      <RecordsSection
+        d={d}
+        mById={mById}
+        completed={completed}
+        positionCounts={positionCounts}
+        topWeekly={topWeekly}
+        biggestWin={biggestWin}
+        longestWin={longestWin}
+        longestLose={longestLose}
+        dominantH2H={dominantH2H}
+        mostCS={mostCS}
+        mostGoals={mostGoals}
+        mostAssists={mostAssists}
+        mostYellows={mostYellows}
+      />
+    </div>
+  );
+}
 
-        <h3 className="font-display text-2xl text-gold mt-8 mb-4">Points & Performance</h3>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            label="Highest Single GW"
-            value={topWeekly?.score ?? "—"}
-            sub={topWeekly ? `${topWeekly.team_name} · GW${topWeekly.gameweek}` : ""}
-            icon={<Flame className="w-5 h-5" />}
-          />
-          <StatCard
-            label="Biggest Win"
-            value={biggestWin?.margin ?? "—"}
-            sub={biggestWin ? `${biggestWin.winner_team} bt ${biggestWin.loser_team} · GW${biggestWin.gameweek}` : ""}
-            icon={<Swords className="w-5 h-5" />}
-          />
-          <StatCard
-            label="Closest Game"
-            value={closestGame?.margin ?? "—"}
-            sub={closestGame ? `${closestGame.home_team} v ${closestGame.away_team} · GW${closestGame.gameweek}` : ""}
-            icon={<Target className="w-5 h-5" />}
-          />
-          <StatCard
-            label="Lowest Single Score"
-            value={lowest ? Math.min(lowest.home_score, lowest.away_score) : "—"}
-            sub={lowest ? `GW${lowest.gameweek}` : ""}
-            icon={<TrendingDown className="w-5 h-5" />}
-          />
-          <StatCard
-            label="Longest Win Streak"
-            value={longestWin?.streak_length ?? "—"}
-            sub={longestWin ? `${longestWin.team_name} · GW${longestWin.streak_start_gw}–${longestWin.streak_end_gw}` : ""}
-            icon={<TrendingUp className="w-5 h-5" />}
-          />
-          <StatCard
-            label="Longest Losing Streak"
-            value={longestLose?.streak_length ?? "—"}
-            sub={longestLose ? `${longestLose.team_name} · GW${longestLose.streak_start_gw}–${longestLose.streak_end_gw}` : ""}
-            icon={<Skull className="w-5 h-5" />}
-          />
-          <StatCard
-            label="Longest Unbeaten"
-            value={longestUnbeaten?.streak_length ?? "—"}
-            sub={longestUnbeaten ? `${longestUnbeaten.team_name}` : ""}
-            icon={<Shield className="w-5 h-5" />}
-          />
-          <StatCard
-            label="Most Dominant H2H"
-            value={dominantH2H ? `${dominantH2H.wins}-${dominantH2H.losses}` : "—"}
-            sub={dominantH2H ? `${dominantH2H.winner} over ${dominantH2H.loser}` : ""}
-            icon={<Crown className="w-5 h-5" />}
-          />
-        </div>
+/* ======================= Records Section ======================= */
 
-        <h3 className="font-display text-2xl text-gold mt-12 mb-4">Fun & Quirky</h3>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            label="Top Scorers"
-            value={topScorer ? Number(topScorer.total_fpts).toFixed(0) : "—"}
-            sub={topScorer?.team_name}
-            icon={<Star className="w-5 h-5" />}
-          />
-          <StatCard
-            label="Most Clean Sheets"
-            value={mostCS?.combined_clean_sheets ?? "—"}
-            sub={mostCS?.team_name}
-            icon={<Shield className="w-5 h-5" />}
-          />
-          <StatCard
-            label="Most Goals (outfield)"
-            value={mostGoals?.out_goals ?? "—"}
-            sub={mostGoals?.team_name}
-            icon={<Zap className="w-5 h-5" />}
-          />
-          <StatCard
-            label="Most Assists"
-            value={mostAssists?.out_assists ?? "—"}
-            sub={mostAssists?.team_name}
-            icon={<Users className="w-5 h-5" />}
-          />
-          <StatCard
-            label="Most Yellow Cards"
-            value={mostYellows?.combined_yellow_cards ?? "—"}
-            sub={mostYellows?.team_name}
-            icon={<Flag className="w-5 h-5" />}
-          />
-          <StatCard
-            label="Longest Winless Run"
-            value={longestWinless?.streak_length ?? "—"}
-            sub={longestWinless?.team_name}
-            icon={<TrendingDown className="w-5 h-5" />}
-          />
-          <StatCard
-            label="Most GWs at #1"
-            value={positionCounts.topId?.[1] ?? "—"}
-            sub={positionCounts.topId ? mById(positionCounts.topId[0])?.team_name : ""}
-            icon={<Trophy className="w-5 h-5" />}
-          />
-          <StatCard
-            label="Most GWs at the Bottom"
-            value={positionCounts.botId?.[1] ?? "—"}
-            sub={positionCounts.botId ? mById(positionCounts.botId[0])?.team_name : ""}
-            icon={<Skull className="w-5 h-5" />}
-          />
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
+type RankRow = { rank: number; name: string; sub?: string; value: React.ReactNode };
+
+function RecordCard({
+  label,
+  value,
+  sub,
+  icon,
+  dialogTitle,
+  rows,
+  valueHeader = "Value",
+}: {
+  label: string;
+  value: React.ReactNode;
+  sub?: React.ReactNode;
+  icon?: React.ReactNode;
+  dialogTitle: string;
+  rows: RankRow[];
+  valueHeader?: string;
+}) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button className="text-left w-full focus:outline-none focus:ring-2 focus:ring-gold/50 rounded-lg">
+          <StatCard label={label} value={value} sub={sub} icon={icon} />
+        </button>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="font-display text-2xl gold-gradient">{dialogTitle}</DialogTitle>
+        </DialogHeader>
+        <div className="mt-2">
+          <div className="grid grid-cols-[auto_1fr_auto] gap-x-4 gap-y-2 text-sm">
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">#</div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Team</div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground text-right">{valueHeader}</div>
+            {rows.map((r) => (
+              <React.Fragment key={r.rank}>
+                <div className="font-display text-gold">{r.rank}</div>
+                <div className="min-w-0">
+                  <div className="font-medium truncate">{r.name}</div>
+                  {r.sub && <div className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">{r.sub}</div>}
+                </div>
+                <div className="font-display text-gold text-right tabular-nums">{r.value}</div>
+              </React.Fragment>
+            ))}
+            {rows.length === 0 && <div className="col-span-3 text-center text-muted-foreground py-4">No data.</div>}
+          </div>
         </div>
-      </section>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function RecordsSection({
+  d,
+  mById,
+  completed,
+  positionCounts,
+  topWeekly,
+  biggestWin,
+  longestWin,
+  longestLose,
+  dominantH2H,
+  mostCS,
+  mostGoals,
+  mostAssists,
+  mostYellows,
+}: any) {
+  // Per-team weekly score entries from fixtures
+  const teamScores = useMemo(() => {
+    const out: { manager: string; team: string; gw: number; score: number; opp_team: string; opp_score: number }[] = [];
+    completed.forEach((f: any) => {
+      out.push({ manager: f.home_manager, team: f.home_team, gw: f.gameweek, score: f.home_score, opp_team: f.away_team, opp_score: f.away_score });
+      out.push({ manager: f.away_manager, team: f.away_team, gw: f.gameweek, score: f.away_score, opp_team: f.home_team, opp_score: f.home_score });
+    });
+    return out;
+  }, [completed]);
+
+  const top5HighGW = [...teamScores].sort((a, b) => b.score - a.score).slice(0, 5);
+  const top5LowGW = [...teamScores].sort((a, b) => a.score - b.score).slice(0, 5);
+  const top5Margin = [...completed].sort((a: any, b: any) => (b.margin ?? 0) - (a.margin ?? 0)).slice(0, 5);
+
+  const top5WinStreaks = [...d.winS].filter((s: any) => s.outcome === "W").sort((a: any, b: any) => b.streak_length - a.streak_length).slice(0, 5);
+  const top5LoseStreaks = [...d.loseS].filter((s: any) => s.outcome === "L").sort((a: any, b: any) => b.streak_length - a.streak_length).slice(0, 5);
+
+  // Streak detail: fixtures during streak window for that team
+  const streakFixtures = (s: any) => {
+    if (!s) return [];
+    return completed
+      .filter((f: any) => (f.home_team === s.team_name || f.away_team === s.team_name) && f.gameweek >= s.streak_start_gw && f.gameweek <= s.streak_end_gw)
+      .sort((a: any, b: any) => a.gameweek - b.gameweek)
+      .map((f: any, i: number) => {
+        const isHome = f.home_team === s.team_name;
+        const my = isHome ? f.home_score : f.away_score;
+        const their = isHome ? f.away_score : f.home_score;
+        const opp = isHome ? f.away_team : f.home_team;
+        const result = my > their ? "W" : my < their ? "L" : "D";
+        return { rank: i + 1, name: opp, sub: `GW${f.gameweek} · ${isHome ? "Home" : "Away"}`, value: `${my}-${their} ${result}` };
+      });
+  };
+
+  // Dominant H2H — top 5
+  const top5H2H = (() => {
+    const records: Record<string, { winner: string; loser: string; w: number; total: number }> = {};
+    completed.forEach((f: any) => {
+      const a = f.home_manager < f.away_manager ? f.home_manager : f.away_manager;
+      const b = f.home_manager < f.away_manager ? f.away_manager : f.home_manager;
+      const key = `${a}|${b}`;
+      if (!records[key]) records[key] = { winner: a, loser: b, w: 0, total: 0 };
+      records[key].total++;
+      if (f.winner_name === a) records[key].w++;
+    });
+    return Object.values(records)
+      .map((r) => {
+        const aWon = r.w; const bWon = r.total - r.w;
+        return aWon >= bWon
+          ? { winner: r.winner, loser: r.loser, wins: aWon, losses: bWon, total: r.total }
+          : { winner: r.loser, loser: r.winner, wins: bWon, losses: aWon, total: r.total };
+      })
+      .sort((a, b) => (b.wins - b.losses) - (a.wins - a.losses))
+      .slice(0, 5);
+  })();
+
+  // Team stat rankings
+  const rankByStat = (key: string, label: string) =>
+    [...d.teamStats]
+      .filter((t: any) => t[key] != null)
+      .sort((a: any, b: any) => (b[key] ?? 0) - (a[key] ?? 0))
+      .slice(0, 5)
+      .map((t: any, i: number) => ({ rank: i + 1, name: t.team_name, sub: t.manager_name, value: Number(t[key]).toFixed(0) }));
+
+  // Position counts top 5
+  const positionTop5 = (target: "first" | "last") => {
+    const counts: Record<string, number> = {};
+    const lastByGw: Record<number, number> = {};
+    d.gwTable.forEach((row: any) => {
+      if (target === "first" && row.position === 1) counts[row.manager_id] = (counts[row.manager_id] ?? 0) + 1;
+      if (target === "last") {
+        if (lastByGw[row.gameweek] == null) {
+          lastByGw[row.gameweek] = Math.max(...d.gwTable.filter((r: any) => r.gameweek === row.gameweek).map((r: any) => r.position));
+        }
+        if (row.position === lastByGw[row.gameweek]) counts[row.manager_id] = (counts[row.manager_id] ?? 0) + 1;
+      }
+    });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([id, n], i) => {
+      const m = mById(id);
+      return { rank: i + 1, name: m?.team_name ?? "—", sub: m?.name, value: `${n} GW${n === 1 ? "" : "s"}` };
+    });
+  };
+
+  return (
+    <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
+      <SectionTitle kicker="Highlights" title="Season Records" />
+
+      <h3 className="font-display text-2xl text-gold mt-8 mb-4">Points & Performance</h3>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <RecordCard
+          label="Highest Single GW"
+          value={topWeekly?.score ?? top5HighGW[0]?.score ?? "—"}
+          sub={top5HighGW[0] ? `${top5HighGW[0].team} · GW${top5HighGW[0].gw}` : ""}
+          icon={<Flame className="w-5 h-5" />}
+          dialogTitle="Top 5 Single Gameweek Scores"
+          valueHeader="Score"
+          rows={top5HighGW.map((r, i) => ({ rank: i + 1, name: r.team, sub: `GW${r.gw} vs ${r.opp_team}`, value: r.score }))}
+        />
+        <RecordCard
+          label="Biggest Win"
+          value={biggestWin?.margin ?? "—"}
+          sub={biggestWin ? `${biggestWin.winner_team} bt ${biggestWin.loser_team}` : ""}
+          icon={<Swords className="w-5 h-5" />}
+          dialogTitle="Top 5 Biggest Wins"
+          valueHeader="Margin"
+          rows={top5Margin.map((f: any, i: number) => ({ rank: i + 1, name: f.winner_team, sub: `bt ${f.loser_team} · GW${f.gameweek}`, value: f.margin }))}
+        />
+        <RecordCard
+          label="Lowest GW Score"
+          value={top5LowGW[0]?.score ?? "—"}
+          sub={top5LowGW[0] ? `${top5LowGW[0].team} · GW${top5LowGW[0].gw}` : ""}
+          icon={<TrendingDown className="w-5 h-5" />}
+          dialogTitle="5 Lowest Gameweek Scores"
+          valueHeader="Score"
+          rows={top5LowGW.map((r, i) => ({ rank: i + 1, name: r.team, sub: `GW${r.gw} vs ${r.opp_team}`, value: r.score }))}
+        />
+        <RecordCard
+          label="Longest Win Streak"
+          value={longestWin?.streak_length ?? "—"}
+          sub={longestWin ? `${longestWin.team_name} · GW${longestWin.streak_start_gw}–${longestWin.streak_end_gw}` : ""}
+          icon={<TrendingUp className="w-5 h-5" />}
+          dialogTitle={longestWin ? `${longestWin.team_name}'s Win Streak (${longestWin.streak_length})` : "Longest Win Streak"}
+          valueHeader="Result"
+          rows={streakFixtures(longestWin)}
+        />
+        <RecordCard
+          label="Longest Losing Streak"
+          value={longestLose?.streak_length ?? "—"}
+          sub={longestLose ? `${longestLose.team_name} · GW${longestLose.streak_start_gw}–${longestLose.streak_end_gw}` : ""}
+          icon={<Skull className="w-5 h-5" />}
+          dialogTitle={longestLose ? `${longestLose.team_name}'s Losing Streak (${longestLose.streak_length})` : "Longest Losing Streak"}
+          valueHeader="Result"
+          rows={streakFixtures(longestLose)}
+        />
+        <RecordCard
+          label="Most Dominant H2H"
+          value={dominantH2H ? `${dominantH2H.wins}-${dominantH2H.losses}` : "—"}
+          sub={dominantH2H ? `${dominantH2H.winner} over ${dominantH2H.loser}` : ""}
+          icon={<Crown className="w-5 h-5" />}
+          dialogTitle="Top 5 Most Dominant Head-to-Heads"
+          valueHeader="Record"
+          rows={top5H2H.map((h, i) => ({ rank: i + 1, name: h.winner, sub: `over ${h.loser}`, value: `${h.wins}-${h.losses}` }))}
+        />
+      </div>
+
+      <h3 className="font-display text-2xl text-gold mt-12 mb-4">Players & Possession</h3>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <RecordCard
+          label="Most Goals"
+          value={mostGoals?.out_goals ?? "—"}
+          sub={mostGoals?.team_name}
+          icon={<Zap className="w-5 h-5" />}
+          dialogTitle="Top 5 · Most Goals"
+          valueHeader="Goals"
+          rows={rankByStat("out_goals", "Goals")}
+        />
+        <RecordCard
+          label="Most Assists"
+          value={mostAssists?.out_assists ?? "—"}
+          sub={mostAssists?.team_name}
+          icon={<Users className="w-5 h-5" />}
+          dialogTitle="Top 5 · Most Assists"
+          valueHeader="Assists"
+          rows={rankByStat("out_assists", "Assists")}
+        />
+        <RecordCard
+          label="Most Clean Sheets"
+          value={mostCS?.combined_clean_sheets ?? "—"}
+          sub={mostCS?.team_name}
+          icon={<Shield className="w-5 h-5" />}
+          dialogTitle="Top 5 · Most Clean Sheets"
+          valueHeader="CS"
+          rows={rankByStat("combined_clean_sheets", "CS")}
+        />
+        <RecordCard
+          label="Most Yellow Cards"
+          value={mostYellows?.combined_yellow_cards ?? "—"}
+          sub={mostYellows?.team_name}
+          icon={<Flag className="w-5 h-5" />}
+          dialogTitle="Top 5 · Most Yellow Cards"
+          valueHeader="Yellows"
+          rows={rankByStat("combined_yellow_cards", "Yellows")}
+        />
+        <RecordCard
+          label="Most Red Cards"
+          value={rankByStat("out_red_cards", "Reds")[0]?.value ?? "—"}
+          sub={rankByStat("out_red_cards", "Reds")[0]?.name}
+          icon={<Flag className="w-5 h-5" />}
+          dialogTitle="Top 5 · Most Red Cards"
+          valueHeader="Reds"
+          rows={rankByStat("out_red_cards", "Reds")}
+        />
+        <RecordCard
+          label="Most Own Goals"
+          value={rankByStat("out_own_goals", "OG")[0]?.value ?? "—"}
+          sub={rankByStat("out_own_goals", "OG")[0]?.name}
+          icon={<Skull className="w-5 h-5" />}
+          dialogTitle="Top 5 · Most Own Goals"
+          valueHeader="OG"
+          rows={rankByStat("out_own_goals", "OG")}
+        />
+        <RecordCard
+          label="Most GWs at #1"
+          value={positionCounts.topId?.[1] ?? "—"}
+          sub={positionCounts.topId ? mById(positionCounts.topId[0])?.team_name : ""}
+          icon={<Trophy className="w-5 h-5" />}
+          dialogTitle="Top 5 · Most Gameweeks in 1st"
+          valueHeader="Gameweeks"
+          rows={positionTop5("first")}
+        />
+        <RecordCard
+          label="Most GWs at the Bottom"
+          value={positionCounts.botId?.[1] ?? "—"}
+          sub={positionCounts.botId ? mById(positionCounts.botId[0])?.team_name : ""}
+          icon={<Skull className="w-5 h-5" />}
+          dialogTitle="Top 5 · Most Gameweeks in Last"
+          valueHeader="Gameweeks"
+          rows={positionTop5("last")}
+        />
+      </div>
+
+      <StatExplorer teamStats={d.teamStats} />
+    </section>
+  );
+}
+
+/* ======================= Stat Explorer ======================= */
+
+const STAT_OPTIONS: { key: string; label: string; group: string }[] = [
+  // Featured
+  { group: "Featured", key: "out_goals", label: "Goals" },
+  { group: "Featured", key: "out_assists", label: "Assists" },
+  { group: "Featured", key: "combined_clean_sheets", label: "Clean Sheets" },
+  { group: "Featured", key: "combined_yellow_cards", label: "Yellow Cards" },
+  { group: "Featured", key: "out_red_cards", label: "Red Cards" },
+  { group: "Featured", key: "out_own_goals", label: "Own Goals" },
+  { group: "Featured", key: "total_fpts", label: "Total Fantasy Points" },
+  // Attack
+  { group: "Attack", key: "out_goals_outside_box", label: "Goals from Outside the Box" },
+  { group: "Attack", key: "out_fantasy_assists", label: "Fantasy Assists" },
+  { group: "Attack", key: "out_key_passes", label: "Key Passes" },
+  { group: "Attack", key: "out_shots_on_target", label: "Shots on Target" },
+  { group: "Attack", key: "out_successful_dribbles", label: "Successful Dribbles" },
+  { group: "Attack", key: "out_accurate_crosses", label: "Accurate Crosses" },
+  { group: "Attack", key: "out_big_chances_created", label: "Big Chances Created" },
+  { group: "Attack", key: "out_big_chances_missed", label: "Big Chances Missed" },
+  { group: "Attack", key: "out_free_kick_goals", label: "Free Kick Goals" },
+  { group: "Attack", key: "out_hat_tricks", label: "Hat-tricks" },
+  { group: "Attack", key: "out_penalties_drawn", label: "Penalties Drawn" },
+  { group: "Attack", key: "out_penalties_missed", label: "Penalties Missed" },
+  // Defence
+  { group: "Defence", key: "out_tackles_won", label: "Tackles Won" },
+  { group: "Defence", key: "out_interceptions", label: "Interceptions" },
+  { group: "Defence", key: "out_ball_recoveries", label: "Ball Recoveries" },
+  { group: "Defence", key: "combined_aerial_duels_won", label: "Aerial Duels Won" },
+  { group: "Defence", key: "combined_clearances_off_line", label: "Clearances off the Line" },
+  { group: "Defence", key: "combined_goals_against", label: "Goals Against" },
+  { group: "Defence", key: "combined_errors", label: "Errors Leading to Goal" },
+  { group: "Defence", key: "combined_penalties_given_away", label: "Penalties Given Away" },
+  // Discipline & misc
+  { group: "Discipline", key: "combined_fouls_suffered", label: "Fouls Suffered" },
+  { group: "Discipline", key: "out_offsides", label: "Offsides" },
+  // Goalkeeping
+  { group: "Goalkeeping", key: "gk_saves", label: "GK Saves" },
+  { group: "Goalkeeping", key: "gk_clean_sheets", label: "GK Clean Sheets" },
+  { group: "Goalkeeping", key: "gk_penalty_saves", label: "GK Penalty Saves" },
+  { group: "Goalkeeping", key: "gk_one_on_ones_won", label: "GK 1-on-1s Won" },
+  { group: "Goalkeeping", key: "gk_aerial_duels_won", label: "GK Aerial Duels Won" },
+  { group: "Goalkeeping", key: "gk_error_goals", label: "GK Errors Leading to Goal" },
+  // Workload
+  { group: "Workload", key: "combined_minutes", label: "Minutes Played" },
+  { group: "Workload", key: "combined_games_started", label: "Games Started" },
+  { group: "Workload", key: "out_subs_on", label: "Substitutions On" },
+];
+
+function StatExplorer({ teamStats }: { teamStats: any[] }) {
+  const [stat, setStat] = useState<string>("out_goals");
+  const ranked = useMemo(() => {
+    return [...teamStats]
+      .filter((t) => t[stat] != null)
+      .sort((a, b) => (b[stat] ?? 0) - (a[stat] ?? 0))
+      .map((t, i) => ({ rank: i + 1, team: t.team_name, manager: t.manager_name, value: Number(t[stat] ?? 0) }));
+  }, [teamStats, stat]);
+
+  const current = STAT_OPTIONS.find((o) => o.key === stat);
+
+  return (
+    <div className="mt-12">
+      <h3 className="font-display text-2xl text-gold mb-4">Stat Explorer</h3>
+      <p className="text-sm text-muted-foreground mb-4">Pick any stat to see the full league ranking for the season.</p>
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Stat</label>
+        <select
+          value={stat}
+          onChange={(e) => setStat(e.target.value)}
+          className="bg-card border border-border rounded px-3 py-2 text-sm font-display text-gold min-w-[260px]"
+        >
+          {Array.from(new Set(STAT_OPTIONS.map((o) => o.group))).map((g) => (
+            <optgroup key={g} label={g}>
+              {STAT_OPTIONS.filter((o) => o.group === g).map((o) => (
+                <option key={o.key} value={o.key}>{o.label}</option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+      </div>
+      <div className="premium-card rounded-lg overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-card/60 text-xs uppercase tracking-wider text-muted-foreground">
+            <tr>
+              <th className="p-3 text-left">#</th>
+              <th className="p-3 text-left">Team</th>
+              <th className="p-3 text-left">Manager</th>
+              <th className="p-3 text-right">{current?.label ?? "Value"}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ranked.map((r) => (
+              <tr key={r.rank} className="border-t border-border/40 hover:bg-gold/5">
+                <td className="p-3 font-display text-gold">{r.rank}</td>
+                <td className="p-3 font-medium">{r.team}</td>
+                <td className="p-3 text-muted-foreground capitalize">{r.manager}</td>
+                <td className="p-3 text-right font-display text-gold tabular-nums">{r.value.toLocaleString()}</td>
+              </tr>
+            ))}
+            {ranked.length === 0 && <tr><td colSpan={4} className="p-6 text-center text-muted-foreground">No data.</td></tr>}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
