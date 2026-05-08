@@ -169,7 +169,24 @@ function TeamPage() {
   const totsPlayers = d.tots.filter((p: any) => p.season_name === totsSeason);
 
   // Highs & Lows
-  const sortedPlayers = [...(d.alltimePlayers as any[])].sort((a, b) => (b.total_fantasy_points ?? 0) - (a.total_fantasy_points ?? 0));
+  // Map each player to their most-used club (by fantasy points contributed).
+  const playerClubAgg = new Map<string, Map<string, number>>();
+  for (const r of (d.history as any[])) {
+    if (!r.player_name || !r.club) continue;
+    const inner = playerClubAgg.get(r.player_name) ?? new Map<string, number>();
+    inner.set(r.club, (inner.get(r.club) ?? 0) + Number(r.fantasy_points ?? 0));
+    playerClubAgg.set(r.player_name, inner);
+  }
+  const topClubFor = (name: string): string | undefined => {
+    const inner = playerClubAgg.get(name);
+    if (!inner) return undefined;
+    return [...inner.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+  };
+  const enrichedPlayers = (d.alltimePlayers as any[]).map((p) => ({
+    ...p,
+    club: p.club ?? topClubFor(p.player_name),
+  }));
+  const sortedPlayers = [...enrichedPlayers].sort((a, b) => (b.total_fantasy_points ?? 0) - (a.total_fantasy_points ?? 0));
   const top5Players = sortedPlayers.slice(0, 5);
   const bottom5Players = [...sortedPlayers].reverse().slice(0, 5);
 
