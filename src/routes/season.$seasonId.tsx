@@ -613,9 +613,10 @@ function StatExplorer({ teamStats }: { teamStats: any[] }) {
 
 /* ======================= Hero ======================= */
 
-function SeasonHero({ season, champ, topScorer, topScorerPts, longestWin, longestLose, mostCS }: any) {
+function SeasonHero({ season, champ, topScorer, topScorerPts, longestWin, longestLose, mostCS, wooden }: any) {
   const [yA, yB] = season.name.split("/");
   const champBranding = champ ? getBranding(champ.id) : null;
+  const woodenBranding = wooden ? getBranding(wooden.id) : null;
 
   return (
     <section className="relative overflow-hidden border-b border-border/50">
