@@ -623,14 +623,14 @@ function StatExplorer({ teamStats, managers }: { teamStats: any[]; managers: any
           ))}
         </select>
       </div>
-      <div className="premium-card rounded-lg overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-card/60 text-xs uppercase tracking-wider text-muted-foreground">
+      <div className="premium-card rounded-lg overflow-hidden">
+        <table className="w-full text-xs sm:text-sm">
+          <thead className="bg-card/60 text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground">
             <tr>
-              <th className="p-3 text-left">#</th>
-              <th className="p-3 text-left">Team</th>
-              <th className="p-3 text-left">Manager</th>
-              <th className="p-3 text-right">{current?.label ?? "Value"}</th>
+              <th className="p-2 sm:p-3 text-left w-8">#</th>
+              <th className="p-2 sm:p-3 text-left">Team</th>
+              <th className="hidden sm:table-cell p-3 text-left">Manager</th>
+              <th className="p-2 sm:p-3 text-right">{current?.label ?? "Value"}</th>
             </tr>
           </thead>
           <tbody>
@@ -639,15 +639,18 @@ function StatExplorer({ teamStats, managers }: { teamStats: any[]; managers: any
               const b = m ? getBranding(m.id) : null;
               return (
                 <tr key={r.rank} className="border-t border-border/40 hover:bg-gold/5">
-                  <td className="p-3 font-display text-gold">{r.rank}</td>
-                  <td className="p-3 font-medium">
-                    <div className="flex items-center gap-3">
-                      {b?.badge && <img src={b.badge} alt="" className="w-7 h-7 object-contain" />}
-                      <span>{r.team}</span>
+                  <td className="p-2 sm:p-3 font-display text-gold">{r.rank}</td>
+                  <td className="p-2 sm:p-3 font-medium">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                      {b?.badge && <img src={b.badge} alt="" className="w-6 h-6 sm:w-7 sm:h-7 object-contain shrink-0" />}
+                      <div className="min-w-0">
+                        <div className="truncate">{r.team}</div>
+                        <div className="sm:hidden text-[10px] text-muted-foreground capitalize truncate">{r.manager}</div>
+                      </div>
                     </div>
                   </td>
-                  <td className="p-3 text-muted-foreground capitalize">{r.manager}</td>
-                  <td className="p-3 text-right font-display text-gold tabular-nums">{r.value.toLocaleString()}</td>
+                  <td className="hidden sm:table-cell p-3 text-muted-foreground capitalize">{r.manager}</td>
+                  <td className="p-2 sm:p-3 text-right font-display text-gold tabular-nums">{r.value.toLocaleString()}</td>
                 </tr>
               );
             })}
