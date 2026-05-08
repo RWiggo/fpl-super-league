@@ -568,15 +568,23 @@ function TeamPage() {
                             </tr>
                           </thead>
                           <tbody>
-                            {selectedPlayerData.rows.map((r: any, i: number) => (
-                              <tr key={i} className="border-t border-border/40">
-                                <td className="p-2">{r.season_name}</td>
-                                <td className="p-2">{r.club}</td>
-                                <td className="text-center p-2">{r.games_played ?? "—"}</td>
-                                <td className="text-right p-2 font-display text-gold">{Number(r.fantasy_points ?? 0).toFixed(0)}</td>
-                                <td className="text-right p-2">{r.avg_points_per_game != null ? Number(r.avg_points_per_game).toFixed(1) : "—"}</td>
-                              </tr>
-                            ))}
+                            {selectedPlayerData.rows.map((r: any, i: number) => {
+                              const rowCrest = getPlClubBadge(r.club);
+                              return (
+                                <tr key={i} className="border-t border-border/40">
+                                  <td className="p-2">{r.season_name}</td>
+                                  <td className="p-2">
+                                    <div className="flex items-center gap-2">
+                                      {rowCrest && <img src={rowCrest} alt="" loading="lazy" className="w-5 h-5 object-contain" />}
+                                      <span>{r.club}</span>
+                                    </div>
+                                  </td>
+                                  <td className="text-center p-2">{r.games_played ?? "—"}</td>
+                                  <td className="text-right p-2 font-display text-gold">{Number(r.fantasy_points ?? 0).toFixed(0)}</td>
+                                  <td className="text-right p-2">{r.avg_points_per_game != null ? Number(r.avg_points_per_game).toFixed(1) : "—"}</td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
