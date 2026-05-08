@@ -316,19 +316,6 @@ function TeamPage() {
         </div>
       </section>
 
-      {/* Personal Records */}
-      <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-        <SectionTitle kicker="Personal" title="Records & Lows" />
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-          <StatCard label="Highest Score" value={highestScore} icon={<Flame className="w-5 h-5" />} />
-          <StatCard label="Biggest Win" value={biggestWin?.margin ?? 0} sub={biggestWin ? `vs ${mById(biggestWin.home_manager_id === managerId ? biggestWin.away_manager_id : biggestWin.home_manager_id)?.name}` : ""} icon={<Target className="w-5 h-5" />} />
-          <StatCard label="Longest Win Streak" value={winStreak?.streak_length ?? 0} icon={<Zap className="w-5 h-5" />} />
-          <StatCard label="Lowest Score" value={lowestScore} icon={<TrendingDown className="w-5 h-5" />} />
-          <StatCard label="Heaviest Defeat" value={heaviestDef?.margin ?? 0} sub={heaviestDef ? `vs ${mById(heaviestDef.home_manager_id === managerId ? heaviestDef.away_manager_id : heaviestDef.home_manager_id)?.name}` : ""} icon={<TrendingDown className="w-5 h-5" />} />
-          <StatCard label="Longest Losing Streak" value={lossStreak?.streak_length ?? 0} icon={<TrendingDown className="w-5 h-5" />} />
-        </div>
-      </section>
-
       {/* Highs and Lows */}
       <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
         <SectionTitle kicker="The Highs and Lows" title="Records and Statistics" />
