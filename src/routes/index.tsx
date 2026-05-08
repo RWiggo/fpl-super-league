@@ -101,7 +101,6 @@ function Home() {
 
   return (
     <div>
-    <div>
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-silver/20 min-h-[80vh] flex items-center">
         <div className="absolute inset-0 ucl-stars opacity-60" />
