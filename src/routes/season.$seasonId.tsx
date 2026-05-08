@@ -589,6 +589,10 @@ function FixturesPanel({ fixtures, managers, maxGW }: any) {
           const ab = awayM ? getBranding(awayM.id) : null;
           const homeWon = f.home_score > f.away_score;
           const awayWon = f.away_score > f.home_score;
+          const isDraw = f.home_score != null && f.home_score === f.away_score;
+          const homeColor = homeWon ? "text-emerald-400" : isDraw ? "text-yellow-400" : "text-red-400";
+          const awayColor = awayWon ? "text-emerald-400" : isDraw ? "text-yellow-400" : "text-red-400";
+          const hasScore = f.home_score != null;
           return (
             <div key={f.id} className="premium-card rounded-lg p-4">
               <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">GW {f.gameweek}</div>
@@ -601,9 +605,9 @@ function FixturesPanel({ fixtures, managers, maxGW }: any) {
                   {hb?.badge && <img src={hb.badge} alt="" className="w-10 h-10 object-contain" />}
                 </Link>
                 <div className="font-display text-2xl text-center tabular-nums">
-                  <span className={homeWon ? "text-gold" : ""}>{f.home_score ?? "-"}</span>
+                  <span className={hasScore ? homeColor : ""}>{f.home_score ?? "-"}</span>
                   <span className="mx-2 text-muted-foreground">:</span>
-                  <span className={awayWon ? "text-gold" : ""}>{f.away_score ?? "-"}</span>
+                  <span className={hasScore ? awayColor : ""}>{f.away_score ?? "-"}</span>
                 </div>
                 <Link to="/team/$managerId" params={{ managerId: String(awayM?.id ?? "") }} className="flex items-center gap-2 hover:text-gold min-w-0">
                   {ab?.badge && <img src={ab.badge} alt="" className="w-10 h-10 object-contain" />}
