@@ -1,3 +1,6 @@
+import { getKit } from "@/lib/managerKits";
+import { GoalkeeperKit } from "./GoalkeeperKit";
+
 type Player = {
   player_name?: string;
   name?: string;
@@ -10,7 +13,16 @@ type Player = {
   manager_id?: string;
 };
 
-export function FormationPitch({ players, getManagerName }: { players: Player[]; getManagerName?: (id: string) => string }) {
+export function FormationPitch({
+  players,
+  getManagerName,
+  managerId,
+}: {
+  players: Player[];
+  getManagerName?: (id: string) => string;
+  /** When set, every player on this pitch wears this manager's kit (used for a single-team Best XI). */
+  managerId?: string | number;
+}) {
   const gks = players.filter((p) => p.position === "GK" || p.position === "GKP");
   const defs = players.filter((p) => p.position === "DEF");
   const mids = players.filter((p) => p.position === "MID");
@@ -45,9 +57,14 @@ export function FormationPitch({ players, getManagerName }: { players: Player[];
 
       <div className="absolute inset-0 flex flex-col justify-around p-2">
         {rows.map((row, i) => (
-          <div key={i} className="flex justify-around">
+          <div key={i} className="flex justify-around items-end">
             {row.map((p, j) => (
-              <PlayerChip key={j} player={p} managerName={p.manager_id && getManagerName ? getManagerName(p.manager_id) : undefined} />
+              <PlayerChip
+                key={j}
+                player={p}
+                managerName={p.manager_id && getManagerName ? getManagerName(p.manager_id) : undefined}
+                kitManagerId={managerId ?? p.manager_id}
+              />
             ))}
           </div>
         ))}
@@ -56,16 +73,43 @@ export function FormationPitch({ players, getManagerName }: { players: Player[];
   );
 }
 
-function PlayerChip({ player, managerName }: { player: Player; managerName?: string }) {
+function PlayerChip({
+  player,
+  managerName,
+  kitManagerId,
+}: {
+  player: Player;
+  managerName?: string;
+  kitManagerId?: string | number;
+}) {
   const points = player.total_fantasy_points ?? player.fantasy_points ?? 0;
   const ppg = player.ppg ?? player.avg_points_per_game;
+  const isGK = player.position === "GK" || player.position === "GKP";
+  const kit = getKit(kitManagerId);
+
   return (
-    <div className="bg-background/85 backdrop-blur-sm border border-gold/40 rounded px-2 py-1.5 text-center min-w-[70px] max-w-[110px] shadow-lg">
-      <div className="text-[10px] sm:text-xs font-medium truncate">{player.player_name ?? player.name}</div>
-      {player.club && <div className="text-[8px] uppercase tracking-wider text-muted-foreground truncate">{player.club}</div>}
-      <div className="text-xs sm:text-sm font-display text-gold">{Number(points).toFixed(0)}</div>
-      {ppg != null && <div className="text-[8px] text-muted-foreground">{Number(ppg).toFixed(1)} ppg</div>}
-      {managerName && <div className="text-[8px] uppercase tracking-wider text-gold/80 truncate mt-0.5">{managerName}</div>}
+    <div className="flex flex-col items-center w-[78px] sm:w-[92px]">
+      {kit && (
+        <div className="mb-1 drop-shadow-[0_3px_6px_rgba(0,0,0,0.55)]">
+          {isGK ? (
+            <GoalkeeperKit palette={kit.gk} className="w-14 h-14 sm:w-16 sm:h-16" />
+          ) : (
+            <img
+              src={kit.home}
+              alt=""
+              className="w-14 h-14 sm:w-16 sm:h-16 object-contain"
+              loading="lazy"
+            />
+          )}
+        </div>
+      )}
+      <div className="bg-background/85 backdrop-blur-sm border border-gold/40 rounded px-2 py-1 text-center w-full shadow-lg">
+        <div className="text-[10px] sm:text-xs font-medium truncate">{player.player_name ?? player.name}</div>
+        {player.club && <div className="text-[8px] uppercase tracking-wider text-muted-foreground truncate">{player.club}</div>}
+        <div className="text-xs sm:text-sm font-display text-gold leading-tight">{Number(points).toFixed(0)}</div>
+        {ppg != null && <div className="text-[8px] text-muted-foreground">{Number(ppg).toFixed(1)} ppg</div>}
+        {managerName && <div className="text-[8px] uppercase tracking-wider text-gold/80 truncate mt-0.5">{managerName}</div>}
+      </div>
     </div>
   );
 }
