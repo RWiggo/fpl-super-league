@@ -433,7 +433,7 @@ function TeamPage() {
                 Combined Points · <span className="text-gold font-display text-lg">{bestXISum.toFixed(0)}</span>
               </div>
             </div>
-            <FormationPitch players={bestXIForPitch} />
+            <FormationPitch players={bestXIForPitch} managerId={managerId} />
 
             {clubsInSquad.length > 0 && (
               <div className="mt-10">
@@ -538,7 +538,7 @@ function TeamPage() {
               </button>
             ))}
           </div>
-          {totsPlayers.length > 0 && <FormationPitch players={totsPlayers} />}
+          {totsPlayers.length > 0 && <FormationPitch players={totsPlayers} managerId={managerId} />}
         </section>
       )}
 
