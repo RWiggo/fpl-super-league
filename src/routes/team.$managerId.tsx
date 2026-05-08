@@ -254,6 +254,7 @@ function TeamPage() {
         teamName={currentTeamName}
         badge={branding?.badge}
         primary={branding?.primary}
+        nickname={getNickname(managerId)}
         seasonsBadges={d.mst.map((t: any) => ({
           season: sById(t.season_id)?.name ?? "",
           team: t.team_name,
