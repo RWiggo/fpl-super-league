@@ -450,48 +450,56 @@ function TeamPage() {
         )}
       </section>
 
-      {/* H2H */}
+      {/* H2H Carousel */}
       {d.h2h.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
           <SectionTitle kicker="vs The Field" title="Head to Head" />
-          <div className="premium-card rounded-lg overflow-x-auto mt-6">
-            <table className="w-full text-sm">
-              <thead className="bg-card/60 text-xs uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="p-3 text-left">Opponent</th>
-                  <th className="p-3 text-center">P</th>
-                  <th className="p-3 text-center">W</th>
-                  <th className="p-3 text-center">D</th>
-                  <th className="p-3 text-center">L</th>
-                  <th className="p-3 text-right">PF</th>
-                  <th className="p-3 text-right">PA</th>
-                  <th className="p-3 text-right">Win%</th>
-                </tr>
-              </thead>
-              <tbody>
-                {d.h2h.map((row: any, i: number) => {
-                  const oppId = row.manager_a_id === managerId ? row.manager_b_id : row.manager_a_id;
-                  const myWins = row.manager_a_id === managerId ? row.manager_a_wins : row.manager_b_wins;
-                  const oppWins = row.manager_a_id === managerId ? row.manager_b_wins : row.manager_a_wins;
-                  const myPF = row.manager_a_id === managerId ? row.manager_a_points : row.manager_b_points;
-                  const oppPF = row.manager_a_id === managerId ? row.manager_b_points : row.manager_a_points;
-                  const total = (myWins ?? 0) + (oppWins ?? 0) + (row.draws ?? 0);
-                  const wp = total ? ((myWins / total) * 100).toFixed(0) : "0";
-                  return (
-                    <tr key={i} className="border-t border-border/40">
-                      <td className="p-3 capitalize"><Link to="/team/$managerId" params={{ managerId: oppId }} className="hover:text-gold">{mById(oppId)?.name}</Link></td>
-                      <td className="text-center p-3">{total}</td>
-                      <td className="text-center p-3 text-gold">{myWins}</td>
-                      <td className="text-center p-3">{row.draws}</td>
-                      <td className="text-center p-3 text-destructive/80">{oppWins}</td>
-                      <td className="text-right p-3">{Number(myPF ?? 0).toFixed(0)}</td>
-                      <td className="text-right p-3">{Number(oppPF ?? 0).toFixed(0)}</td>
-                      <td className="text-right p-3 font-display">{wp}%</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <p className="text-sm text-muted-foreground mt-3 mb-6">Scroll to view records against every other manager. Click a card to see every result.</p>
+          <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-thin">
+            {[...d.h2h]
+              .map((row: any) => {
+                const oppId = row.manager_a_id === managerId ? row.manager_b_id : row.manager_a_id;
+                const myWins = row.manager_a_id === managerId ? row.manager_a_wins : row.manager_b_wins;
+                const oppWins = row.manager_a_id === managerId ? row.manager_b_wins : row.manager_a_wins;
+                const myPF = row.manager_a_id === managerId ? row.manager_a_points : row.manager_b_points;
+                const oppPF = row.manager_a_id === managerId ? row.manager_b_points : row.manager_a_points;
+                return { row, oppId, myWins, oppWins, myPF, oppPF };
+              })
+              .sort((a, b) => (b.myWins + b.oppWins + (b.row.draws ?? 0)) - (a.myWins + a.oppWins + (a.row.draws ?? 0)))
+              .map(({ row, oppId, myWins, oppWins, myPF, oppPF }) => {
+                const opp = mById(oppId);
+                const oppFixtures = (d.fixtures as any[])
+                  .filter((f) => f.home_manager_id === oppId || f.away_manager_id === oppId)
+                  .map((f) => {
+                    const my = f.home_manager_id === managerId ? f.home_score : f.away_score;
+                    const op = f.home_manager_id === managerId ? f.away_score : f.home_score;
+                    const seasonName = sById(f.season_id)?.name;
+                    return { ...f, my, op, seasonName };
+                  })
+                  .filter((f) => f.my != null && f.op != null)
+                  .sort((a, b) => {
+                    const sa = d.seasons.find((s: any) => s.id === a.season_id)?.year_start ?? 0;
+                    const sb = d.seasons.find((s: any) => s.id === b.season_id)?.year_start ?? 0;
+                    if (sa !== sb) return sb - sa;
+                    return (b.gameweek ?? 0) - (a.gameweek ?? 0);
+                  });
+                return (
+                  <H2HCard
+                    key={oppId}
+                    opponentId={oppId}
+                    opponentName={opp?.name ?? "—"}
+                    opponentBadge={getBranding(oppId)?.badge}
+                    opponentTint={getBranding(oppId)?.primary}
+                    wins={myWins ?? 0}
+                    draws={row.draws ?? 0}
+                    losses={oppWins ?? 0}
+                    pf={Number(myPF ?? 0)}
+                    pa={Number(oppPF ?? 0)}
+                    fixtures={oppFixtures}
+                    selfId={managerId}
+                  />
+                );
+              })}
           </div>
         </section>
       )}
