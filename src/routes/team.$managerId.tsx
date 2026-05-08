@@ -291,7 +291,10 @@ function TeamPage() {
               {d.standings.map((s: any) => {
                 const teamName = d.mst.find((t: any) => t.season_id === s.season_id)?.team_name;
                 // Star player: top fantasy_points scorer for this manager that season
-                const seasonHistory = (d.history as any[]).filter((h) => h.season_id === s.season_id);
+                const seasonName = sById(s.season_id)?.name;
+                const seasonHistory = (d.history as any[]).filter(
+                  (h) => h.season_id === s.season_id || h.season_name === seasonName
+                );
                 const star = [...seasonHistory].sort(
                   (a, b) => Number(b.fantasy_points ?? 0) - Number(a.fantasy_points ?? 0)
                 )[0];
