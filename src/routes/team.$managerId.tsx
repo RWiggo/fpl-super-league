@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { PageHero } from "@/components/PageHero";
+import { TeamHero } from "@/components/TeamHero";
 import { StatCard, Skeleton } from "@/components/StatCard";
 import { FormationPitch } from "@/components/FormationPitch";
 import { Trophy, Crown, Flame, Target, Zap, TrendingDown, Award, ShieldOff, Flag, Skull } from "lucide-react";
@@ -244,32 +244,21 @@ function TeamPage() {
 
   return (
     <div style={brandStyle}>
-      <PageHero
-        kicker={d.manager.name}
-        title={
-          <span className="flex items-center gap-6 flex-wrap" style={{ color: branding?.primary }}>
-            {branding && (
-              <img
-                src={branding.badge}
-                alt={`${currentTeamName} badge`}
-                className="w-24 h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 shrink-0 drop-shadow-[0_8px_30px_rgba(0,0,0,0.6)]"
-              />
-            )}
-            <span>{currentTeamName}</span>
-          </span>
-        }
-        subtitle={
-          <div className="flex flex-wrap gap-2 mt-2">
-            <span className="text-xs uppercase tracking-wider text-muted-foreground self-center mr-2">
-              {d.mst.length} Season{d.mst.length !== 1 ? "s" : ""} ·
-            </span>
-            {d.mst.map((t: any) => (
-              <span key={t.id} className="px-3 py-1 bg-card border border-border rounded text-xs uppercase tracking-wider">
-                <span className="text-gold mr-1">{sById(t.season_id)?.name}</span> {t.team_name}
-              </span>
-            ))}
-          </div>
-        }
+      <TeamHero
+        managerName={d.manager.name}
+        teamName={currentTeamName}
+        badge={branding?.badge}
+        primary={branding?.primary}
+        seasonsBadges={d.mst.map((t: any) => ({
+          season: sById(t.season_id)?.name ?? "",
+          team: t.team_name,
+        }))}
+        facts={[
+          { label: "Seasons", value: d.mst.length },
+          { label: "Titles", value: titles },
+          { label: "All-Time Rank", value: allTimeRank > 0 ? ordinal(allTimeRank) : "—" },
+          { label: "Win %", value: `${winPct}%` },
+        ]}
       />
 
       {/* Career */}
@@ -529,9 +518,12 @@ function TeamPage() {
 
 function SectionTitle({ kicker, title }: { kicker: string; title: string }) {
   return (
-    <div>
-      <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{kicker}</div>
-      <h2 className="font-display text-3xl md:text-4xl">{title}</h2>
+    <div className="flex items-center gap-4">
+      <div className="h-10 w-[3px] rounded-full bg-gold" />
+      <div>
+        <div className="text-[10px] uppercase tracking-[0.4em] text-silver/70 mb-1">{kicker}</div>
+        <h2 className="font-display text-3xl md:text-4xl uppercase">{title}</h2>
+      </div>
     </div>
   );
 }
