@@ -429,7 +429,7 @@ function RecordsSection({
           label="Most Goals"
           value={mostGoals?.out_goals ?? "—"}
           sub={mostGoals?.team_name}
-          icon={<Zap className="w-5 h-5" />}
+          icon={<Goal className="w-5 h-5" />}
           dialogTitle="Top 5 · Most Goals"
           valueHeader="Goals"
           rows={rankByStat("out_goals", "Goals")}
@@ -438,7 +438,7 @@ function RecordsSection({
           label="Most Assists"
           value={mostAssists?.out_assists ?? "—"}
           sub={mostAssists?.team_name}
-          icon={<Users className="w-5 h-5" />}
+          icon={<HandHelping className="w-5 h-5" />}
           dialogTitle="Top 5 · Most Assists"
           valueHeader="Assists"
           rows={rankByStat("out_assists", "Assists")}
@@ -456,7 +456,7 @@ function RecordsSection({
           label="Most Yellow Cards"
           value={mostYellows?.combined_yellow_cards ?? "—"}
           sub={mostYellows?.team_name}
-          icon={<Flag className="w-5 h-5" />}
+          icon={<CardIcon color="yellow" />}
           dialogTitle="Top 5 · Most Yellow Cards"
           valueHeader="Yellows"
           rows={rankByStat("combined_yellow_cards", "Yellows")}
@@ -465,7 +465,7 @@ function RecordsSection({
           label="Most Red Cards"
           value={rankByStat("out_red_cards", "Reds")[0]?.value ?? "—"}
           sub={rankByStat("out_red_cards", "Reds")[0]?.name}
-          icon={<Flag className="w-5 h-5" />}
+          icon={<CardIcon color="red" />}
           dialogTitle="Top 5 · Most Red Cards"
           valueHeader="Reds"
           rows={rankByStat("out_red_cards", "Reds")}
@@ -474,7 +474,7 @@ function RecordsSection({
           label="Most Own Goals"
           value={rankByStat("out_own_goals", "OG")[0]?.value ?? "—"}
           sub={rankByStat("out_own_goals", "OG")[0]?.name}
-          icon={<Skull className="w-5 h-5" />}
+          icon={<AlertOctagon className="w-5 h-5" />}
           dialogTitle="Top 5 · Most Own Goals"
           valueHeader="OG"
           rows={rankByStat("out_own_goals", "OG")}
@@ -492,14 +492,14 @@ function RecordsSection({
           label="Most GWs at the Bottom"
           value={positionCounts.botId?.[1] ?? "—"}
           sub={positionCounts.botId ? mById(positionCounts.botId[0])?.team_name : ""}
-          icon={<Skull className="w-5 h-5" />}
+          icon={<ArrowDown className="w-5 h-5" />}
           dialogTitle="Top 5 · Most Gameweeks in Last"
           valueHeader="Gameweeks"
           rows={positionTop5("last")}
         />
       </div>
 
-      <StatExplorer teamStats={d.teamStats} />
+      <StatExplorer teamStats={d.teamStats} managers={d.managers} />
     </section>
   );
 }
