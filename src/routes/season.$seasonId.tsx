@@ -999,9 +999,13 @@ function SectionTitle({ kicker, title }: { kicker: string; title: string }) {
   );
 }
 
-function Flag({ className }: { className?: string }) {
-  // tiny icon shim so we don't need another import
-  return <span className={className}>🟨</span>;
+function CardIcon({ color, className = "w-5 h-5" }: { color: "yellow" | "red"; className?: string }) {
+  const fill = color === "yellow" ? "#facc15" : "#dc2626";
+  return (
+    <svg viewBox="0 0 16 22" className={className} aria-hidden>
+      <rect x="1" y="1" width="14" height="20" rx="2" fill={fill} stroke="rgba(0,0,0,0.25)" strokeWidth="0.6" />
+    </svg>
+  );
 }
 
 function Skel() {
