@@ -273,7 +273,7 @@ function TeamPage() {
 
       {/* Season Hist */}
       <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-        <SectionTitle kicker="Season by Season" title="The Journey" />
+        <SectionTitle kicker="Season History" title="The Journey so far" />
         <div className="premium-card rounded-lg overflow-x-auto mt-6">
           <table className="w-full text-sm">
             <thead className="bg-card/60 text-xs uppercase tracking-wider text-muted-foreground">
