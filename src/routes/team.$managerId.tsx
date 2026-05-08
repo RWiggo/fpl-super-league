@@ -432,15 +432,6 @@ function TeamPage() {
         </section>
       )}
 
-      {/* Legends */}
-      {d.legends.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-          <SectionTitle kicker="Immortals" title="All-Time XI" />
-          <div className="mt-8">
-            <FormationPitch players={d.legends} />
-          </div>
-        </section>
-      )}
 
       {/* Player History */}
       {d.alltimePlayers.length > 0 && (
