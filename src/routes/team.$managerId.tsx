@@ -77,12 +77,30 @@ function TeamPage() {
   const [totsSeason, setTotsSeason] = useState<string>("");
   useEffect(() => { if (d?.tots?.length && !totsSeason) setTotsSeason(d.tots[0].season_id); }, [d]);
 
-  const filteredPlayers = useMemo(() => {
-    if (!d) return [];
-    let p = d.alltimePlayers as any[];
-    if (posFilter) p = p.filter((x) => x.position === posFilter);
-    return [...p].sort((a, b) => (b.total_fantasy_points ?? 0) - (a.total_fantasy_points ?? 0));
-  }, [d, posFilter]);
+  // Player search: club -> players from history; selected player aggregated stats
+  const clubsInSquad = useMemo(() => {
+    if (!d) return [] as string[];
+    return [...new Set((d.history as any[]).map((h) => h.club).filter(Boolean))].sort();
+  }, [d]);
+  const playersForClub = useMemo(() => {
+    if (!d || !searchClub) return [] as string[];
+    return [...new Set((d.history as any[]).filter((h) => h.club === searchClub).map((h) => h.player_name))].sort();
+  }, [d, searchClub]);
+  const selectedPlayerData = useMemo(() => {
+    if (!d || !searchPlayer) return null;
+    const rows = (d.history as any[]).filter((h) => h.player_name === searchPlayer);
+    if (!rows.length) return null;
+    const allTime = (d.alltimePlayers as any[]).find((p) => p.player_name === searchPlayer);
+    const totalPts = rows.reduce((a, r) => a + Number(r.fantasy_points ?? 0), 0);
+    const totalGames = rows.reduce((a, r) => a + Number(r.games_played ?? 0), 0);
+    const totalMins = rows.reduce((a, r) => a + Number(r.minutes ?? 0), 0);
+    const ppg = totalGames ? totalPts / totalGames : 0;
+    const seasons = rows.map((r) => r.season_name).join(", ");
+    const clubs = [...new Set(rows.map((r) => r.club))].join(", ");
+    const position = allTime?.position ?? rows[0]?.position;
+    return { totalPts, totalGames, totalMins, ppg, seasons, clubs, position, rows };
+  }, [d, searchPlayer]);
+
 
   if (!d || !d.manager) return <Skel />;
 
