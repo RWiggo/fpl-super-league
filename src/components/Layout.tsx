@@ -97,7 +97,7 @@ export function Layout() {
               {teamsOpen && (
                 <div className="fixed left-0 right-0 top-[68px] bg-[#15164a] border-y border-cyan-500/20 shadow-2xl shadow-black/60">
                   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
-                  <div className="grid grid-cols-3 gap-2.5">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                     {teamsList.map((m) => {
                       const b = getBranding(m.id);
                       const tint = b?.primary ?? "#508cff";
@@ -136,6 +136,7 @@ export function Layout() {
                         </Link>
                       );
                     })}
+                    </div>
                   </div>
                 </div>
               )}
