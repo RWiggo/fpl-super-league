@@ -92,7 +92,7 @@ function SeasonPage() {
   const topWeekly = [...d.weeklyHi].sort((a: any, b: any) => (b.score ?? 0) - (a.score ?? 0))[0];
 
   // Time at top / bottom of league (gw_table)
-  const positionCounts = useMemo(() => {
+  const positionCounts = (() => {
     const top: Record<string, number> = {};
     const bot: Record<string, number> = {};
     d.gwTable.forEach((row: any) => {
@@ -103,10 +103,10 @@ function SeasonPage() {
     const topId = Object.entries(top).sort((a, b) => b[1] - a[1])[0];
     const botId = Object.entries(bot).sort((a, b) => b[1] - a[1])[0];
     return { topId, botId };
-  }, [d.gwTable]);
+  })();
 
   // Most dominant H2H from fixtures
-  const dominantH2H = useMemo(() => {
+  const dominantH2H = (() => {
     const records: Record<string, { winner: string; loser: string; w: number; total: number; pf: number; pa: number }> = {};
     completed.forEach((f: any) => {
       const a = f.home_manager < f.away_manager ? f.home_manager : f.away_manager;
