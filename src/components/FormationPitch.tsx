@@ -88,27 +88,27 @@ function PlayerChip({
   const kit = getKit(kitManagerId);
 
   return (
-    <div className="flex flex-col items-center w-[78px] sm:w-[92px]">
+    <div className="flex flex-col items-center w-[58px] sm:w-[92px]">
       {kit && (
         <div className="mb-1 drop-shadow-[0_3px_6px_rgba(0,0,0,0.55)]">
           {isGK ? (
-            <GoalkeeperKit palette={kit.gk} className="w-14 h-14 sm:w-16 sm:h-16" />
+            <GoalkeeperKit palette={kit.gk} className="w-9 h-9 sm:w-16 sm:h-16" />
           ) : (
             <img
               src={kit.home}
               alt=""
-              className="w-14 h-14 sm:w-16 sm:h-16 object-contain"
+              className="w-9 h-9 sm:w-16 sm:h-16 object-contain"
               loading="lazy"
             />
           )}
         </div>
       )}
-      <div className="bg-background/85 backdrop-blur-sm border border-gold/40 rounded px-2 py-1 text-center w-full shadow-lg">
-        <div className="text-[10px] sm:text-xs font-medium truncate">{player.player_name ?? player.name}</div>
-        {player.club && <div className="text-[8px] uppercase tracking-wider text-muted-foreground truncate">{player.club}</div>}
-        <div className="text-xs sm:text-sm font-display text-gold leading-tight">{Number(points).toFixed(0)}</div>
-        {ppg != null && <div className="text-[8px] text-muted-foreground">{Number(ppg).toFixed(1)} ppg</div>}
-        {managerName && <div className="text-[8px] uppercase tracking-wider text-gold/80 truncate mt-0.5">{managerName}</div>}
+      <div className="bg-background/85 backdrop-blur-sm border border-gold/40 rounded px-1 sm:px-2 py-0.5 sm:py-1 text-center w-full shadow-lg">
+        <div className="text-[9px] sm:text-xs font-medium truncate leading-tight">{player.player_name ?? player.name}</div>
+        {player.club && <div className="text-[7px] sm:text-[8px] uppercase tracking-wider text-muted-foreground truncate">{player.club}</div>}
+        <div className="text-[11px] sm:text-sm font-display text-gold leading-tight">{Number(points).toFixed(0)}</div>
+        {ppg != null && <div className="hidden sm:block text-[8px] text-muted-foreground">{Number(ppg).toFixed(1)} ppg</div>}
+        {managerName && <div className="text-[7px] sm:text-[8px] uppercase tracking-wider text-gold/80 truncate mt-0.5">{managerName}</div>}
       </div>
     </div>
   );
