@@ -65,11 +65,6 @@ export function Layout() {
       .sort((a, b) => a.displayName.localeCompare(b.displayName));
   }, [managers, mst]);
 
-  const navLinks = [
-    { to: "/", label: "Home" },
-    { to: "/history", label: "History" },
-    { to: "/fixtures", label: "Fixtures" },
-  ];
 
   // UCL-style nav link: bold uppercase, animated underline on hover/active.
   const navItemBase =
@@ -215,18 +210,25 @@ export function Layout() {
             </div>
 
             <Link
-              to="/history"
+              to="/records"
               className={`${navItemBase} ${underline} ${underlineHover}`}
               activeProps={{ className: `${navItemBase} ${underline} ${activeUnderline}` }}
             >
-              History
+              Records
             </Link>
             <Link
-              to="/fixtures"
+              to="/h2h"
               className={`${navItemBase} ${underline} ${underlineHover}`}
               activeProps={{ className: `${navItemBase} ${underline} ${activeUnderline}` }}
             >
-              Fixtures
+              H2H
+            </Link>
+            <Link
+              to="/table"
+              className={`${navItemBase} ${underline} ${underlineHover}`}
+              activeProps={{ className: `${navItemBase} ${underline} ${activeUnderline}` }}
+            >
+              Table
             </Link>
           </nav>
 
@@ -306,18 +308,25 @@ export function Layout() {
                 </div>
               </details>
               <Link
-                to="/history"
+                to="/records"
                 onClick={() => setOpen(false)}
                 className="block py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-white/85 hover:text-cyan-300 border-l-2 border-transparent hover:border-cyan-400 pl-3 transition-all border-t border-cyan-500/15 pt-3 mt-2"
               >
-                History
+                Records
               </Link>
               <Link
-                to="/fixtures"
+                to="/h2h"
                 onClick={() => setOpen(false)}
                 className="block py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-white/85 hover:text-cyan-300 border-l-2 border-transparent hover:border-cyan-400 pl-3 transition-all"
               >
-                Fixtures
+                H2H
+              </Link>
+              <Link
+                to="/table"
+                onClick={() => setOpen(false)}
+                className="block py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-white/85 hover:text-cyan-300 border-l-2 border-transparent hover:border-cyan-400 pl-3 transition-all"
+              >
+                Table
               </Link>
             </div>
           </div>

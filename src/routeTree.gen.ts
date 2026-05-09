@@ -9,20 +9,26 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as HistoryRouteImport } from './routes/history'
-import { Route as FixturesRouteImport } from './routes/fixtures'
+import { Route as TableRouteImport } from './routes/table'
+import { Route as RecordsRouteImport } from './routes/records'
+import { Route as H2hRouteImport } from './routes/h2h'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TeamManagerIdRouteImport } from './routes/team.$managerId'
 import { Route as SeasonSeasonIdRouteImport } from './routes/season.$seasonId'
 
-const HistoryRoute = HistoryRouteImport.update({
-  id: '/history',
-  path: '/history',
+const TableRoute = TableRouteImport.update({
+  id: '/table',
+  path: '/table',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FixturesRoute = FixturesRouteImport.update({
-  id: '/fixtures',
-  path: '/fixtures',
+const RecordsRoute = RecordsRouteImport.update({
+  id: '/records',
+  path: '/records',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const H2hRoute = H2hRouteImport.update({
+  id: '/h2h',
+  path: '/h2h',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -43,23 +49,26 @@ const SeasonSeasonIdRoute = SeasonSeasonIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/fixtures': typeof FixturesRoute
-  '/history': typeof HistoryRoute
+  '/h2h': typeof H2hRoute
+  '/records': typeof RecordsRoute
+  '/table': typeof TableRoute
   '/season/$seasonId': typeof SeasonSeasonIdRoute
   '/team/$managerId': typeof TeamManagerIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/fixtures': typeof FixturesRoute
-  '/history': typeof HistoryRoute
+  '/h2h': typeof H2hRoute
+  '/records': typeof RecordsRoute
+  '/table': typeof TableRoute
   '/season/$seasonId': typeof SeasonSeasonIdRoute
   '/team/$managerId': typeof TeamManagerIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/fixtures': typeof FixturesRoute
-  '/history': typeof HistoryRoute
+  '/h2h': typeof H2hRoute
+  '/records': typeof RecordsRoute
+  '/table': typeof TableRoute
   '/season/$seasonId': typeof SeasonSeasonIdRoute
   '/team/$managerId': typeof TeamManagerIdRoute
 }
@@ -67,43 +76,59 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/fixtures'
-    | '/history'
+    | '/h2h'
+    | '/records'
+    | '/table'
     | '/season/$seasonId'
     | '/team/$managerId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/fixtures' | '/history' | '/season/$seasonId' | '/team/$managerId'
+  to:
+    | '/'
+    | '/h2h'
+    | '/records'
+    | '/table'
+    | '/season/$seasonId'
+    | '/team/$managerId'
   id:
     | '__root__'
     | '/'
-    | '/fixtures'
-    | '/history'
+    | '/h2h'
+    | '/records'
+    | '/table'
     | '/season/$seasonId'
     | '/team/$managerId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  FixturesRoute: typeof FixturesRoute
-  HistoryRoute: typeof HistoryRoute
+  H2hRoute: typeof H2hRoute
+  RecordsRoute: typeof RecordsRoute
+  TableRoute: typeof TableRoute
   SeasonSeasonIdRoute: typeof SeasonSeasonIdRoute
   TeamManagerIdRoute: typeof TeamManagerIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/history': {
-      id: '/history'
-      path: '/history'
-      fullPath: '/history'
-      preLoaderRoute: typeof HistoryRouteImport
+    '/table': {
+      id: '/table'
+      path: '/table'
+      fullPath: '/table'
+      preLoaderRoute: typeof TableRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/fixtures': {
-      id: '/fixtures'
-      path: '/fixtures'
-      fullPath: '/fixtures'
-      preLoaderRoute: typeof FixturesRouteImport
+    '/records': {
+      id: '/records'
+      path: '/records'
+      fullPath: '/records'
+      preLoaderRoute: typeof RecordsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/h2h': {
+      id: '/h2h'
+      path: '/h2h'
+      fullPath: '/h2h'
+      preLoaderRoute: typeof H2hRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -132,8 +157,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  FixturesRoute: FixturesRoute,
-  HistoryRoute: HistoryRoute,
+  H2hRoute: H2hRoute,
+  RecordsRoute: RecordsRoute,
+  TableRoute: TableRoute,
   SeasonSeasonIdRoute: SeasonSeasonIdRoute,
   TeamManagerIdRoute: TeamManagerIdRoute,
 }

@@ -121,7 +121,7 @@ function Home() {
                 Three seasons. One archive. Every champion, every record, every legend.
               </p>
               <div className="flex flex-wrap gap-3">
-                <Link to="/history" className="px-7 py-3 bg-primary text-primary-foreground font-semibold uppercase tracking-[0.18em] text-xs rounded hover:opacity-90 transition primary-glow">
+                <Link to="/records" className="px-7 py-3 bg-primary text-primary-foreground font-semibold uppercase tracking-[0.18em] text-xs rounded hover:opacity-90 transition primary-glow">
                   Enter The Archive
                 </Link>
                 {currentSeason && (
@@ -240,7 +240,7 @@ function Home() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-border/50">
         <div className="flex items-end justify-between flex-wrap gap-4 mb-10">
           <SectionHeader kicker="Eternal Standings" title="All-Time Top 5" inline />
-          <Link to="/history" className="text-sm uppercase tracking-wider text-gold hover:underline">Full Table →</Link>
+          <Link to="/table" className="text-sm uppercase tracking-wider text-gold hover:underline">Full Table →</Link>
         </div>
         <div className="grid gap-3">
           {data.alltime.slice(0, 5).map((row: any, i: number) => {
