@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/StatCard";
 import { getBranding } from "@/lib/managerBranding";
-import { Trophy, Crown, Medal, ArrowUp, ArrowDown, ChevronsUpDown } from "lucide-react";
+import { Trophy, Crown, Medal, ArrowUp, ArrowDown, ChevronsUpDown, X } from "lucide-react";
 import logo from "@/assets/fpl-super-league-logo.png";
 
 export const Route = createFileRoute("/table")({
@@ -21,26 +21,30 @@ type SortKey =
   | "pf" | "pa" | "pd" | "ppg" | "pts" | "winpct" | "best" | "titles";
 
 const COLS: { key: SortKey; label: string; tip: string; align: "left" | "center" | "right" }[] = [
-  { key: "rank", label: "#", tip: "Rank by League Points", align: "left" },
+  { key: "rank", label: "#", tip: "Rank", align: "left" },
   { key: "seasons", label: "S", tip: "Seasons Played", align: "center" },
   { key: "played", label: "P", tip: "Matches Played", align: "center" },
   { key: "wins", label: "W", tip: "Wins", align: "center" },
   { key: "draws", label: "D", tip: "Draws", align: "center" },
   { key: "losses", label: "L", tip: "Losses", align: "center" },
-  { key: "pf", label: "PF", tip: "Points For (fantasy points scored)", align: "right" },
-  { key: "pa", label: "PA", tip: "Points Against", align: "right" },
-  { key: "pd", label: "PD", tip: "Points Difference", align: "right" },
-  { key: "ppg", label: "PPG", tip: "Points For per game", align: "right" },
+  { key: "pf", label: "PF", tip: "FPL Points For", align: "right" },
+  { key: "pa", label: "PA", tip: "FPL Points Against", align: "right" },
+  { key: "pd", label: "PD", tip: "FPL Points Difference", align: "right" },
+  { key: "ppg", label: "PPG", tip: "FPL Points per Game", align: "right" },
   { key: "winpct", label: "Win%", tip: "Win Percentage", align: "right" },
   { key: "best", label: "Best", tip: "Best season finish", align: "center" },
-  { key: "titles", label: "T", tip: "Titles won", align: "center" },
-  { key: "pts", label: "Pts", tip: "Total League Points", align: "right" },
+  { key: "titles", label: "T", tip: "Titles", align: "center" },
+  { key: "pts", label: "Pts", tip: "Total League Points (3W/1D)", align: "right" },
 ];
+
+type AwardKey = "wins" | "pf" | "pa" | "ppg" | "winpct" | "titles" | "pts";
 
 function TablePage() {
   const [d, setD] = useState<any>(null);
-  const [sortKey, setSortKey] = useState<SortKey>("rank");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  // Default: sort by PPG (most representative single stat)
+  const [sortKey, setSortKey] = useState<SortKey>("ppg");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [openAward, setOpenAward] = useState<AwardKey | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -52,7 +56,7 @@ function TablePage() {
 
   const enriched = useMemo(() => {
     if (!d) return [];
-    const baseRanked = [...d.alltime]
+    return [...d.alltime]
       .sort((a, b) => (b.total_league_points ?? 0) - (a.total_league_points ?? 0))
       .map((r, i) => {
         const w = r.total_wins ?? 0;
@@ -75,7 +79,6 @@ function TablePage() {
           _titles: r.titles_won ?? 0,
         };
       });
-    return baseRanked;
   }, [d]);
 
   const rows = useMemo(() => {
@@ -103,24 +106,32 @@ function TablePage() {
   if (!d) return <div className="max-w-7xl mx-auto px-4 py-20"><Skeleton className="h-96" /></div>;
 
   const mById = (id: any) => d.managers.find((m: any) => String(m.id) === String(id));
-  const podium = enriched.slice(0, 3);
+  const tintFor = (id: any) => getBranding(String(id))?.primary ?? "#d4af37";
 
-  // Most wins / most pf / best win% — header awards strip
-  const mostWins = [...enriched].sort((a, b) => b._wins - a._wins)[0];
-  const mostPF = [...enriched].sort((a, b) => b._pf - a._pf)[0];
-  const bestWinPct = [...enriched].filter(r => r._played >= 20).sort((a, b) => b._winpct - a._winpct)[0];
-  const totalGames = enriched.reduce((s, r) => s + r._played, 0) / 2; // each game is 2 sides
+  // Award definitions — each is a top-5 leaderboard
+  type AwardDef = { key: AwardKey; label: string; sortBy: (r: any) => number; format: (r: any) => string; valueLabel: string };
+  const AWARDS: AwardDef[] = [
+    { key: "pts", label: "League Points", sortBy: (r) => r._pts, format: (r) => String(r._pts), valueLabel: "Pts" },
+    { key: "ppg", label: "Points / Game", sortBy: (r) => r._ppg, format: (r) => r._ppg.toFixed(1), valueLabel: "PPG" },
+    { key: "wins", label: "Most Wins", sortBy: (r) => r._wins, format: (r) => String(r._wins), valueLabel: "Wins" },
+    { key: "pf", label: "Points For", sortBy: (r) => r._pf, format: (r) => Math.round(r._pf).toLocaleString(), valueLabel: "PF" },
+    { key: "winpct", label: "Win %", sortBy: (r) => r._played >= 20 ? r._winpct : -1, format: (r) => `${r._winpct.toFixed(1)}%`, valueLabel: "Win%" },
+    { key: "titles", label: "Most Titles", sortBy: (r) => r._titles, format: (r) => String(r._titles), valueLabel: "Titles" },
+  ];
+  const top5For = (a: AwardDef) => [...enriched].sort((x, y) => a.sortBy(y) - a.sortBy(x)).slice(0, 5);
+  const leaderFor = (a: AwardDef) => top5For(a)[0];
+
+  // Header podium = top 3 by League Points (the canonical ranking)
+  const podium = [...enriched].sort((a, b) => b._pts - a._pts).slice(0, 3);
+  const totalGames = enriched.reduce((s, r) => s + r._played, 0) / 2;
   const totalPoints = enriched.reduce((s, r) => s + r._pf, 0);
 
   const setSort = (k: SortKey) => {
-    if (sortKey === k) {
-      setSortDir(sortDir === "asc" ? "desc" : "asc");
-    } else {
-      setSortKey(k);
-      // Sensible defaults: rank/best/losses ascending; everything else descending
-      setSortDir(k === "rank" || k === "best" || k === "losses" ? "asc" : "desc");
-    }
+    if (sortKey === k) setSortDir(sortDir === "asc" ? "desc" : "asc");
+    else { setSortKey(k); setSortDir(k === "rank" || k === "best" || k === "losses" ? "asc" : "desc"); }
   };
+
+  const openAwardDef = AWARDS.find((a) => a.key === openAward) ?? null;
 
   return (
     <div>
@@ -160,97 +171,27 @@ function TablePage() {
         </div>
       </section>
 
-      {/* PODIUM */}
-      <section className="max-w-7xl mx-auto px-4 py-12 md:py-16">
-        <div className="grid grid-cols-3 gap-3 md:gap-6 items-end max-w-4xl mx-auto">
-          {[1, 0, 2].map((idx) => {
-            const r = podium[idx];
-            if (!r) return <div key={idx} />;
-            const m = mById(r.manager_id);
-            const b = getBranding(String(r.manager_id));
-            const tint = b?.primary ?? "#d4af37";
-            const heights = [180, 240, 150];
-            const place = idx + 1;
-            const icon = idx === 0 ? <Crown className="w-7 h-7 md:w-9 md:h-9" /> :
-              idx === 1 ? <Trophy className="w-6 h-6 md:w-8 md:h-8" /> :
-              <Medal className="w-6 h-6 md:w-8 md:h-8" />;
-            return (
-              <Link key={r.manager_id} to="/team/$managerId" params={{ managerId: String(r.manager_id) }}
-                className="flex flex-col items-center group">
-                <div className="mb-3" style={{ color: tint }}>{icon}</div>
-                {b?.badge ? (
-                  <img src={b.badge} alt="" className="w-12 h-12 md:w-16 md:h-16 object-contain mb-2 drop-shadow-lg group-hover:scale-110 transition" />
-                ) : (
-                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-full mb-2 flex items-center justify-center font-bold text-white text-xl" style={{ background: tint }}>
-                    {(m?.name ?? r.manager_name ?? "?").charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <div className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-center capitalize text-white mb-1 px-1 truncate max-w-full">
-                  {m?.name ?? r.manager_name}
-                </div>
-                <div className="font-display text-xl md:text-3xl text-gold mb-3">{r._pts}</div>
-                <div
-                  className="w-full rounded-t-lg flex items-start justify-center pt-3 font-display text-2xl md:text-4xl text-white relative overflow-hidden"
-                  style={{
-                    height: `${heights[idx]}px`,
-                    background: `linear-gradient(180deg, ${tint}cc 0%, ${tint}55 100%)`,
-                    border: `1px solid ${tint}`,
-                    borderBottom: 0,
-                  }}
-                >
-                  <span className="relative z-10">{place}</span>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* Awards strip */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-10 max-w-4xl mx-auto">
-          <AwardChip label="Most Wins" value={mostWins?._wins ?? 0} who={mById(mostWins?.manager_id)?.name ?? mostWins?.manager_name} tint="hsl(195 80% 55%)" />
-          <AwardChip label="Most Points For" value={Math.round(mostPF?._pf ?? 0).toLocaleString()} who={mById(mostPF?.manager_id)?.name ?? mostPF?.manager_name} tint="hsl(15 85% 55%)" />
-          <AwardChip label="Best Win %" value={`${(bestWinPct?._winpct ?? 0).toFixed(1)}%`} who={mById(bestWinPct?.manager_id)?.name ?? bestWinPct?.manager_name} tint="hsl(145 70% 50%)" />
-        </div>
-      </section>
-
-      {/* FULL TABLE */}
-      <section className="max-w-7xl mx-auto px-4 pb-20">
-        <div className="flex items-end justify-between mb-6 flex-wrap gap-3">
+      {/* FULL TABLE — first thing after hero */}
+      <section className="max-w-7xl mx-auto px-4 pt-12 md:pt-16">
+        <div className="flex items-end justify-between mb-3 flex-wrap gap-3">
           <div>
             <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">The Full Standings</div>
             <h2 className="font-display text-3xl md:text-4xl">All-Time Rankings</h2>
-          </div>
-          <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
-            Tap any column to sort
+            <p className="text-sm text-muted-foreground mt-2">
+              Sorted by <span className="text-gold font-bold">{COLS.find((c) => c.key === sortKey)?.label}</span> — tap any column to re-sort.
+            </p>
           </div>
         </div>
 
         <div className="premium-card rounded-lg overflow-x-auto">
-          <table className="w-full text-sm min-w-[900px]">
-            <thead className="bg-card/60 text-xs uppercase tracking-wider text-muted-foreground sticky top-0">
+          <table className="w-full text-sm min-w-[1000px]">
+            <thead className="bg-card/80 text-xs uppercase tracking-wider text-muted-foreground sticky top-0 z-10">
               <tr>
-                {COLS.map((c) => {
-                  const active = sortKey === c.key;
-                  return (
-                    <th
-                      key={c.key}
-                      className={`p-3 cursor-pointer select-none hover:text-white transition text-${c.align} ${active ? "text-gold" : ""}`}
-                      onClick={() => setSort(c.key)}
-                      title={c.tip}
-                    >
-                      <span className={`inline-flex items-center gap-1 ${c.align === "right" ? "justify-end w-full" : ""}`}>
-                        {c.label}
-                        {active
-                          ? (sortDir === "asc"
-                            ? <ArrowUp className="w-3 h-3" />
-                            : <ArrowDown className="w-3 h-3" />)
-                          : <ChevronsUpDown className="w-3 h-3 opacity-40" />}
-                      </span>
-                    </th>
-                  );
-                })}
+                <SortTh col={COLS[0]} active={sortKey === "rank"} dir={sortDir} onClick={() => setSort("rank")} />
                 <th className="p-3 text-left">Manager</th>
+                {COLS.slice(1).map((c) => (
+                  <SortTh key={c.key} col={c} active={sortKey === c.key} dir={sortDir} onClick={() => setSort(c.key)} />
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -269,6 +210,19 @@ function TablePage() {
                         <span className={`font-display text-lg ${isTop3 ? "text-gold" : ""}`}>{r._rank}</span>
                       </div>
                     </td>
+                    <td className="p-3 capitalize">
+                      <Link to="/team/$managerId" params={{ managerId: String(r.manager_id) }}
+                        className="hover:text-gold flex items-center gap-2.5 min-w-[180px]">
+                        {b?.badge ? (
+                          <img src={b.badge} alt="" className="w-8 h-8 object-contain flex-shrink-0" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: tint }}>
+                            {(m?.name ?? r.manager_name ?? "?").charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <span className="whitespace-nowrap font-medium">{m?.name ?? r.manager_name}</span>
+                      </Link>
+                    </td>
                     <td className="text-center p-3">{r.seasons_played ?? "—"}</td>
                     <td className="text-center p-3">{r._played}</td>
                     <td className="text-center p-3 text-emerald-400">{r._wins}</td>
@@ -279,7 +233,7 @@ function TablePage() {
                     <td className={`text-right p-3 tabular-nums font-medium ${pdPositive ? "text-emerald-400" : pdZero ? "text-muted-foreground" : "text-red-400"}`}>
                       {pdPositive ? "+" : ""}{Math.round(r._pd).toLocaleString()}
                     </td>
-                    <td className="text-right p-3 tabular-nums">{r._ppg.toFixed(1)}</td>
+                    <td className="text-right p-3 tabular-nums font-bold">{r._ppg.toFixed(1)}</td>
                     <td className="text-right p-3 tabular-nums">{r._winpct.toFixed(1)}%</td>
                     <td className="text-center p-3">
                       {r._best ? <span className={r._best === 1 ? "text-gold font-display" : ""}>{ord(r._best)}</span> : "—"}
@@ -292,13 +246,6 @@ function TablePage() {
                       ) : "—"}
                     </td>
                     <td className="text-right p-3 font-display text-gold text-base tabular-nums">{r._pts}</td>
-                    <td className="p-3 capitalize">
-                      <Link to="/team/$managerId" params={{ managerId: String(r.manager_id) }}
-                        className="hover:text-gold flex items-center gap-2">
-                        {b?.badge && <img src={b.badge} alt="" className="w-6 h-6 object-contain" />}
-                        <span className="whitespace-nowrap">{m?.name ?? r.manager_name}</span>
-                      </Link>
-                    </td>
                   </tr>
                 );
               })}
@@ -311,14 +258,191 @@ function TablePage() {
           <span><b className="text-white">S</b> Seasons</span>
           <span><b className="text-white">P</b> Played</span>
           <span><b className="text-white">W/D/L</b> Wins/Draws/Losses</span>
-          <span><b className="text-white">PF/PA/PD</b> Points For/Against/Difference</span>
-          <span><b className="text-white">PPG</b> Points per Game</span>
+          <span><b className="text-white">PF/PA/PD</b> FPL Points For/Against/Difference</span>
+          <span><b className="text-white">PPG</b> FPL Points per Game</span>
           <span><b className="text-white">Best</b> Best season finish</span>
           <span><b className="text-white">T</b> Titles</span>
           <span><b className="text-white">Pts</b> League Points (3W/1D)</span>
         </div>
       </section>
+
+      {/* PODIUM — top 3 by League Points, with clear label */}
+      <section className="max-w-7xl mx-auto px-4 py-16 md:py-20 border-t border-border/50 mt-16">
+        <div className="text-center mb-10">
+          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">The Pinnacle</div>
+          <h2 className="font-display text-3xl md:text-4xl">Top 3 — All-Time League Points</h2>
+          <p className="text-sm text-muted-foreground mt-3 max-w-xl mx-auto">
+            Bar height represents total league points (3 for a win, 1 for a draw) accumulated across every season.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3 md:gap-6 items-end max-w-4xl mx-auto">
+          {[1, 0, 2].map((idx) => {
+            const r = podium[idx];
+            if (!r) return <div key={idx} />;
+            const m = mById(r.manager_id);
+            const b = getBranding(String(r.manager_id));
+            const tint = b?.primary ?? "#d4af37";
+            // Scale bar height to actual points (proportional, normalized)
+            const maxPts = podium[0]?._pts ?? 1;
+            const heightPx = 120 + Math.round((r._pts / maxPts) * 140);
+            const place = idx + 1;
+            const icon = idx === 0 ? <Crown className="w-7 h-7 md:w-9 md:h-9" /> :
+              idx === 1 ? <Trophy className="w-6 h-6 md:w-8 md:h-8" /> :
+              <Medal className="w-6 h-6 md:w-8 md:h-8" />;
+            return (
+              <Link key={r.manager_id} to="/team/$managerId" params={{ managerId: String(r.manager_id) }}
+                className="flex flex-col items-center group">
+                <div className="mb-3" style={{ color: tint }}>{icon}</div>
+                {b?.badge ? (
+                  <img src={b.badge} alt="" className="w-12 h-12 md:w-16 md:h-16 object-contain mb-2 drop-shadow-lg group-hover:scale-110 transition" />
+                ) : (
+                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-full mb-2 flex items-center justify-center font-bold text-white text-xl" style={{ background: tint }}>
+                    {(m?.name ?? r.manager_name ?? "?").charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-center capitalize text-white mb-1 px-1 truncate max-w-full">
+                  {m?.name ?? r.manager_name}
+                </div>
+                <div className="font-display text-xl md:text-3xl text-gold mb-1">{r._pts}</div>
+                <div className="text-[9px] uppercase tracking-widest text-muted-foreground mb-3">League Pts</div>
+                <div
+                  className="w-full rounded-t-lg flex items-start justify-center pt-3 font-display text-2xl md:text-4xl text-white relative overflow-hidden"
+                  style={{
+                    height: `${heightPx}px`,
+                    background: `linear-gradient(180deg, ${tint}cc 0%, ${tint}55 100%)`,
+                    border: `1px solid ${tint}`,
+                    borderBottom: 0,
+                  }}
+                >
+                  <span className="relative z-10">{place}</span>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* AWARDS — clickable, team-coloured */}
+      <section className="max-w-7xl mx-auto px-4 pb-20 border-t border-border/50 pt-16">
+        <div className="text-center mb-10">
+          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">Category Leaders</div>
+          <h2 className="font-display text-3xl md:text-4xl">All-Time Awards</h2>
+          <p className="text-sm text-muted-foreground mt-3">Tap any award to see the top 5</p>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+          {AWARDS.map((a) => {
+            const leader = leaderFor(a);
+            if (!leader) return null;
+            const m = mById(leader.manager_id);
+            const b = getBranding(String(leader.manager_id));
+            const tint = tintFor(leader.manager_id);
+            return (
+              <button
+                key={a.key}
+                onClick={() => setOpenAward(a.key)}
+                className="text-left rounded-xl p-5 border border-white/10 hover:border-white/40 transition relative overflow-hidden group"
+                style={{
+                  background: `linear-gradient(135deg, ${tint}45 0%, ${tint}12 55%, rgba(10,17,48,0.7) 100%)`,
+                }}
+              >
+                <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full blur-3xl opacity-40 group-hover:opacity-60 transition" style={{ background: tint }} />
+                <div className="relative">
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-white/70 font-bold">{a.label}</div>
+                  <div className="font-display text-3xl md:text-4xl text-white mt-1 leading-none">{a.format(leader)}</div>
+                  <div className="flex items-center gap-2 mt-4">
+                    {b?.badge ? (
+                      <img src={b.badge} alt="" className="w-7 h-7 object-contain" />
+                    ) : (
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ background: tint }}>
+                        {(m?.name ?? leader.manager_name ?? "?").charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <span className="text-sm font-bold capitalize text-white truncate">{m?.name ?? leader.manager_name}</span>
+                  </div>
+                  <div className="text-[10px] uppercase tracking-widest mt-3 opacity-70" style={{ color: tint }}>
+                    Tap for top 5 →
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Award top-5 modal */}
+      {openAwardDef && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setOpenAward(null)}
+        >
+          <div
+            className="bg-card border border-border rounded-xl max-w-md w-full p-6 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setOpenAward(null)}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-white transition"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="text-xs uppercase tracking-[0.3em] text-gold">Top 5</div>
+            <h3 className="font-display text-2xl md:text-3xl mt-1 mb-5">{openAwardDef.label}</h3>
+            <ol className="space-y-2">
+              {top5For(openAwardDef).map((r, i) => {
+                const m = mById(r.manager_id);
+                const b = getBranding(String(r.manager_id));
+                const tint = tintFor(r.manager_id);
+                return (
+                  <li key={r.manager_id}>
+                    <Link
+                      to="/team/$managerId"
+                      params={{ managerId: String(r.manager_id) }}
+                      onClick={() => setOpenAward(null)}
+                      className="flex items-center gap-3 p-3 rounded-lg border border-white/10 hover:border-white/40 transition"
+                      style={{ background: `linear-gradient(90deg, ${tint}25 0%, transparent 80%)` }}
+                    >
+                      <span className={`font-display text-xl w-6 text-center ${i === 0 ? "text-gold" : "text-muted-foreground"}`}>
+                        {i + 1}
+                      </span>
+                      {b?.badge ? (
+                        <img src={b.badge} alt="" className="w-9 h-9 object-contain" />
+                      ) : (
+                        <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ background: tint }}>
+                          {(m?.name ?? r.manager_name ?? "?").charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <span className="flex-1 capitalize font-medium truncate">{m?.name ?? r.manager_name}</span>
+                      <span className="font-display text-lg text-gold tabular-nums">{openAwardDef.format(r)}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+function SortTh({ col, active, dir, onClick }: { col: typeof COLS[number]; active: boolean; dir: "asc" | "desc"; onClick: () => void }) {
+  return (
+    <th
+      className={`p-3 cursor-pointer select-none hover:text-white transition text-${col.align} ${active ? "text-gold" : ""}`}
+      onClick={onClick}
+      title={col.tip}
+    >
+      <span className={`inline-flex items-center gap-1 ${col.align === "right" ? "justify-end w-full" : ""}`}>
+        {col.label}
+        {active
+          ? (dir === "asc" ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)
+          : <ChevronsUpDown className="w-3 h-3 opacity-40" />}
+      </span>
+    </th>
   );
 }
 
@@ -327,17 +451,6 @@ function MiniStat({ label, value }: { label: string; value: any }) {
     <div className="border-l-2 border-gold pl-3">
       <div className="font-display text-2xl md:text-3xl text-gold">{value}</div>
       <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
-    </div>
-  );
-}
-
-function AwardChip({ label, value, who, tint }: { label: string; value: any; who?: string; tint: string }) {
-  return (
-    <div className="rounded-lg p-4 border border-white/10 relative overflow-hidden"
-      style={{ background: `linear-gradient(135deg, ${tint}30 0%, ${tint}05 100%)` }}>
-      <div className="text-[10px] uppercase tracking-[0.18em] text-white/70 font-bold">{label}</div>
-      <div className="font-display text-2xl text-white mt-1">{value}</div>
-      {who && <div className="text-[11px] uppercase tracking-wider mt-1 capitalize" style={{ color: tint }}>{who}</div>}
     </div>
   );
 }
