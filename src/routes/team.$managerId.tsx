@@ -189,8 +189,9 @@ function TeamPage() {
     club: p.club ?? topClubFor(p.player_name),
   }));
   const sortedPlayers = [...enrichedPlayers].sort((a, b) => (b.total_fantasy_points ?? 0) - (a.total_fantasy_points ?? 0));
-  const top5Players = sortedPlayers.slice(0, 5);
-  const bottom5Players = [...sortedPlayers].reverse().slice(0, 5);
+  // We compute season counts later; defer enrichment via a post-step
+  const top5PlayersRaw = sortedPlayers.slice(0, 5);
+  const bottom5PlayersRaw = [...sortedPlayers].reverse().slice(0, 5);
 
   const longest = (rows: any[]) => [...rows].sort((a, b) => (b.streak_length ?? 0) - (a.streak_length ?? 0))[0];
   const bestWinRun = longest((d.streaks as any[]).filter((r) => r.outcome === "W"));
