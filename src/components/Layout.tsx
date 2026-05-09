@@ -282,12 +282,27 @@ export function Layout() {
               </details>
               <details className="border-t border-cyan-500/15 pt-2">
                 <summary className="py-2 text-xs font-bold uppercase tracking-[0.18em] cursor-pointer text-white/85">Seasons</summary>
-                <div className="pl-4">
-                  {seasons.map((s) => (
-                    <Link key={s.id} to="/season/$seasonId" params={{ seasonId: s.id }} onClick={() => setOpen(false)} className="block py-1.5 text-sm text-white/75 hover:text-cyan-300">
-                      {s.name}
-                    </Link>
-                  ))}
+                <div className="grid grid-cols-2 gap-2 pt-2 pb-1">
+                  {seasons.map((s, i) => {
+                    const { accent } = seasonAccent(s.id);
+                    const isLive = i === seasons.length - 1;
+                    return (
+                      <Link
+                        key={s.id}
+                        to="/season/$seasonId"
+                        params={{ seasonId: s.id }}
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-2 px-2 py-2 rounded-md border border-white/10 hover:border-white/40 transition"
+                        style={{ background: `linear-gradient(120deg, ${accent}30 0%, ${accent}10 60%, rgba(10,17,48,0.5) 100%)` }}
+                      >
+                        <SeasonCrest id={s.id} size={28} />
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-white leading-tight truncate flex-1">{s.name}</span>
+                        {isLive && (
+                          <span className="text-[8px] bg-red-500 text-white px-1 py-0.5 rounded font-bold tracking-wider">LIVE</span>
+                        )}
+                      </Link>
+                    );
+                  })}
                 </div>
               </details>
               <Link
