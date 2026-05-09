@@ -8,6 +8,7 @@ import { Trophy, Crown, Flame, Target, Zap, TrendingDown, Award, ShieldOff, Flag
 import { getBranding } from "@/lib/managerBranding";
 import { getNickname } from "@/lib/managerNicknames";
 import { getPlClubBadge } from "@/lib/plClubBadges";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Route = createFileRoute("/team/$managerId")({
   component: TeamPage,
