@@ -524,6 +524,19 @@ function MiniStat({ label, value }: { label: string; value: any }) {
   );
 }
 
+function MobileStat({ label, value, valueClass = "" }: { label: string; value: any; valueClass?: string }) {
+  return (
+    <div className="bg-background/45 rounded px-0.5 py-1 min-w-0">
+      <div className="text-[7px] uppercase text-muted-foreground">{label}</div>
+      <div className={`font-bold tabular-nums truncate ${valueClass}`}>{value}</div>
+    </div>
+  );
+}
+
+function defaultSortDir(k: SortKey): "asc" | "desc" {
+  return k === "rank" || k === "best" || k === "losses" ? "asc" : "desc";
+}
+
 function ord(n: number) {
   const s = ["th", "st", "nd", "rd"], v = n % 100;
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
