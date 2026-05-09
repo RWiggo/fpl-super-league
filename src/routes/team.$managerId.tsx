@@ -735,7 +735,14 @@ function PlayerLeaderboard({ title, subtitle, players, icon, accent }: { title: 
                 </td>
                 <td className="p-3 font-medium">
                   <div>{p.player_name ?? p.name}</div>
-                  {p.club && <div className="text-[10px] uppercase tracking-wider text-muted-foreground/80 mt-0.5">{p.club}</div>}
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground/80 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                    {p.club && <span>{p.club}</span>}
+                    {p.seasonCount != null && (
+                      <span className="px-1.5 py-px rounded-sm bg-muted/30 border border-border/40 text-muted-foreground">
+                        {p.seasonCount} {p.seasonCount === 1 ? "season" : "seasons"}
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="p-3 w-14 text-center">
                   <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${POSITION_STYLES[p.position] ?? "bg-muted/20 text-muted-foreground border-border"}`}>
