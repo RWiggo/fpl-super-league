@@ -433,15 +433,15 @@ function TablePage() {
 function SortTh({ col, active, dir, onClick }: { col: typeof COLS[number]; active: boolean; dir: "asc" | "desc"; onClick: () => void }) {
   return (
     <th
-      className={`p-1 sm:p-3 cursor-pointer select-none hover:text-white transition text-${col.align} ${active ? "text-gold" : ""}`}
+      className={`px-0.5 py-1 sm:p-3 cursor-pointer select-none hover:text-white transition text-${col.align} ${active ? "text-gold" : ""}`}
       onClick={onClick}
       title={col.tip}
     >
-      <span className={`inline-flex items-center gap-1 ${col.align === "right" ? "justify-end w-full" : ""}`}>
+      <span className={`inline-flex items-center gap-0.5 sm:gap-1 ${col.align === "right" ? "justify-end w-full" : col.align === "center" ? "justify-center w-full" : ""}`}>
         {col.label}
         {active
-          ? (dir === "asc" ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)
-          : <ChevronsUpDown className="w-3 h-3 opacity-40" />}
+          ? (dir === "asc" ? <ArrowUp className="hidden sm:block w-3 h-3" /> : <ArrowDown className="hidden sm:block w-3 h-3" />)
+          : <ChevronsUpDown className="hidden sm:block w-3 h-3 opacity-40" />}
       </span>
     </th>
   );
