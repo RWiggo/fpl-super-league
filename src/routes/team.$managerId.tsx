@@ -189,8 +189,9 @@ function TeamPage() {
     club: p.club ?? topClubFor(p.player_name),
   }));
   const sortedPlayers = [...enrichedPlayers].sort((a, b) => (b.total_fantasy_points ?? 0) - (a.total_fantasy_points ?? 0));
-  const top5Players = sortedPlayers.slice(0, 5);
-  const bottom5Players = [...sortedPlayers].reverse().slice(0, 5);
+  // We compute season counts later; defer enrichment via a post-step
+  const top5PlayersRaw = sortedPlayers.slice(0, 5);
+  const bottom5PlayersRaw = [...sortedPlayers].reverse().slice(0, 5);
 
   const longest = (rows: any[]) => [...rows].sort((a, b) => (b.streak_length ?? 0) - (a.streak_length ?? 0))[0];
   const bestWinRun = longest((d.streaks as any[]).filter((r) => r.outcome === "W"));
@@ -207,8 +208,31 @@ function TeamPage() {
   // include unused clubs with 0
   for (const c of (d.allClubs as string[])) if (!clubAgg.has(c)) clubAgg.set(c, 0);
   const clubsRanked = [...clubAgg.entries()].map(([club, pts]) => ({ club, pts })).sort((a, b) => b.pts - a.pts);
-  const top5Clubs = clubsRanked.slice(0, 5);
-  const bottom5Clubs = [...clubsRanked].reverse().slice(0, 5);
+
+  // Player → distinct seasons in this manager's squad
+  const playerSeasonsMap = new Map<string, Set<any>>();
+  for (const r of (d.history as any[])) {
+    if (!r.player_name) continue;
+    const key = r.season_id ?? r.season_name;
+    if (key == null) continue;
+    if (!playerSeasonsMap.has(r.player_name)) playerSeasonsMap.set(r.player_name, new Set());
+    playerSeasonsMap.get(r.player_name)!.add(key);
+  }
+  const seasonsForPlayer = (name: string) => playerSeasonsMap.get(name)?.size ?? 0;
+
+  // Club → distinct players the manager used from that club
+  const clubPlayersMap = new Map<string, Set<string>>();
+  for (const r of (d.history as any[])) {
+    if (!r.club || !r.player_name) continue;
+    if (!clubPlayersMap.has(r.club)) clubPlayersMap.set(r.club, new Set());
+    clubPlayersMap.get(r.club)!.add(r.player_name);
+  }
+  const playersFromClub = (club: string) => clubPlayersMap.get(club)?.size ?? 0;
+
+  const top5Clubs = clubsRanked.slice(0, 5).map((c) => ({ ...c, playerCount: playersFromClub(c.club) }));
+  const bottom5Clubs = [...clubsRanked].reverse().slice(0, 5).map((c) => ({ ...c, playerCount: playersFromClub(c.club) }));
+  const top5Players = top5PlayersRaw.map((p) => ({ ...p, seasonCount: seasonsForPlayer(p.player_name) }));
+  const bottom5Players = bottom5PlayersRaw.map((p) => ({ ...p, seasonCount: seasonsForPlayer(p.player_name) }));
 
   // All-time XI in legal formation
   const posMap: Record<string, "GK" | "DEF" | "MID" | "FWD"> = { G: "GK", GK: "GK", GKP: "GK", D: "DEF", DEF: "DEF", M: "MID", MID: "MID", F: "FWD", FWD: "FWD" };
@@ -711,7 +735,14 @@ function PlayerLeaderboard({ title, subtitle, players, icon, accent }: { title: 
                 </td>
                 <td className="p-3 font-medium">
                   <div>{p.player_name ?? p.name}</div>
-                  {p.club && <div className="text-[10px] uppercase tracking-wider text-muted-foreground/80 mt-0.5">{p.club}</div>}
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground/80 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                    {p.club && <span>{p.club}</span>}
+                    {p.seasonCount != null && (
+                      <span className="px-1.5 py-px rounded-sm bg-muted/30 border border-border/40 text-muted-foreground">
+                        {p.seasonCount} {p.seasonCount === 1 ? "season" : "seasons"}
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="p-3 w-14 text-center">
                   <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${POSITION_STYLES[p.position] ?? "bg-muted/20 text-muted-foreground border-border"}`}>
@@ -731,7 +762,7 @@ function PlayerLeaderboard({ title, subtitle, players, icon, accent }: { title: 
   );
 }
 
-function ClubLeaderboard({ title, subtitle, rows, accent }: { title: string; subtitle?: string; rows: { club: string; pts: number }[]; accent?: boolean }) {
+function ClubLeaderboard({ title, subtitle, rows, accent }: { title: string; subtitle?: string; rows: { club: string; pts: number; playerCount?: number }[]; accent?: boolean }) {
   const valueClass = accent ? "text-emerald-300" : "text-rose-300";
   const headerAccent = accent ? "text-emerald-300" : "text-rose-300";
   return (
@@ -760,7 +791,12 @@ function ClubLeaderboard({ title, subtitle, rows, accent }: { title: string; sub
                     ) : (
                       <span className="w-8 h-8 shrink-0 rounded-sm bg-muted/30 border border-border/40" aria-hidden />
                     )}
-                    <span className="font-display tracking-wider">{r.club}</span>
+                    <div className="min-w-0">
+                      <div className="font-display tracking-wider truncate">{r.club}</div>
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground/80 mt-0.5">
+                        {r.playerCount ?? 0} {r.playerCount === 1 ? "player used" : "players used"}
+                      </div>
+                    </div>
                   </div>
                 </td>
                 <td className={`p-3 text-right font-display ${valueClass}`}>
