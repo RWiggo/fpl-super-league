@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TableRouteImport } from './routes/table'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TeamManagerIdRouteImport } from './routes/team.$managerId'
 import { Route as SeasonSeasonIdRouteImport } from './routes/season.$seasonId'
 
+const TableRoute = TableRouteImport.update({
+  id: '/table',
+  path: '/table',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,36 +37,47 @@ const SeasonSeasonIdRoute = SeasonSeasonIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/table': typeof TableRoute
   '/season/$seasonId': typeof SeasonSeasonIdRoute
   '/team/$managerId': typeof TeamManagerIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/table': typeof TableRoute
   '/season/$seasonId': typeof SeasonSeasonIdRoute
   '/team/$managerId': typeof TeamManagerIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/table': typeof TableRoute
   '/season/$seasonId': typeof SeasonSeasonIdRoute
   '/team/$managerId': typeof TeamManagerIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/season/$seasonId' | '/team/$managerId'
+  fullPaths: '/' | '/table' | '/season/$seasonId' | '/team/$managerId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/season/$seasonId' | '/team/$managerId'
-  id: '__root__' | '/' | '/season/$seasonId' | '/team/$managerId'
+  to: '/' | '/table' | '/season/$seasonId' | '/team/$managerId'
+  id: '__root__' | '/' | '/table' | '/season/$seasonId' | '/team/$managerId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  TableRoute: typeof TableRoute
   SeasonSeasonIdRoute: typeof SeasonSeasonIdRoute
   TeamManagerIdRoute: typeof TeamManagerIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/table': {
+      id: '/table'
+      path: '/table'
+      fullPath: '/table'
+      preLoaderRoute: typeof TableRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  TableRoute: TableRoute,
   SeasonSeasonIdRoute: SeasonSeasonIdRoute,
   TeamManagerIdRoute: TeamManagerIdRoute,
 }
