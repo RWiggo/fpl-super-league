@@ -224,29 +224,29 @@ function TablePage() {
                         <span className="hidden sm:inline whitespace-nowrap font-medium">{m?.name ?? r.manager_name}</span>
                       </Link>
                     </td>
-                    <td className="text-center p-1 sm:p-3">{r.seasons_played ?? "—"}</td>
-                    <td className="text-center p-1 sm:p-3">{r._played}</td>
-                    <td className="text-center p-1 sm:p-3 text-emerald-400">{r._wins}</td>
-                    <td className="text-center p-1 sm:p-3 text-muted-foreground">{r._draws}</td>
-                    <td className="text-center p-1 sm:p-3 text-red-400/90">{r._losses}</td>
-                    <td className="text-right p-1 sm:p-3 tabular-nums">{Math.round(r._pf).toLocaleString()}</td>
-                    <td className="text-right p-1 sm:p-3 tabular-nums text-muted-foreground">{Math.round(r._pa).toLocaleString()}</td>
-                    <td className={`text-right p-1 sm:p-3 tabular-nums font-medium ${pdPositive ? "text-emerald-400" : pdZero ? "text-muted-foreground" : "text-red-400"}`}>
-                      {pdPositive ? "+" : ""}{Math.round(r._pd).toLocaleString()}
+                    <td className="text-center px-0.5 py-1 sm:p-3">{r.seasons_played ?? "—"}</td>
+                    <td className="text-center px-0.5 py-1 sm:p-3">{r._played}</td>
+                    <td className="text-center px-0.5 py-1 sm:p-3 text-emerald-400">{r._wins}</td>
+                    <td className="text-center px-0.5 py-1 sm:p-3 text-muted-foreground">{r._draws}</td>
+                    <td className="text-center px-0.5 py-1 sm:p-3 text-red-400/90">{r._losses}</td>
+                    <td className="text-right px-0.5 py-1 sm:p-3 tabular-nums">{compactNumber(r._pf)}</td>
+                    <td className="text-right px-0.5 py-1 sm:p-3 tabular-nums text-muted-foreground">{compactNumber(r._pa)}</td>
+                    <td className={`text-right px-0.5 py-1 sm:p-3 tabular-nums font-medium ${pdPositive ? "text-emerald-400" : pdZero ? "text-muted-foreground" : "text-red-400"}`}>
+                      {pdPositive ? "+" : ""}{compactNumber(r._pd)}
                     </td>
-                    <td className="text-right p-1 sm:p-3 tabular-nums font-bold">{r._ppg.toFixed(1)}</td>
-                    <td className="text-right p-1 sm:p-3 tabular-nums">{r._winpct.toFixed(0)}%</td>
-                    <td className="text-center p-1 sm:p-3">
+                    <td className="text-right px-0.5 py-1 sm:p-3 tabular-nums font-bold">{r._ppg.toFixed(1)}</td>
+                    <td className="text-right px-0.5 py-1 sm:p-3 tabular-nums">{r._winpct.toFixed(0)}%</td>
+                    <td className="text-center px-0.5 py-1 sm:p-3">
                       {r._best ? <span className={r._best === 1 ? "text-gold font-display" : ""}>{ord(r._best)}</span> : "—"}
                     </td>
-                    <td className="text-center p-1 sm:p-3">
+                    <td className="text-center px-0.5 py-1 sm:p-3">
                       {r._titles > 0 ? (
-                        <span className="inline-flex items-center gap-1 text-gold font-display">
-                          <Trophy className="w-3 h-3 sm:w-3.5 sm:h-3.5" />{r._titles}
+                        <span className="inline-flex items-center justify-center gap-0.5 sm:gap-1 text-gold font-display">
+                          <Trophy className="hidden sm:block w-3.5 h-3.5" />{r._titles}
                         </span>
                       ) : "—"}
                     </td>
-                    <td className="text-right p-1 sm:p-3 font-display text-gold text-xs sm:text-base tabular-nums">{r._pts}</td>
+                    <td className="text-right px-0.5 py-1 sm:p-3 font-display text-gold text-[8px] min-[390px]:text-[9px] sm:text-base tabular-nums">{r._pts}</td>
                   </tr>
                 );
               })}
