@@ -77,6 +77,9 @@ function TablePage() {
           _titles: r.titles_won ?? 0,
         };
       });
+    return mapped
+      .sort((a, b) => b._ppgRaw - a._ppgRaw)
+      .map((r, i) => ({ ...r, _rank: i + 1 }));
   }, [d]);
 
   const rows = useMemo(() => {
