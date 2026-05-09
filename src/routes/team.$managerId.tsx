@@ -762,7 +762,7 @@ function PlayerLeaderboard({ title, subtitle, players, icon, accent }: { title: 
   );
 }
 
-function ClubLeaderboard({ title, subtitle, rows, accent }: { title: string; subtitle?: string; rows: { club: string; pts: number }[]; accent?: boolean }) {
+function ClubLeaderboard({ title, subtitle, rows, accent }: { title: string; subtitle?: string; rows: { club: string; pts: number; playerCount?: number }[]; accent?: boolean }) {
   const valueClass = accent ? "text-emerald-300" : "text-rose-300";
   const headerAccent = accent ? "text-emerald-300" : "text-rose-300";
   return (
