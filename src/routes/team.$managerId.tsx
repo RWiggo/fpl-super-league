@@ -231,6 +231,8 @@ function TeamPage() {
 
   const top5Clubs = clubsRanked.slice(0, 5).map((c) => ({ ...c, playerCount: playersFromClub(c.club) }));
   const bottom5Clubs = [...clubsRanked].reverse().slice(0, 5).map((c) => ({ ...c, playerCount: playersFromClub(c.club) }));
+  const top5Players = top5PlayersRaw.map((p) => ({ ...p, seasonCount: seasonsForPlayer(p.player_name) }));
+  const bottom5Players = bottom5PlayersRaw.map((p) => ({ ...p, seasonCount: seasonsForPlayer(p.player_name) }));
 
   // All-time XI in legal formation
   const posMap: Record<string, "GK" | "DEF" | "MID" | "FWD"> = { G: "GK", GK: "GK", GKP: "GK", D: "DEF", DEF: "DEF", M: "MID", MID: "MID", F: "FWD", FWD: "FWD" };
