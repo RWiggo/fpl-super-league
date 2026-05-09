@@ -41,9 +41,9 @@ type AwardKey = "wins" | "pf" | "pa" | "ppg" | "winpct" | "titles" | "pts" | "dr
 
 function TablePage() {
   const [d, setD] = useState<any>(null);
-  // Default: sort by PPG (most representative single stat)
-  const [sortKey, setSortKey] = useState<SortKey>("ppg");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [sortKey, setSortKey] = useState<SortKey>("rank");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  
   const [openAward, setOpenAward] = useState<AwardKey | null>(null);
 
   useEffect(() => {
@@ -339,64 +339,6 @@ function TablePage() {
           <span><b className="text-white">Best</b> Best season finish</span>
           <span><b className="text-white">T</b> Titles</span>
           <span><b className="text-white">Pts</b> League Points (3W/1D)</span>
-        </div>
-      </section>
-
-      {/* PODIUM — top 3 by League Points, with clear label */}
-      <section className="max-w-7xl mx-auto px-4 py-16 md:py-20 border-t border-border/50 mt-16">
-        <div className="text-center mb-10">
-          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">The Pinnacle</div>
-          <h2 className="font-display text-3xl md:text-4xl">Top 3 — All-Time League Points</h2>
-          <p className="text-sm text-muted-foreground mt-3 max-w-xl mx-auto">
-            Bar height represents total league points (3 for a win, 1 for a draw) accumulated across every season.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-3 gap-3 md:gap-6 items-end max-w-4xl mx-auto">
-          {[1, 0, 2].map((idx) => {
-            const r = podium[idx];
-            if (!r) return <div key={idx} />;
-            const m = mById(r.manager_id);
-            const b = getBranding(String(r.manager_id));
-            const tint = b?.primary ?? "#d4af37";
-            // Scale bar height to actual points (proportional, normalized)
-            const maxPts = podium[0]?._pts ?? 1;
-            const heightPx = 120 + Math.round((r._pts / maxPts) * 140);
-            const place = idx + 1;
-            const icon = idx === 0 ? <Crown className="w-7 h-7 md:w-9 md:h-9" /> :
-              idx === 1 ? <Trophy className="w-6 h-6 md:w-8 md:h-8" /> :
-              <Medal className="w-6 h-6 md:w-8 md:h-8" />;
-            return (
-              <Link key={r.manager_id} to="/team/$managerId" params={{ managerId: String(r.manager_id) }}
-                className="flex flex-col items-center group">
-                <div className="mb-3" style={{ color: tint }}>{icon}</div>
-                {b?.badge ? (
-                  <img src={b.badge} alt="" className="w-12 h-12 md:w-16 md:h-16 object-contain mb-2 drop-shadow-lg group-hover:scale-110 transition" />
-                ) : (
-                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-full mb-2 flex items-center justify-center font-bold text-white text-xl" style={{ background: tint }}>
-                    {(m?.name ?? r.manager_name ?? "?").charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <div className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-center capitalize text-white mb-1 px-1 truncate max-w-full">
-                  {m?.name ?? r.manager_name}
-                </div>
-                <div className="font-display text-xl md:text-3xl text-gold mb-1">{r._pts}</div>
-                <div className="text-[9px] uppercase tracking-widest text-muted-foreground mb-3">League Pts</div>
-                <div
-                  className="w-full rounded-t-lg flex items-start justify-center pt-3 font-display text-2xl md:text-4xl text-white relative overflow-hidden"
-                  style={{
-                    height: `${heightPx}px`,
-                    background: `linear-gradient(180deg, ${tint}cc 0%, ${tint}55 100%)`,
-                    border: `1px solid ${tint}`,
-                    borderBottom: 0,
-                  }}
-                >
-                  <span className="relative z-10">{place}</span>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-                </div>
-              </Link>
-            );
-          })}
         </div>
       </section>
 
