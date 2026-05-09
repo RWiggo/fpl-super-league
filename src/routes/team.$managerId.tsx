@@ -381,7 +381,7 @@ function TeamPage() {
           })
           .sort((a, b) => (b.myWins + b.oppWins + (b.row.draws ?? 0)) - (a.myWins + a.oppWins + (a.row.draws ?? 0)));
 
-        const perPage = 3;
+        const perPage = isMobile ? 1 : 3;
         const pageCount = Math.max(1, Math.ceil(cards.length / perPage));
         const page = Math.min(h2hPage, pageCount - 1);
         const visible = cards.slice(page * perPage, page * perPage + perPage);
