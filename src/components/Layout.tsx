@@ -5,6 +5,37 @@ import { Menu, X, ChevronDown } from "lucide-react";
 import logo from "@/assets/fpl-super-league-logo.png";
 import { getBranding } from "@/lib/managerBranding";
 
+// Same palette used on the season hero so menu tiles match each season's crest.
+const SEASON_HUES = [220, 0, 145, 35, 285, 175, 50, 320, 110, 260, 15, 195];
+function seasonAccent(id: any) {
+  const idx = Math.max(0, (Number(id) || 1) - 1) % SEASON_HUES.length;
+  const hue = SEASON_HUES[idx];
+  return { accent: `hsl(${hue} 80% 55%)`, deep: `hsl(${hue} 70% 35%)` };
+}
+function SeasonCrest({ id, size = 36 }: { id: any; size?: number }) {
+  const { accent, deep } = seasonAccent(id);
+  const hueRotate = ((SEASON_HUES[Math.max(0, (Number(id) || 1) - 1) % SEASON_HUES.length] - 220 + 360) % 360);
+  return (
+    <div
+      className="relative shrink-0 rounded-full flex items-center justify-center overflow-hidden"
+      style={{
+        width: size,
+        height: size,
+        background: `radial-gradient(circle, ${deep} 0%, #0a1240 80%)`,
+        border: `1.5px solid ${accent}`,
+        boxShadow: `0 0 10px ${accent}55`,
+      }}
+    >
+      <img
+        src={logo}
+        alt=""
+        className="w-[78%] h-[78%] object-contain"
+        style={{ filter: `hue-rotate(${hueRotate}deg) saturate(1.05)` }}
+      />
+    </div>
+  );
+}
+
 export function Layout() {
   const [managers, setManagers] = useState<Manager[]>([]);
   const [seasons, setSeasons] = useState<Season[]>([]);
@@ -152,20 +183,33 @@ export function Layout() {
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform ${seasonsOpen ? "rotate-180" : ""}`} />
               </button>
               {seasonsOpen && (
-                <div className="absolute top-full left-0 w-52 bg-[#15164a] border border-cyan-500/20 rounded-b-md py-2 shadow-2xl shadow-black/50">
-                  {seasons.map((s, i) => (
-                    <Link
-                      key={s.id}
-                      to="/season/$seasonId"
-                      params={{ seasonId: s.id }}
-                      className="flex items-center justify-between px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white/75 hover:text-white hover:bg-cyan-500/10 border-l-2 border-transparent hover:border-cyan-400 transition-all"
-                    >
-                      <span>{s.name}</span>
-                      {i === seasons.length - 1 && (
-                        <span className="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded font-bold tracking-wider">LIVE</span>
-                      )}
-                    </Link>
-                  ))}
+                <div className="fixed left-0 right-0 top-[68px] bg-[#15164a] border-y border-cyan-500/20 shadow-2xl shadow-black/60">
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {seasons.map((s, i) => {
+                        const { accent } = seasonAccent(s.id);
+                        const isLive = i === seasons.length - 1;
+                        return (
+                          <Link
+                            key={s.id}
+                            to="/season/$seasonId"
+                            params={{ seasonId: s.id }}
+                            className="group relative flex items-center gap-3 px-3 py-2.5 rounded-md overflow-hidden border border-white/10 hover:border-white/40 transition-all hover:scale-[1.02]"
+                            style={{ background: `linear-gradient(120deg, ${accent}38 0%, ${accent}10 55%, rgba(10,17,48,0.6) 100%)` }}
+                          >
+                            <span className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: accent }} />
+                            <SeasonCrest id={s.id} size={36} />
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-white leading-tight flex-1">
+                              {s.name}
+                            </span>
+                            {isLive && (
+                              <span className="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded font-bold tracking-wider">LIVE</span>
+                            )}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -238,12 +282,27 @@ export function Layout() {
               </details>
               <details className="border-t border-cyan-500/15 pt-2">
                 <summary className="py-2 text-xs font-bold uppercase tracking-[0.18em] cursor-pointer text-white/85">Seasons</summary>
-                <div className="pl-4">
-                  {seasons.map((s) => (
-                    <Link key={s.id} to="/season/$seasonId" params={{ seasonId: s.id }} onClick={() => setOpen(false)} className="block py-1.5 text-sm text-white/75 hover:text-cyan-300">
-                      {s.name}
-                    </Link>
-                  ))}
+                <div className="grid grid-cols-2 gap-2 pt-2 pb-1">
+                  {seasons.map((s, i) => {
+                    const { accent } = seasonAccent(s.id);
+                    const isLive = i === seasons.length - 1;
+                    return (
+                      <Link
+                        key={s.id}
+                        to="/season/$seasonId"
+                        params={{ seasonId: s.id }}
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-2 px-2 py-2 rounded-md border border-white/10 hover:border-white/40 transition"
+                        style={{ background: `linear-gradient(120deg, ${accent}30 0%, ${accent}10 60%, rgba(10,17,48,0.5) 100%)` }}
+                      >
+                        <SeasonCrest id={s.id} size={28} />
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-white leading-tight truncate flex-1">{s.name}</span>
+                        {isLive && (
+                          <span className="text-[8px] bg-red-500 text-white px-1 py-0.5 rounded font-bold tracking-wider">LIVE</span>
+                        )}
+                      </Link>
+                    );
+                  })}
                 </div>
               </details>
               <Link
