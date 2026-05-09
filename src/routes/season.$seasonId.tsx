@@ -236,7 +236,7 @@ function RecordCard({
     <Dialog>
       <DialogTrigger asChild>
         <button className="text-left w-full focus:outline-none focus:ring-2 focus:ring-gold/50 rounded-lg">
-          <div className="premium-card rounded-lg p-4 sm:p-6 group hover:border-gold/50 transition-all hover:-translate-y-1 text-center sm:text-left">
+          <div className="premium-card rounded-lg p-4 sm:p-6 group hover:border-gold/50 transition-all hover:-translate-y-1 text-center sm:text-left relative">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground">{label}</span>
               {icon && <span className="text-gold opacity-60 group-hover:opacity-100 transition shrink-0">{icon}</span>}
@@ -247,6 +247,11 @@ function RecordCard({
                 <div className="font-display text-3xl sm:text-4xl gold-gradient leading-none">{value}</div>
                 {sub && <div className="text-[11px] sm:text-xs text-muted-foreground mt-1.5 truncate">{sub}</div>}
               </div>
+            </div>
+            <div className="mt-3 pt-3 border-t border-border/40 flex items-center justify-center sm:justify-start gap-1.5 text-[10px] uppercase tracking-[0.2em] text-gold/70 group-hover:text-gold transition">
+              <Info className="w-3 h-3" />
+              <span>Tap for details</span>
+              <ChevronRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
             </div>
           </div>
         </button>
