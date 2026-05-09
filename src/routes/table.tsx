@@ -43,7 +43,7 @@ function TablePage() {
   const [d, setD] = useState<any>(null);
   const [sortKey, setSortKey] = useState<SortKey>("rank");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  
   const [openAward, setOpenAward] = useState<AwardKey | null>(null);
 
   useEffect(() => {
