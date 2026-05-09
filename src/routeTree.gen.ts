@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TableRouteImport } from './routes/table'
+import { Route as RecordsRouteImport } from './routes/records'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TeamManagerIdRouteImport } from './routes/team.$managerId'
 import { Route as SeasonSeasonIdRouteImport } from './routes/season.$seasonId'
@@ -17,6 +18,11 @@ import { Route as SeasonSeasonIdRouteImport } from './routes/season.$seasonId'
 const TableRoute = TableRouteImport.update({
   id: '/table',
   path: '/table',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecordsRoute = RecordsRouteImport.update({
+  id: '/records',
+  path: '/records',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -37,12 +43,14 @@ const SeasonSeasonIdRoute = SeasonSeasonIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/records': typeof RecordsRoute
   '/table': typeof TableRoute
   '/season/$seasonId': typeof SeasonSeasonIdRoute
   '/team/$managerId': typeof TeamManagerIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/records': typeof RecordsRoute
   '/table': typeof TableRoute
   '/season/$seasonId': typeof SeasonSeasonIdRoute
   '/team/$managerId': typeof TeamManagerIdRoute
@@ -50,20 +58,33 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/records': typeof RecordsRoute
   '/table': typeof TableRoute
   '/season/$seasonId': typeof SeasonSeasonIdRoute
   '/team/$managerId': typeof TeamManagerIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/table' | '/season/$seasonId' | '/team/$managerId'
+  fullPaths:
+    | '/'
+    | '/records'
+    | '/table'
+    | '/season/$seasonId'
+    | '/team/$managerId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/table' | '/season/$seasonId' | '/team/$managerId'
-  id: '__root__' | '/' | '/table' | '/season/$seasonId' | '/team/$managerId'
+  to: '/' | '/records' | '/table' | '/season/$seasonId' | '/team/$managerId'
+  id:
+    | '__root__'
+    | '/'
+    | '/records'
+    | '/table'
+    | '/season/$seasonId'
+    | '/team/$managerId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  RecordsRoute: typeof RecordsRoute
   TableRoute: typeof TableRoute
   SeasonSeasonIdRoute: typeof SeasonSeasonIdRoute
   TeamManagerIdRoute: typeof TeamManagerIdRoute
@@ -76,6 +97,13 @@ declare module '@tanstack/react-router' {
       path: '/table'
       fullPath: '/table'
       preLoaderRoute: typeof TableRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/records': {
+      id: '/records'
+      path: '/records'
+      fullPath: '/records'
+      preLoaderRoute: typeof RecordsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -104,6 +132,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  RecordsRoute: RecordsRoute,
   TableRoute: TableRoute,
   SeasonSeasonIdRoute: SeasonSeasonIdRoute,
   TeamManagerIdRoute: TeamManagerIdRoute,
