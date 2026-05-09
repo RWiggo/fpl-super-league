@@ -207,8 +207,29 @@ function TeamPage() {
   // include unused clubs with 0
   for (const c of (d.allClubs as string[])) if (!clubAgg.has(c)) clubAgg.set(c, 0);
   const clubsRanked = [...clubAgg.entries()].map(([club, pts]) => ({ club, pts })).sort((a, b) => b.pts - a.pts);
-  const top5Clubs = clubsRanked.slice(0, 5);
-  const bottom5Clubs = [...clubsRanked].reverse().slice(0, 5);
+
+  // Player → distinct seasons in this manager's squad
+  const playerSeasonsMap = new Map<string, Set<any>>();
+  for (const r of (d.history as any[])) {
+    if (!r.player_name) continue;
+    const key = r.season_id ?? r.season_name;
+    if (key == null) continue;
+    if (!playerSeasonsMap.has(r.player_name)) playerSeasonsMap.set(r.player_name, new Set());
+    playerSeasonsMap.get(r.player_name)!.add(key);
+  }
+  const seasonsForPlayer = (name: string) => playerSeasonsMap.get(name)?.size ?? 0;
+
+  // Club → distinct players the manager used from that club
+  const clubPlayersMap = new Map<string, Set<string>>();
+  for (const r of (d.history as any[])) {
+    if (!r.club || !r.player_name) continue;
+    if (!clubPlayersMap.has(r.club)) clubPlayersMap.set(r.club, new Set());
+    clubPlayersMap.get(r.club)!.add(r.player_name);
+  }
+  const playersFromClub = (club: string) => clubPlayersMap.get(club)?.size ?? 0;
+
+  const top5Clubs = clubsRanked.slice(0, 5).map((c) => ({ ...c, playerCount: playersFromClub(c.club) }));
+  const bottom5Clubs = [...clubsRanked].reverse().slice(0, 5).map((c) => ({ ...c, playerCount: playersFromClub(c.club) }));
 
   // All-time XI in legal formation
   const posMap: Record<string, "GK" | "DEF" | "MID" | "FWD"> = { G: "GK", GK: "GK", GKP: "GK", D: "DEF", DEF: "DEF", M: "MID", MID: "MID", F: "FWD", FWD: "FWD" };
