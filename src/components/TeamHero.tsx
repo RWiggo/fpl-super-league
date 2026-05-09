@@ -125,9 +125,9 @@ export function TeamHero({
                 style={{ gridTemplateColumns: `repeat(${secondaryFacts.length}, minmax(0, 1fr))` }}
               >
                 {secondaryFacts.map((f, i) => (
-                  <div key={i} className="py-3 md:py-4 px-3 md:px-5 first:pl-0">
-                    <div className="text-[9px] uppercase tracking-[0.22em] text-silver/50 leading-tight">{f.label}</div>
-                    <div className="font-display text-lg md:text-xl lg:text-2xl mt-0.5" style={{ color: tint }}>
+                  <div key={i} className="py-3 md:py-4 px-3 md:px-5 first:pl-0 flex flex-col items-center sm:items-start text-center sm:text-left">
+                    <div className="text-[9px] uppercase tracking-[0.22em] text-silver/50 leading-tight min-h-[2.2em] flex items-start justify-center sm:justify-start">{f.label}</div>
+                    <div className="font-display text-lg md:text-xl lg:text-2xl mt-auto pt-1 leading-none" style={{ color: tint }}>
                       {f.value}
                     </div>
                   </div>
