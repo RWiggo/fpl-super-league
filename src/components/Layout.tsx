@@ -5,6 +5,37 @@ import { Menu, X, ChevronDown } from "lucide-react";
 import logo from "@/assets/fpl-super-league-logo.png";
 import { getBranding } from "@/lib/managerBranding";
 
+// Same palette used on the season hero so menu tiles match each season's crest.
+const SEASON_HUES = [220, 0, 145, 35, 285, 175, 50, 320, 110, 260, 15, 195];
+function seasonAccent(id: any) {
+  const idx = Math.max(0, (Number(id) || 1) - 1) % SEASON_HUES.length;
+  const hue = SEASON_HUES[idx];
+  return { accent: `hsl(${hue} 80% 55%)`, deep: `hsl(${hue} 70% 35%)` };
+}
+function SeasonCrest({ id, size = 36 }: { id: any; size?: number }) {
+  const { accent, deep } = seasonAccent(id);
+  const hueRotate = ((SEASON_HUES[Math.max(0, (Number(id) || 1) - 1) % SEASON_HUES.length] - 220 + 360) % 360);
+  return (
+    <div
+      className="relative shrink-0 rounded-full flex items-center justify-center overflow-hidden"
+      style={{
+        width: size,
+        height: size,
+        background: `radial-gradient(circle, ${deep} 0%, #0a1240 80%)`,
+        border: `1.5px solid ${accent}`,
+        boxShadow: `0 0 10px ${accent}55`,
+      }}
+    >
+      <img
+        src={logo}
+        alt=""
+        className="w-[78%] h-[78%] object-contain"
+        style={{ filter: `hue-rotate(${hueRotate}deg) saturate(1.05)` }}
+      />
+    </div>
+  );
+}
+
 export function Layout() {
   const [managers, setManagers] = useState<Manager[]>([]);
   const [seasons, setSeasons] = useState<Season[]>([]);
