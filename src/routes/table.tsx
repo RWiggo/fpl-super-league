@@ -56,9 +56,7 @@ function TablePage() {
 
   const enriched = useMemo(() => {
     if (!d) return [];
-    return [...d.alltime]
-      .sort((a, b) => (b.total_league_points ?? 0) - (a.total_league_points ?? 0))
-      .map((r, i) => {
+    const mapped = [...d.alltime].map((r) => {
         const w = r.total_wins ?? 0;
         const dr = r.total_draws ?? 0;
         const l = r.total_losses ?? 0;
@@ -68,7 +66,7 @@ function TablePage() {
         const pd = Number(r.total_points_difference ?? (pf - pa));
         return {
           ...r,
-          _rank: i + 1,
+          _ppgRaw: games ? pf / games : 0,
           _played: games,
           _wins: w, _draws: dr, _losses: l,
           _pf: pf, _pa: pa, _pd: pd,
