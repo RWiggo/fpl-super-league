@@ -30,7 +30,7 @@ const COLS: { key: SortKey; label: string; tip: string; align: "left" | "center"
   { key: "pf", label: "PF", tip: "FPL Points For", align: "right" },
   { key: "pa", label: "PA", tip: "FPL Points Against", align: "right" },
   { key: "pd", label: "PD", tip: "FPL Points Difference", align: "right" },
-  { key: "ppg", label: "PPG", tip: "FPL Points per Game", align: "right" },
+  { key: "ppg", label: "PPG", tip: "League Points per Game", align: "right" },
   { key: "winpct", label: "Win%", tip: "Win Percentage", align: "right" },
   { key: "best", label: "Best", tip: "Best season finish", align: "center" },
   { key: "titles", label: "T", tip: "Titles", align: "center" },
