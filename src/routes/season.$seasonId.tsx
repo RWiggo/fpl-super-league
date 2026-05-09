@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/StatCard";
 import { FormationPitch } from "@/components/FormationPitch";
 import { getBranding } from "@/lib/managerBranding";
-import { Trophy, Crown, Flame, Target, Zap, Skull, Shield, TrendingUp, TrendingDown, Users, Swords, Star, Goal, HandHelping, ArrowDown, AlertOctagon } from "lucide-react";
+import { Trophy, Crown, Flame, Target, Zap, Skull, Shield, TrendingUp, TrendingDown, Users, Swords, Star, Goal, HandHelping, ArrowDown, AlertOctagon, Info, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/season/$seasonId")({
   component: SeasonPage,
