@@ -8,6 +8,7 @@ import { Trophy, Crown, Flame, Target, Zap, TrendingDown, Award, ShieldOff, Flag
 import { getBranding } from "@/lib/managerBranding";
 import { getNickname } from "@/lib/managerNicknames";
 import { getPlClubBadge } from "@/lib/plClubBadges";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Route = createFileRoute("/team/$managerId")({
   component: TeamPage,
@@ -78,6 +79,7 @@ function TeamPage() {
   useEffect(() => { if (d?.standings?.length && !statSeason) setStatSeason(d.seasons.find((x: any) => x.id === d.standings[d.standings.length - 1].season_id)?.name ?? ""); }, [d]);
   const [totsSeason, setTotsSeason] = useState<string>("");
   const [h2hPage, setH2hPage] = useState(0);
+  const isMobile = useIsMobile();
   useEffect(() => { if (d?.tots?.length && !totsSeason) setTotsSeason(d.tots[0].season_name); }, [d]);
 
   // Player search: club -> players from history; selected player aggregated stats
@@ -379,7 +381,7 @@ function TeamPage() {
           })
           .sort((a, b) => (b.myWins + b.oppWins + (b.row.draws ?? 0)) - (a.myWins + a.oppWins + (a.row.draws ?? 0)));
 
-        const perPage = 3;
+        const perPage = isMobile ? 1 : 3;
         const pageCount = Math.max(1, Math.ceil(cards.length / perPage));
         const page = Math.min(h2hPage, pageCount - 1);
         const visible = cards.slice(page * perPage, page * perPage + perPage);
