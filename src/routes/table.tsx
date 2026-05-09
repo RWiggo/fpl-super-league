@@ -78,7 +78,7 @@ function TablePage() {
         };
       });
     return mapped
-      .sort((a, b) => b._ppgRaw - a._ppgRaw)
+      .sort((a, b) => (b._titles - a._titles) || (b._ppgRaw - a._ppgRaw) || (b._pf - a._pf))
       .map((r, i) => ({ ...r, _rank: i + 1 }));
   }, [d]);
 
