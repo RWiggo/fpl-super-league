@@ -201,24 +201,39 @@ export function Layout() {
         {open && (
           <div className="relative md:hidden border-t border-cyan-500/20 bg-[#0f0a30]">
             <div className="px-4 py-4 space-y-1">
-              {navLinks.map((l) => (
-                <Link
-                  key={l.to}
-                  to={l.to}
-                  onClick={() => setOpen(false)}
-                  className="block py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-white/85 hover:text-cyan-300 border-l-2 border-transparent hover:border-cyan-400 pl-3 transition-all"
-                >
-                  {l.label}
-                </Link>
-              ))}
+              <Link
+                to="/"
+                onClick={() => setOpen(false)}
+                className="block py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-white/85 hover:text-cyan-300 border-l-2 border-transparent hover:border-cyan-400 pl-3 transition-all"
+              >
+                Home
+              </Link>
               <details className="border-t border-cyan-500/15 pt-2">
                 <summary className="py-2 text-xs font-bold uppercase tracking-[0.18em] cursor-pointer text-white/85">Teams</summary>
-                <div className="pl-4 max-h-60 overflow-auto">
-                  {teamsList.map((m) => (
-                    <Link key={m.id} to="/team/$managerId" params={{ managerId: m.id }} onClick={() => setOpen(false)} className="block py-1.5 text-sm text-white/75 hover:text-cyan-300">
-                      {m.displayName}
-                    </Link>
-                  ))}
+                <div className="grid grid-cols-2 gap-2 pt-2 pb-1">
+                  {teamsList.map((m) => {
+                    const b = getBranding(m.id);
+                    const tint = b?.primary ?? "#508cff";
+                    return (
+                      <Link
+                        key={m.id}
+                        to="/team/$managerId"
+                        params={{ managerId: m.id }}
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-2 px-2 py-2 rounded-md border border-white/10 hover:border-white/40 transition"
+                        style={{ background: `linear-gradient(120deg, ${tint}30 0%, ${tint}10 60%, rgba(10,17,48,0.5) 100%)` }}
+                      >
+                        {b?.badge ? (
+                          <img src={b.badge} alt="" className="w-7 h-7 object-contain shrink-0" />
+                        ) : (
+                          <div className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold text-white" style={{ background: tint }}>
+                            {m.displayName.charAt(0)}
+                          </div>
+                        )}
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-white leading-tight truncate">{m.displayName}</span>
+                      </Link>
+                    );
+                  })}
                 </div>
               </details>
               <details className="border-t border-cyan-500/15 pt-2">
@@ -231,6 +246,20 @@ export function Layout() {
                   ))}
                 </div>
               </details>
+              <Link
+                to="/history"
+                onClick={() => setOpen(false)}
+                className="block py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-white/85 hover:text-cyan-300 border-l-2 border-transparent hover:border-cyan-400 pl-3 transition-all border-t border-cyan-500/15 pt-3 mt-2"
+              >
+                History
+              </Link>
+              <Link
+                to="/fixtures"
+                onClick={() => setOpen(false)}
+                className="block py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-white/85 hover:text-cyan-300 border-l-2 border-transparent hover:border-cyan-400 pl-3 transition-all"
+              >
+                Fixtures
+              </Link>
             </div>
           </div>
         )}
