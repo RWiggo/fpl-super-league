@@ -674,11 +674,11 @@ function SeasonHero({ season, champ, topScorer, topScorerPts, longestWin, longes
   const champBranding = champ ? getBranding(champ.id) : null;
   const woodenBranding = wooden ? getBranding(wooden.id) : null;
 
-  // Season-unique accent: stable hue derived from the season id/name so each
-  // season gets its own colourway of the same base league crest.
-  const seasonKey = String(season.id ?? season.name);
-  const hash = Array.from(seasonKey).reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
-  const hue = hash % 360;
+  // Season-unique accent: each season gets a deliberately distinct hue from a
+  // curated, well-spaced palette so consecutive seasons never look alike.
+  const SEASON_HUES = [220, 0, 145, 35, 285, 175, 50, 320, 110, 260, 15, 195];
+  const idx = Math.max(0, (Number(season.id) || 1) - 1) % SEASON_HUES.length;
+  const hue = SEASON_HUES[idx];
   const hueRotate = (hue - 220 + 360) % 360; // base logo is ~220° blue
   const accent = `hsl(${hue} 80% 55%)`;
   const accentDeep = `hsl(${hue} 70% 35%)`;
