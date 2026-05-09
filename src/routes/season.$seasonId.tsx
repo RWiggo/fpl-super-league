@@ -809,39 +809,98 @@ function LeagueTable({ standings, managers, mst, gwTable, maxGW }: any) {
     return out;
   }, [gwTable, managers]);
 
+  type SortKey = "position" | "team" | "P" | "W" | "D" | "L" | "PF" | "PA" | "PD" | "Pts";
+  const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "position", dir: "asc" });
+
+  const sortedRows = useMemo(() => {
+    const valueOf = (row: any, key: SortKey): number | string => {
+      switch (key) {
+        case "position": return row.position;
+        case "team": return (teamNameFor(row.manager_id) ?? "").toString().toLowerCase();
+        case "P": return (row.wins ?? 0) + (row.draws ?? 0) + (row.losses ?? 0);
+        case "W": return row.wins ?? 0;
+        case "D": return row.draws ?? 0;
+        case "L": return row.losses ?? 0;
+        case "PF": return Number(row.points_for ?? 0);
+        case "PA": return Number(row.points_against ?? 0);
+        case "PD": return Number(row.points_difference ?? 0);
+        case "Pts": return row.total_points ?? 0;
+      }
+    };
+    const arr = [...standings];
+    arr.sort((a, b) => {
+      const av = valueOf(a, sort.key);
+      const bv = valueOf(b, sort.key);
+      let cmp: number;
+      if (typeof av === "number" && typeof bv === "number") cmp = av - bv;
+      else cmp = String(av).localeCompare(String(bv));
+      return sort.dir === "asc" ? cmp : -cmp;
+    });
+    return arr;
+  }, [standings, sort, mst]);
+
+  const toggleSort = (key: SortKey) => {
+    setSort((prev) => {
+      if (prev.key !== key) {
+        // sensible default: numeric metrics start desc, position/team start asc
+        const numericDesc = key !== "position" && key !== "team";
+        return { key, dir: numericDesc ? "desc" : "asc" };
+      }
+      return { key, dir: prev.dir === "asc" ? "desc" : "asc" };
+    });
+  };
+
+  const SortableTh = ({ k, label, className }: { k: SortKey; label: string; className?: string }) => {
+    const active = sort.key === k;
+    return (
+      <th className={className}>
+        <button
+          type="button"
+          onClick={() => toggleSort(k)}
+          className={`inline-flex items-center gap-0.5 uppercase tracking-wider hover:text-gold transition ${active ? "text-gold" : ""}`}
+        >
+          {label}
+          <span className="text-[8px] leading-none w-2 inline-block">
+            {active ? (sort.dir === "asc" ? "▲" : "▼") : ""}
+          </span>
+        </button>
+      </th>
+    );
+  };
+
   return (
     <div className="premium-card rounded-lg mt-6 overflow-hidden">
       <table className="w-full text-[10px] sm:text-sm table-fixed">
         <colgroup>
           <col className="w-6 sm:w-auto" />
           <col />
-          <col className="w-6 sm:w-auto" />
-          <col className="w-6 sm:w-auto" />
-          <col className="w-6 sm:w-auto" />
-          <col className="w-6 sm:w-auto" />
+          <col className="w-7 sm:w-auto" />
+          <col className="w-7 sm:w-auto" />
+          <col className="w-7 sm:w-auto" />
+          <col className="w-7 sm:w-auto" />
           <col className="w-9 sm:w-auto" />
           <col className="w-9 sm:w-auto" />
           <col className="hidden lg:table-column" />
-          <col className="w-9 sm:w-auto" />
+          <col className="w-10 sm:w-auto" />
           <col className="hidden md:table-column" />
         </colgroup>
-        <thead className="bg-card/60 text-[9px] sm:text-xs uppercase tracking-wider text-muted-foreground">
+        <thead className="bg-card/60 text-[9px] sm:text-xs uppercase tracking-wider text-muted-foreground select-none">
           <tr>
-            <th className="px-1 py-2 sm:p-3 text-center">#</th>
-            <th className="px-1 py-2 sm:p-3 text-left">Team</th>
-            <th className="px-0.5 py-2 sm:p-3 text-center">P</th>
-            <th className="px-0.5 py-2 sm:p-3 text-center">W</th>
-            <th className="px-0.5 py-2 sm:p-3 text-center">D</th>
-            <th className="px-0.5 py-2 sm:p-3 text-center">L</th>
-            <th className="px-0.5 py-2 sm:p-3 text-right">PF</th>
-            <th className="px-0.5 py-2 sm:p-3 text-right">PA</th>
-            <th className="hidden lg:table-cell p-3 text-right">PD</th>
-            <th className="px-1 py-2 sm:p-3 text-right">Pts</th>
+            <SortableTh k="position" label="#" className="px-1 py-2 sm:p-3 text-center" />
+            <SortableTh k="team" label="Team" className="px-1 py-2 sm:p-3 text-left" />
+            <SortableTh k="P" label="P" className="px-0.5 py-2 sm:p-3 text-center" />
+            <SortableTh k="W" label="W" className="px-0.5 py-2 sm:p-3 text-center" />
+            <SortableTh k="D" label="D" className="px-0.5 py-2 sm:p-3 text-center" />
+            <SortableTh k="L" label="L" className="px-0.5 py-2 sm:p-3 text-center" />
+            <SortableTh k="PF" label="PF" className="px-0.5 py-2 sm:p-3 text-right" />
+            <SortableTh k="PA" label="PA" className="px-0.5 py-2 sm:p-3 text-right" />
+            <SortableTh k="PD" label="PD" className="hidden lg:table-cell p-3 text-right" />
+            <SortableTh k="Pts" label="Pts" className="px-1 py-2 sm:p-3 text-right" />
             <th className="hidden md:table-cell p-3 text-center">Form</th>
           </tr>
         </thead>
         <tbody>
-          {standings.map((row: any) => {
+          {sortedRows.map((row: any) => {
             const m = mById(row.manager_id);
             const branding = getBranding(row.manager_id);
             const games = (row.wins ?? 0) + (row.draws ?? 0) + (row.losses ?? 0);
