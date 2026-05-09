@@ -41,8 +41,8 @@ type AwardKey = "wins" | "pf" | "pa" | "ppg" | "winpct" | "titles" | "pts" | "dr
 
 function TablePage() {
   const [d, setD] = useState<any>(null);
-  // Default: sort by PPG (most representative single stat)
-  const [sortKey, setSortKey] = useState<SortKey>("ppg");
+  const [sortKey, setSortKey] = useState<SortKey>("rank");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [openAward, setOpenAward] = useState<AwardKey | null>(null);
 
