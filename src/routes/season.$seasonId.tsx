@@ -1112,9 +1112,35 @@ function FixturesPanel({ fixtures, managers, maxGW }: any) {
           const awayColor = awayWon ? "text-emerald-400" : isDraw ? "text-yellow-400" : "text-red-400";
           const hasScore = f.home_score != null;
           return (
-            <div key={f.id} className="premium-card rounded-lg p-4">
+            <div key={f.id} className="premium-card rounded-lg p-3 sm:p-4">
               <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">GW {f.gameweek}</div>
-              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+
+              {/* Mobile: stacked rows so full team names always fit */}
+              <div className="sm:hidden space-y-2">
+                {[
+                  { team: f.home_team, manager: f.home_manager, m: homeM, b: hb, score: f.home_score, won: homeWon, color: homeColor },
+                  { team: f.away_team, manager: f.away_manager, m: awayM, b: ab, score: f.away_score, won: awayWon, color: awayColor },
+                ].map((side, i) => (
+                  <Link
+                    key={i}
+                    to="/team/$managerId"
+                    params={{ managerId: String(side.m?.id ?? "") }}
+                    className="flex items-center gap-2 hover:text-gold"
+                  >
+                    {side.b?.badge && <img src={side.b.badge} alt="" className="w-8 h-8 object-contain shrink-0" />}
+                    <div className="min-w-0 flex-1">
+                      <div className={`font-medium text-sm leading-tight break-words ${side.won ? "text-gold" : ""}`}>{side.team}</div>
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">{side.manager}</div>
+                    </div>
+                    <div className={`font-display text-xl tabular-nums shrink-0 ${hasScore ? side.color : "text-muted-foreground"}`}>
+                      {side.score ?? "-"}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Desktop: original side-by-side layout */}
+              <div className="hidden sm:grid grid-cols-[1fr_auto_1fr] items-center gap-3">
                 <Link to="/team/$managerId" params={{ managerId: String(homeM?.id ?? "") }} className="flex items-center gap-2 justify-end text-right hover:text-gold min-w-0">
                   <div className="min-w-0">
                     <div className={`font-medium truncate ${homeWon ? "text-gold" : ""}`}>{f.home_team}</div>
