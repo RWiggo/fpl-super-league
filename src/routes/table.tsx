@@ -110,15 +110,22 @@ function TablePage() {
   const tintFor = (id: any) => getBranding(String(id))?.primary ?? "#d4af37";
 
   // Award definitions — each is a top-5 leaderboard
-  type AwardDef = { key: AwardKey; label: string; sortBy: (r: any) => number; format: (r: any) => string; valueLabel: string };
-  const AWARDS: AwardDef[] = [
-    { key: "pts", label: "League Points", sortBy: (r) => r._pts, format: (r) => String(r._pts), valueLabel: "Pts" },
-    { key: "ppg", label: "Points / Game", sortBy: (r) => r._ppg, format: (r) => r._ppg.toFixed(1), valueLabel: "PPG" },
-    { key: "wins", label: "Most Wins", sortBy: (r) => r._wins, format: (r) => String(r._wins), valueLabel: "Wins" },
-    { key: "pf", label: "Points For", sortBy: (r) => r._pf, format: (r) => Math.round(r._pf).toLocaleString(), valueLabel: "PF" },
-    { key: "winpct", label: "Win %", sortBy: (r) => r._played >= 20 ? r._winpct : -1, format: (r) => `${r._winpct.toFixed(1)}%`, valueLabel: "Win%" },
-    { key: "titles", label: "Most Titles", sortBy: (r) => r._titles, format: (r) => String(r._titles), valueLabel: "Titles" },
+  type AwardDef = { key: AwardKey; label: string; sortBy: (r: any) => number; format: (r: any) => string; valueLabel: string; tone?: "positive" | "negative" };
+  const POSITIVE_AWARDS: AwardDef[] = [
+    { key: "ppg", label: "Points / Game", sortBy: (r) => r._ppg, format: (r) => r._ppg.toFixed(2), valueLabel: "PPG", tone: "positive" },
+    { key: "pts", label: "League Points", sortBy: (r) => r._pts, format: (r) => String(r._pts), valueLabel: "Pts", tone: "positive" },
+    { key: "wins", label: "Most Wins", sortBy: (r) => r._wins, format: (r) => String(r._wins), valueLabel: "Wins", tone: "positive" },
+    { key: "pf", label: "Points For", sortBy: (r) => r._pf, format: (r) => Math.round(r._pf).toLocaleString(), valueLabel: "PF", tone: "positive" },
+    { key: "winpct", label: "Win %", sortBy: (r) => r._played >= 20 ? r._winpct : -1, format: (r) => `${r._winpct.toFixed(1)}%`, valueLabel: "Win%", tone: "positive" },
+    { key: "titles", label: "Most Titles", sortBy: (r) => r._titles, format: (r) => String(r._titles), valueLabel: "Titles", tone: "positive" },
+    { key: "pd", label: "Biggest Points Difference", sortBy: (r) => r._pd, format: (r) => (r._pd >= 0 ? "+" : "") + Math.round(r._pd).toLocaleString(), valueLabel: "PD", tone: "positive" },
   ];
+  const NEGATIVE_AWARDS: AwardDef[] = [
+    { key: "draws", label: "Most Draws", sortBy: (r) => r._draws, format: (r) => String(r._draws), valueLabel: "Draws", tone: "negative" },
+    { key: "losses", label: "Most Losses", sortBy: (r) => r._losses, format: (r) => String(r._losses), valueLabel: "Losses", tone: "negative" },
+    { key: "pa", label: "Most Points Against", sortBy: (r) => r._pa, format: (r) => Math.round(r._pa).toLocaleString(), valueLabel: "PA", tone: "negative" },
+  ];
+  const AWARDS: AwardDef[] = [...POSITIVE_AWARDS, ...NEGATIVE_AWARDS];
   const top5For = (a: AwardDef) => [...enriched].sort((x, y) => a.sortBy(y) - a.sortBy(x)).slice(0, 5);
   const leaderFor = (a: AwardDef) => top5For(a)[0];
 
