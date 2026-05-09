@@ -55,9 +55,9 @@ export function FormationPitch({
         <rect x="38" y="141" width="24" height="7" fill="none" stroke="white" strokeOpacity="0.5" strokeWidth="0.4" />
       </svg>
 
-      <div className="absolute inset-0 flex flex-col justify-around p-2">
+      <div className="absolute inset-0 flex flex-col justify-around p-1 sm:p-2">
         {rows.map((row, i) => (
-          <div key={i} className="flex justify-around items-end">
+          <div key={i} className="flex justify-around items-end gap-0.5 sm:gap-2 px-0.5">
             {row.map((p, j) => (
               <PlayerChip
                 key={j}
