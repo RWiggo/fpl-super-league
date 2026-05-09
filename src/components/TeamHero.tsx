@@ -111,9 +111,9 @@ export function TeamHero({
               style={{ gridTemplateColumns: `repeat(${facts.length}, minmax(0, 1fr))` }}
             >
               {facts.map((f, i) => (
-                <div key={i} className="py-4 md:py-5 px-3 md:px-5 first:pl-0 flex flex-col items-center sm:items-start text-center sm:text-left">
-                  <div className="text-[10px] uppercase tracking-[0.25em] text-silver/60 leading-tight min-h-[2.4em] flex items-start justify-center sm:justify-start">{f.label}</div>
-                  <div className="font-display text-2xl md:text-3xl lg:text-4xl mt-auto pt-2 leading-none" style={{ color: tint }}>
+                <div key={i} className="py-4 md:py-5 px-2 md:px-5 first:pl-0 flex flex-col items-center sm:items-start text-center sm:text-left min-w-0">
+                  <div className="text-[8px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.25em] text-silver/60 leading-tight whitespace-nowrap">{f.label}</div>
+                  <div className="font-display text-xl sm:text-2xl md:text-3xl lg:text-4xl mt-2 leading-none whitespace-nowrap" style={{ color: tint }}>
                     {f.value}
                   </div>
                 </div>
@@ -125,9 +125,9 @@ export function TeamHero({
                 style={{ gridTemplateColumns: `repeat(${secondaryFacts.length}, minmax(0, 1fr))` }}
               >
                 {secondaryFacts.map((f, i) => (
-                  <div key={i} className="py-3 md:py-4 px-3 md:px-5 first:pl-0 flex flex-col items-center sm:items-start text-center sm:text-left">
-                    <div className="text-[9px] uppercase tracking-[0.22em] text-silver/50 leading-tight min-h-[2.2em] flex items-start justify-center sm:justify-start">{f.label}</div>
-                    <div className="font-display text-lg md:text-xl lg:text-2xl mt-auto pt-1 leading-none" style={{ color: tint }}>
+                  <div key={i} className="py-3 md:py-4 px-2 md:px-5 first:pl-0 flex flex-col items-center sm:items-start text-center sm:text-left min-w-0">
+                    <div className="text-[8px] sm:text-[9px] uppercase tracking-[0.12em] sm:tracking-[0.22em] text-silver/50 leading-tight whitespace-nowrap">{f.label}</div>
+                    <div className="font-display text-base sm:text-lg md:text-xl lg:text-2xl mt-1 leading-none whitespace-nowrap" style={{ color: tint }}>
                       {f.value}
                     </div>
                   </div>

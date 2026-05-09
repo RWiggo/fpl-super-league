@@ -297,7 +297,7 @@ function TeamPage() {
       {/* Season Hist */}
       <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
         <SectionTitle kicker="Season History" title="The Journey so far" />
-        <div className="premium-card rounded-lg overflow-x-auto mt-6">
+        <div className="premium-card rounded-lg overflow-x-auto mt-6 hidden sm:block">
           <table className="w-full text-sm">
             <thead className="bg-card/60 text-xs uppercase tracking-wider text-muted-foreground">
               <tr>
@@ -315,7 +315,6 @@ function TeamPage() {
             <tbody>
               {d.standings.map((s: any) => {
                 const teamName = d.mst.find((t: any) => t.season_id === s.season_id)?.team_name;
-                // Star player: top fantasy_points scorer for this manager that season
                 const seasonName = sById(s.season_id)?.name;
                 const seasonHistory = (d.history as any[]).filter(
                   (h) => h.season_id === s.season_id || h.season_name === seasonName
@@ -323,12 +322,11 @@ function TeamPage() {
                 const star = [...seasonHistory].sort(
                   (a, b) => Number(b.fantasy_points ?? 0) - Number(a.fantasy_points ?? 0)
                 )[0];
-                // Total managers in this season → relative finish bucket
                 const seasonSize = new Set(
                   (d.allStandings as any[]).filter((x) => x.season_id === s.season_id).map((x) => x.manager_id)
                 ).size;
                 const pos = s.position;
-                let posClass = "text-yellow-400"; // mid-table default
+                let posClass = "text-yellow-400";
                 if (pos === 1) posClass = "text-emerald-300";
                 else if (pos === 2 || pos === 3) posClass = "text-emerald-600";
                 else if (seasonSize > 0 && pos === seasonSize) posClass = "text-red-700";
@@ -364,6 +362,58 @@ function TeamPage() {
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile cards */}
+        <div className="sm:hidden mt-6 space-y-3">
+          {d.standings.map((s: any) => {
+            const teamName = d.mst.find((t: any) => t.season_id === s.season_id)?.team_name;
+            const seasonName = sById(s.season_id)?.name;
+            const seasonHistory = (d.history as any[]).filter(
+              (h) => h.season_id === s.season_id || h.season_name === seasonName
+            );
+            const star = [...seasonHistory].sort(
+              (a, b) => Number(b.fantasy_points ?? 0) - Number(a.fantasy_points ?? 0)
+            )[0];
+            const seasonSize = new Set(
+              (d.allStandings as any[]).filter((x) => x.season_id === s.season_id).map((x) => x.manager_id)
+            ).size;
+            const pos = s.position;
+            let posClass = "text-yellow-400";
+            if (pos === 1) posClass = "text-emerald-300";
+            else if (pos === 2 || pos === 3) posClass = "text-emerald-600";
+            else if (seasonSize > 0 && pos === seasonSize) posClass = "text-red-700";
+            else if (seasonSize > 0 && pos > seasonSize - 3) posClass = "text-red-500";
+            const diff = Number(s.points_for ?? 0) - Number(s.points_against ?? 0);
+            return (
+              <div key={s.id} className="premium-card rounded-lg p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <Link to="/season/$seasonId" params={{ seasonId: s.season_id }} className="font-display text-base hover:text-gold truncate">
+                    {sById(s.season_id)?.name}
+                  </Link>
+                  <div className={`font-display text-xl ${posClass} flex items-center gap-1 shrink-0`}>
+                    {pos === 1 && <Trophy className="w-4 h-4 text-gold" />}
+                    {pos}<span className="text-[10px] text-muted-foreground ml-0.5">/{seasonSize || "—"}</span>
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground truncate mt-0.5">{teamName}</div>
+                {star && (
+                  <div className="text-xs mt-1 truncate">
+                    <span className="text-muted-foreground">★ </span>
+                    <span className="font-medium">{star.player_name}</span>
+                    <span className="text-muted-foreground ml-1">({Number(star.fantasy_points ?? 0).toFixed(0)})</span>
+                  </div>
+                )}
+                <div className="grid grid-cols-5 gap-1 mt-3 text-center">
+                  <Stat label="W" value={s.wins} />
+                  <Stat label="D" value={s.draws} />
+                  <Stat label="L" value={s.losses} />
+                  <Stat label="Pts" value={s.total_points} />
+                  <Stat label="Diff" value={`${diff >= 0 ? "+" : ""}${diff.toFixed(0)}`} valueClass={diff >= 0 ? "text-emerald-400/90" : "text-red-400/90"} />
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -840,6 +890,15 @@ function H2HCard({
           </table>
         </div>
       )}
+    </div>
+  );
+}
+
+function Stat({ label, value, valueClass }: { label: string; value: any; valueClass?: string }) {
+  return (
+    <div>
+      <div className="text-[9px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className={`font-display text-sm ${valueClass ?? "text-foreground"}`}>{value}</div>
     </div>
   );
 }
