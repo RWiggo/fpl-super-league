@@ -791,7 +791,12 @@ function ClubLeaderboard({ title, subtitle, rows, accent }: { title: string; sub
                     ) : (
                       <span className="w-8 h-8 shrink-0 rounded-sm bg-muted/30 border border-border/40" aria-hidden />
                     )}
-                    <span className="font-display tracking-wider">{r.club}</span>
+                    <div className="min-w-0">
+                      <div className="font-display tracking-wider truncate">{r.club}</div>
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground/80 mt-0.5">
+                        {r.playerCount ?? 0} {r.playerCount === 1 ? "player used" : "players used"}
+                      </div>
+                    </div>
                   </div>
                 </td>
                 <td className={`p-3 text-right font-display ${valueClass}`}>
