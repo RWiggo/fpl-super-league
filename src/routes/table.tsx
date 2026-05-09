@@ -66,11 +66,11 @@ function TablePage() {
         const pd = Number(r.total_points_difference ?? (pf - pa));
         return {
           ...r,
-          _ppgRaw: games ? pf / games : 0,
+          _ppgRaw: games ? (Number(r.total_league_points ?? 0)) / games : 0,
           _played: games,
           _wins: w, _draws: dr, _losses: l,
           _pf: pf, _pa: pa, _pd: pd,
-          _ppg: games ? pf / games : 0,
+          _ppg: games ? (Number(r.total_league_points ?? 0)) / games : 0,
           _winpct: r.win_percentage != null ? Number(r.win_percentage) : (games ? (w / games) * 100 : 0),
           _pts: r.total_league_points ?? 0,
           _best: r.best_finish ?? null,
