@@ -669,32 +669,62 @@ function SeasonHero({ season, champ, topScorer, topScorerPts, longestWin, longes
   const champBranding = champ ? getBranding(champ.id) : null;
   const woodenBranding = wooden ? getBranding(wooden.id) : null;
 
+  // Season-unique accent: stable hue derived from the season id/name so each
+  // season gets its own colourway of the same base league crest.
+  const seasonKey = String(season.id ?? season.name);
+  const hash = Array.from(seasonKey).reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+  const hue = hash % 360;
+  const hueRotate = (hue - 220 + 360) % 360; // base logo is ~220° blue
+  const accent = `hsl(${hue} 80% 55%)`;
+  const accentDeep = `hsl(${hue} 70% 35%)`;
+
   return (
     <section className="relative overflow-hidden border-b border-border/50">
       <div className="absolute inset-0 ucl-stars opacity-70" />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
       <div
         className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full blur-3xl pointer-events-none opacity-50"
-        style={{ background: "radial-gradient(circle, var(--color-primary) 0%, transparent 65%)" }}
+        style={{ background: `radial-gradient(circle, ${accent} 0%, transparent 65%)` }}
       />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
         <div className="grid lg:grid-cols-[auto_1fr] gap-10 lg:gap-16 items-center">
-          {/* Bespoke logo */}
+          {/* Bespoke season crest — base league logo with a season-unique colourway */}
           <div className="relative mx-auto lg:mx-0">
-            <div className="relative w-[260px] h-[260px] sm:w-[300px] sm:h-[300px] flex items-center justify-center">
-              {/* concentric rings */}
-              <div className="absolute inset-0 rounded-full border-2 border-gold/30" />
-              <div className="absolute inset-4 rounded-full border border-gold/20" />
-              <div className="absolute inset-0 rounded-full"
-                   style={{ background: "conic-gradient(from 90deg, var(--color-gold) 0%, transparent 25%, var(--color-primary) 50%, transparent 75%, var(--color-gold) 100%)", opacity: 0.18 }}/>
-              <Crown className="absolute -top-2 left-1/2 -translate-x-1/2 w-10 h-10 text-gold drop-shadow" />
-              <div className="text-center">
-                <div className="text-[10px] uppercase tracking-[0.5em] text-gold/80">Season</div>
-                <div className="font-display text-7xl sm:text-8xl gold-gradient leading-none">{yA}</div>
-                <div className="h-px w-16 bg-gold/60 mx-auto my-2" />
-                <div className="font-display text-7xl sm:text-8xl gold-gradient leading-none">{yB}</div>
-                <div className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground mt-2">FPL Super League</div>
+            <div className="relative w-[240px] h-[240px] sm:w-[300px] sm:h-[300px] flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full" style={{ border: `2px solid ${accent}66` }} />
+              <div className="absolute inset-4 rounded-full" style={{ border: `1px solid ${accent}33` }} />
+              <div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background: `conic-gradient(from 90deg, ${accent} 0%, transparent 25%, ${accentDeep} 50%, transparent 75%, ${accent} 100%)`,
+                  opacity: 0.22,
+                }}
+              />
+              <div
+                className="absolute inset-6 rounded-full blur-2xl pointer-events-none"
+                style={{ background: `radial-gradient(circle, ${accent} 0%, transparent 70%)`, opacity: 0.5 }}
+              />
+              <img
+                src={new URL("@/assets/fpl-super-league-logo.png", import.meta.url).href}
+                alt={`${season.name} crest`}
+                className="relative w-[78%] h-[78%] object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.55)]"
+                style={{ filter: `hue-rotate(${hueRotate}deg) saturate(1.05)` }}
+              />
+              <Crown
+                className="absolute -top-2 left-1/2 -translate-x-1/2 w-9 h-9"
+                style={{ color: accent, filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.6))" }}
+              />
+              <div
+                className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-4 py-1 rounded-md border backdrop-blur-sm"
+                style={{ background: `linear-gradient(180deg, ${accentDeep}cc, #00000099)`, borderColor: `${accent}80` }}
+              >
+                <div className="font-display text-lg sm:text-xl tracking-[0.25em] text-white leading-none">
+                  {yA}<span className="opacity-60 mx-1">/</span>{yB}
+                </div>
               </div>
+            </div>
+            <div className="mt-6 text-center text-[10px] uppercase tracking-[0.4em]" style={{ color: accent }}>
+              FPL Super League · Season {yA}/{yB}
             </div>
           </div>
 
