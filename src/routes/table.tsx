@@ -37,7 +37,7 @@ const COLS: { key: SortKey; label: string; tip: string; align: "left" | "center"
   { key: "pts", label: "Pts", tip: "Total League Points (3W/1D)", align: "right" },
 ];
 
-type AwardKey = "wins" | "pf" | "pa" | "ppg" | "winpct" | "titles" | "pts";
+type AwardKey = "wins" | "pf" | "pa" | "ppg" | "winpct" | "titles" | "pts" | "draws" | "losses" | "pd";
 
 function TablePage() {
   const [d, setD] = useState<any>(null);
