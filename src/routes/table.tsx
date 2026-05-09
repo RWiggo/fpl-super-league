@@ -408,13 +408,13 @@ function TablePage() {
           <p className="text-sm text-muted-foreground mt-3">Tap any award to see the top 5</p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-          {AWARDS.map((a) => {
+        {(() => {
+          const renderCard = (a: AwardDef) => {
             const leader = leaderFor(a);
             if (!leader) return null;
             const m = mById(leader.manager_id);
             const b = getBranding(String(leader.manager_id));
-            const tint = tintFor(leader.manager_id);
+            const tint = a.tone === "negative" ? "#b34747" : tintFor(leader.manager_id);
             return (
               <button
                 key={a.key}
@@ -444,8 +444,28 @@ function TablePage() {
                 </div>
               </button>
             );
-          })}
-        </div>
+          };
+          return (
+            <>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="h-px flex-1 bg-gradient-to-r from-transparent via-emerald-400/50 to-transparent" />
+                <span className="text-xs uppercase tracking-[0.3em] text-emerald-400 font-bold">Positive</span>
+                <span className="h-px flex-1 bg-gradient-to-r from-transparent via-emerald-400/50 to-transparent" />
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+                {POSITIVE_AWARDS.map(renderCard)}
+              </div>
+              <div className="flex items-center gap-3 mt-12 mb-4">
+                <span className="h-px flex-1 bg-gradient-to-r from-transparent via-red-400/50 to-transparent" />
+                <span className="text-xs uppercase tracking-[0.3em] text-red-400 font-bold">Negative</span>
+                <span className="h-px flex-1 bg-gradient-to-r from-transparent via-red-400/50 to-transparent" />
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+                {NEGATIVE_AWARDS.map(renderCard)}
+              </div>
+            </>
+          );
+        })()}
       </section>
 
       {/* Award top-5 modal */}
