@@ -129,7 +129,7 @@ function TablePage() {
 
   const setSort = (k: SortKey) => {
     if (sortKey === k) setSortDir(sortDir === "asc" ? "desc" : "asc");
-    else { setSortKey(k); setSortDir(k === "rank" || k === "best" || k === "losses" ? "asc" : "desc"); }
+    else { setSortKey(k); setSortDir(defaultSortDir(k)); }
   };
 
   const openAwardDef = AWARDS.find((a) => a.key === openAward) ?? null;
@@ -184,7 +184,75 @@ function TablePage() {
           </div>
         </div>
 
-        <div className="premium-card rounded-lg overflow-hidden">
+        <div className="md:hidden mb-3 flex gap-2">
+          <select
+            value={sortKey}
+            onChange={(e) => {
+              const next = e.target.value as SortKey;
+              setSortKey(next);
+              setSortDir(defaultSortDir(next));
+            }}
+            className="flex-1 bg-card border border-border rounded-lg px-3 py-2 text-xs text-foreground"
+            aria-label="Sort all-time table"
+          >
+            {COLS.map((c) => <option key={c.key} value={c.key}>{c.tip}</option>)}
+          </select>
+          <button
+            onClick={() => setSortDir(sortDir === "asc" ? "desc" : "asc")}
+            className="bg-card border border-border rounded-lg px-3 py-2 text-xs font-bold text-gold"
+          >
+            {sortDir === "asc" ? "ASC" : "DESC"}
+          </button>
+        </div>
+
+        <div className="md:hidden space-y-2">
+          {rows.map((r: any) => {
+            const m = mById(r.manager_id);
+            const b = getBranding(String(r.manager_id));
+            const tint = b?.primary ?? "#d4af37";
+            const pdPositive = r._pd > 0;
+            const pdZero = r._pd === 0;
+            return (
+              <Link
+                key={r.manager_id}
+                to="/team/$managerId"
+                params={{ managerId: String(r.manager_id) }}
+                className="block rounded-lg border border-border/70 bg-card/70 p-2"
+                style={{ borderLeftColor: tint, borderLeftWidth: 4 }}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-display text-lg text-gold w-6">{r._rank}</span>
+                  {b?.badge ? (
+                    <img src={b.badge} alt="" className="w-7 h-7 object-contain flex-shrink-0" />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: tint }}>
+                      {(m?.name ?? r.manager_name ?? "?").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <span className="capitalize font-bold text-sm truncate">{m?.name ?? r.manager_name}</span>
+                  <span className="ml-auto font-display text-gold text-base tabular-nums">{r._ppg.toFixed(1)}</span>
+                </div>
+                <div className="grid grid-cols-7 gap-px text-center text-[9px] leading-tight">
+                  <MobileStat label="S" value={r.seasons_played ?? "—"} />
+                  <MobileStat label="P" value={r._played} />
+                  <MobileStat label="W" value={r._wins} valueClass="text-emerald-400" />
+                  <MobileStat label="D" value={r._draws} />
+                  <MobileStat label="L" value={r._losses} valueClass="text-red-400/90" />
+                  <MobileStat label="PF" value={compactNumber(r._pf)} />
+                  <MobileStat label="PA" value={compactNumber(r._pa)} />
+                  <MobileStat label="PD" value={`${pdPositive ? "+" : ""}${compactNumber(r._pd)}`} valueClass={pdPositive ? "text-emerald-400" : pdZero ? "text-muted-foreground" : "text-red-400"} />
+                  <MobileStat label="PPG" value={r._ppg.toFixed(1)} valueClass="text-gold" />
+                  <MobileStat label="Win" value={`${r._winpct.toFixed(0)}%`} />
+                  <MobileStat label="Best" value={r._best ? ord(r._best) : "—"} />
+                  <MobileStat label="T" value={r._titles || "—"} valueClass={r._titles ? "text-gold" : ""} />
+                  <MobileStat label="Pts" value={r._pts} valueClass="text-gold" />
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+
+        <div className="hidden md:block premium-card rounded-lg overflow-hidden">
           <table className="w-full table-fixed text-[7px] min-[390px]:text-[8px] sm:text-sm leading-tight">
             <thead className="bg-card/80 text-[7px] min-[390px]:text-[8px] sm:text-xs uppercase tracking-normal sm:tracking-wider text-muted-foreground sticky top-0 z-10">
               <tr>
