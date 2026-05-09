@@ -56,9 +56,7 @@ function TablePage() {
 
   const enriched = useMemo(() => {
     if (!d) return [];
-    return [...d.alltime]
-      .sort((a, b) => (b.total_league_points ?? 0) - (a.total_league_points ?? 0))
-      .map((r, i) => {
+    const mapped = [...d.alltime].map((r) => {
         const w = r.total_wins ?? 0;
         const dr = r.total_draws ?? 0;
         const l = r.total_losses ?? 0;
@@ -68,7 +66,7 @@ function TablePage() {
         const pd = Number(r.total_points_difference ?? (pf - pa));
         return {
           ...r,
-          _rank: i + 1,
+          _ppgRaw: games ? pf / games : 0,
           _played: games,
           _wins: w, _draws: dr, _losses: l,
           _pf: pf, _pa: pa, _pd: pd,
@@ -79,6 +77,9 @@ function TablePage() {
           _titles: r.titles_won ?? 0,
         };
       });
+    return mapped
+      .sort((a, b) => b._ppgRaw - a._ppgRaw)
+      .map((r, i) => ({ ...r, _rank: i + 1 }));
   }, [d]);
 
   const rows = useMemo(() => {
@@ -184,11 +185,11 @@ function TablePage() {
         </div>
 
         <div className="premium-card rounded-lg overflow-x-auto">
-          <table className="w-full text-sm min-w-[1000px]">
-            <thead className="bg-card/80 text-xs uppercase tracking-wider text-muted-foreground sticky top-0 z-10">
+          <table className="w-full text-[10px] sm:text-sm">
+            <thead className="bg-card/80 text-[9px] sm:text-xs uppercase tracking-wider text-muted-foreground sticky top-0 z-10">
               <tr>
                 <SortTh col={COLS[0]} active={sortKey === "rank"} dir={sortDir} onClick={() => setSort("rank")} />
-                <th className="p-3 text-left">Manager</th>
+                <th className="p-1 sm:p-3 text-left">Mgr</th>
                 {COLS.slice(1).map((c) => (
                   <SortTh key={c.key} col={c} active={sortKey === c.key} dir={sortDir} onClick={() => setSort(c.key)} />
                 ))}
@@ -204,48 +205,48 @@ function TablePage() {
                 const pdZero = r._pd === 0;
                 return (
                   <tr key={r.manager_id} className="border-t border-border/40 hover:bg-gold/5 transition">
-                    <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        <span className="w-1 h-8 rounded" style={{ background: tint }} />
-                        <span className={`font-display text-lg ${isTop3 ? "text-gold" : ""}`}>{r._rank}</span>
+                    <td className="p-1 sm:p-3">
+                      <div className="flex items-center gap-1 sm:gap-2">
+                        <span className="w-0.5 sm:w-1 h-5 sm:h-8 rounded" style={{ background: tint }} />
+                        <span className={`font-display text-sm sm:text-lg ${isTop3 ? "text-gold" : ""}`}>{r._rank}</span>
                       </div>
                     </td>
-                    <td className="p-3 capitalize">
+                    <td className="p-1 sm:p-3 capitalize">
                       <Link to="/team/$managerId" params={{ managerId: String(r.manager_id) }}
-                        className="hover:text-gold flex items-center gap-2.5 min-w-[180px]">
+                        className="hover:text-gold flex items-center gap-1.5 sm:gap-2.5">
                         {b?.badge ? (
-                          <img src={b.badge} alt="" className="w-8 h-8 object-contain flex-shrink-0" />
+                          <img src={b.badge} alt="" className="w-5 h-5 sm:w-8 sm:h-8 object-contain flex-shrink-0" />
                         ) : (
-                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: tint }}>
+                          <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[9px] sm:text-xs font-bold text-white flex-shrink-0" style={{ background: tint }}>
                             {(m?.name ?? r.manager_name ?? "?").charAt(0).toUpperCase()}
                           </div>
                         )}
-                        <span className="whitespace-nowrap font-medium">{m?.name ?? r.manager_name}</span>
+                        <span className="hidden sm:inline whitespace-nowrap font-medium">{m?.name ?? r.manager_name}</span>
                       </Link>
                     </td>
-                    <td className="text-center p-3">{r.seasons_played ?? "—"}</td>
-                    <td className="text-center p-3">{r._played}</td>
-                    <td className="text-center p-3 text-emerald-400">{r._wins}</td>
-                    <td className="text-center p-3 text-muted-foreground">{r._draws}</td>
-                    <td className="text-center p-3 text-red-400/90">{r._losses}</td>
-                    <td className="text-right p-3 tabular-nums">{Math.round(r._pf).toLocaleString()}</td>
-                    <td className="text-right p-3 tabular-nums text-muted-foreground">{Math.round(r._pa).toLocaleString()}</td>
-                    <td className={`text-right p-3 tabular-nums font-medium ${pdPositive ? "text-emerald-400" : pdZero ? "text-muted-foreground" : "text-red-400"}`}>
+                    <td className="text-center p-1 sm:p-3">{r.seasons_played ?? "—"}</td>
+                    <td className="text-center p-1 sm:p-3">{r._played}</td>
+                    <td className="text-center p-1 sm:p-3 text-emerald-400">{r._wins}</td>
+                    <td className="text-center p-1 sm:p-3 text-muted-foreground">{r._draws}</td>
+                    <td className="text-center p-1 sm:p-3 text-red-400/90">{r._losses}</td>
+                    <td className="text-right p-1 sm:p-3 tabular-nums">{Math.round(r._pf).toLocaleString()}</td>
+                    <td className="text-right p-1 sm:p-3 tabular-nums text-muted-foreground">{Math.round(r._pa).toLocaleString()}</td>
+                    <td className={`text-right p-1 sm:p-3 tabular-nums font-medium ${pdPositive ? "text-emerald-400" : pdZero ? "text-muted-foreground" : "text-red-400"}`}>
                       {pdPositive ? "+" : ""}{Math.round(r._pd).toLocaleString()}
                     </td>
-                    <td className="text-right p-3 tabular-nums font-bold">{r._ppg.toFixed(1)}</td>
-                    <td className="text-right p-3 tabular-nums">{r._winpct.toFixed(1)}%</td>
-                    <td className="text-center p-3">
+                    <td className="text-right p-1 sm:p-3 tabular-nums font-bold">{r._ppg.toFixed(1)}</td>
+                    <td className="text-right p-1 sm:p-3 tabular-nums">{r._winpct.toFixed(0)}%</td>
+                    <td className="text-center p-1 sm:p-3">
                       {r._best ? <span className={r._best === 1 ? "text-gold font-display" : ""}>{ord(r._best)}</span> : "—"}
                     </td>
-                    <td className="text-center p-3">
+                    <td className="text-center p-1 sm:p-3">
                       {r._titles > 0 ? (
                         <span className="inline-flex items-center gap-1 text-gold font-display">
-                          <Trophy className="w-3.5 h-3.5" />{r._titles}
+                          <Trophy className="w-3 h-3 sm:w-3.5 sm:h-3.5" />{r._titles}
                         </span>
                       ) : "—"}
                     </td>
-                    <td className="text-right p-3 font-display text-gold text-base tabular-nums">{r._pts}</td>
+                    <td className="text-right p-1 sm:p-3 font-display text-gold text-xs sm:text-base tabular-nums">{r._pts}</td>
                   </tr>
                 );
               })}
@@ -432,7 +433,7 @@ function TablePage() {
 function SortTh({ col, active, dir, onClick }: { col: typeof COLS[number]; active: boolean; dir: "asc" | "desc"; onClick: () => void }) {
   return (
     <th
-      className={`p-3 cursor-pointer select-none hover:text-white transition text-${col.align} ${active ? "text-gold" : ""}`}
+      className={`p-1 sm:p-3 cursor-pointer select-none hover:text-white transition text-${col.align} ${active ? "text-gold" : ""}`}
       onClick={onClick}
       title={col.tip}
     >
