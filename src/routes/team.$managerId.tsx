@@ -893,3 +893,12 @@ function H2HCard({
     </div>
   );
 }
+
+function Stat({ label, value, valueClass }: { label: string; value: any; valueClass?: string }) {
+  return (
+    <div>
+      <div className="text-[9px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className={`font-display text-sm ${valueClass ?? "text-foreground"}`}>{value}</div>
+    </div>
+  );
+}
