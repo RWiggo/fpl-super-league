@@ -669,32 +669,62 @@ function SeasonHero({ season, champ, topScorer, topScorerPts, longestWin, longes
   const champBranding = champ ? getBranding(champ.id) : null;
   const woodenBranding = wooden ? getBranding(wooden.id) : null;
 
+  // Season-unique accent: stable hue derived from the season id/name so each
+  // season gets its own colourway of the same base league crest.
+  const seasonKey = String(season.id ?? season.name);
+  const hash = Array.from(seasonKey).reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+  const hue = hash % 360;
+  const hueRotate = (hue - 220 + 360) % 360; // base logo is ~220° blue
+  const accent = `hsl(${hue} 80% 55%)`;
+  const accentDeep = `hsl(${hue} 70% 35%)`;
+
   return (
     <section className="relative overflow-hidden border-b border-border/50">
       <div className="absolute inset-0 ucl-stars opacity-70" />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
       <div
         className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full blur-3xl pointer-events-none opacity-50"
-        style={{ background: "radial-gradient(circle, var(--color-primary) 0%, transparent 65%)" }}
+        style={{ background: `radial-gradient(circle, ${accent} 0%, transparent 65%)` }}
       />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
         <div className="grid lg:grid-cols-[auto_1fr] gap-10 lg:gap-16 items-center">
-          {/* Bespoke logo */}
+          {/* Bespoke season crest — base league logo with a season-unique colourway */}
           <div className="relative mx-auto lg:mx-0">
-            <div className="relative w-[260px] h-[260px] sm:w-[300px] sm:h-[300px] flex items-center justify-center">
-              {/* concentric rings */}
-              <div className="absolute inset-0 rounded-full border-2 border-gold/30" />
-              <div className="absolute inset-4 rounded-full border border-gold/20" />
-              <div className="absolute inset-0 rounded-full"
-                   style={{ background: "conic-gradient(from 90deg, var(--color-gold) 0%, transparent 25%, var(--color-primary) 50%, transparent 75%, var(--color-gold) 100%)", opacity: 0.18 }}/>
-              <Crown className="absolute -top-2 left-1/2 -translate-x-1/2 w-10 h-10 text-gold drop-shadow" />
-              <div className="text-center">
-                <div className="text-[10px] uppercase tracking-[0.5em] text-gold/80">Season</div>
-                <div className="font-display text-7xl sm:text-8xl gold-gradient leading-none">{yA}</div>
-                <div className="h-px w-16 bg-gold/60 mx-auto my-2" />
-                <div className="font-display text-7xl sm:text-8xl gold-gradient leading-none">{yB}</div>
-                <div className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground mt-2">FPL Super League</div>
+            <div className="relative w-[240px] h-[240px] sm:w-[300px] sm:h-[300px] flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full" style={{ border: `2px solid ${accent}66` }} />
+              <div className="absolute inset-4 rounded-full" style={{ border: `1px solid ${accent}33` }} />
+              <div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background: `conic-gradient(from 90deg, ${accent} 0%, transparent 25%, ${accentDeep} 50%, transparent 75%, ${accent} 100%)`,
+                  opacity: 0.22,
+                }}
+              />
+              <div
+                className="absolute inset-6 rounded-full blur-2xl pointer-events-none"
+                style={{ background: `radial-gradient(circle, ${accent} 0%, transparent 70%)`, opacity: 0.5 }}
+              />
+              <img
+                src={new URL("@/assets/fpl-super-league-logo.png", import.meta.url).href}
+                alt={`${season.name} crest`}
+                className="relative w-[78%] h-[78%] object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.55)]"
+                style={{ filter: `hue-rotate(${hueRotate}deg) saturate(1.05)` }}
+              />
+              <Crown
+                className="absolute -top-2 left-1/2 -translate-x-1/2 w-9 h-9"
+                style={{ color: accent, filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.6))" }}
+              />
+              <div
+                className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-4 py-1 rounded-md border backdrop-blur-sm"
+                style={{ background: `linear-gradient(180deg, ${accentDeep}cc, #00000099)`, borderColor: `${accent}80` }}
+              >
+                <div className="font-display text-lg sm:text-xl tracking-[0.25em] text-white leading-none">
+                  {yA}<span className="opacity-60 mx-1">/</span>{yB}
+                </div>
               </div>
+            </div>
+            <div className="mt-6 text-center text-[10px] uppercase tracking-[0.4em]" style={{ color: accent }}>
+              FPL Super League · Season {yA}/{yB}
             </div>
           </div>
 
@@ -809,39 +839,98 @@ function LeagueTable({ standings, managers, mst, gwTable, maxGW }: any) {
     return out;
   }, [gwTable, managers]);
 
+  type SortKey = "position" | "team" | "P" | "W" | "D" | "L" | "PF" | "PA" | "PD" | "Pts";
+  const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "position", dir: "asc" });
+
+  const sortedRows = useMemo(() => {
+    const valueOf = (row: any, key: SortKey): number | string => {
+      switch (key) {
+        case "position": return row.position;
+        case "team": return (teamNameFor(row.manager_id) ?? "").toString().toLowerCase();
+        case "P": return (row.wins ?? 0) + (row.draws ?? 0) + (row.losses ?? 0);
+        case "W": return row.wins ?? 0;
+        case "D": return row.draws ?? 0;
+        case "L": return row.losses ?? 0;
+        case "PF": return Number(row.points_for ?? 0);
+        case "PA": return Number(row.points_against ?? 0);
+        case "PD": return Number(row.points_difference ?? 0);
+        case "Pts": return row.total_points ?? 0;
+      }
+    };
+    const arr = [...standings];
+    arr.sort((a, b) => {
+      const av = valueOf(a, sort.key);
+      const bv = valueOf(b, sort.key);
+      let cmp: number;
+      if (typeof av === "number" && typeof bv === "number") cmp = av - bv;
+      else cmp = String(av).localeCompare(String(bv));
+      return sort.dir === "asc" ? cmp : -cmp;
+    });
+    return arr;
+  }, [standings, sort, mst]);
+
+  const toggleSort = (key: SortKey) => {
+    setSort((prev) => {
+      if (prev.key !== key) {
+        // sensible default: numeric metrics start desc, position/team start asc
+        const numericDesc = key !== "position" && key !== "team";
+        return { key, dir: numericDesc ? "desc" : "asc" };
+      }
+      return { key, dir: prev.dir === "asc" ? "desc" : "asc" };
+    });
+  };
+
+  const SortableTh = ({ k, label, className }: { k: SortKey; label: string; className?: string }) => {
+    const active = sort.key === k;
+    return (
+      <th className={className}>
+        <button
+          type="button"
+          onClick={() => toggleSort(k)}
+          className={`inline-flex items-center gap-0.5 uppercase tracking-wider hover:text-gold transition ${active ? "text-gold" : ""}`}
+        >
+          {label}
+          <span className="text-[8px] leading-none w-2 inline-block">
+            {active ? (sort.dir === "asc" ? "▲" : "▼") : ""}
+          </span>
+        </button>
+      </th>
+    );
+  };
+
   return (
     <div className="premium-card rounded-lg mt-6 overflow-hidden">
       <table className="w-full text-[10px] sm:text-sm table-fixed">
         <colgroup>
           <col className="w-6 sm:w-auto" />
           <col />
-          <col className="w-6 sm:w-auto" />
-          <col className="w-6 sm:w-auto" />
-          <col className="w-6 sm:w-auto" />
-          <col className="w-6 sm:w-auto" />
+          <col className="w-7 sm:w-auto" />
+          <col className="w-7 sm:w-auto" />
+          <col className="w-7 sm:w-auto" />
+          <col className="w-7 sm:w-auto" />
           <col className="w-9 sm:w-auto" />
           <col className="w-9 sm:w-auto" />
           <col className="hidden lg:table-column" />
-          <col className="w-9 sm:w-auto" />
+          <col className="w-10 sm:w-auto" />
           <col className="hidden md:table-column" />
         </colgroup>
-        <thead className="bg-card/60 text-[9px] sm:text-xs uppercase tracking-wider text-muted-foreground">
+        <thead className="bg-card/60 text-[9px] sm:text-xs uppercase tracking-wider text-muted-foreground select-none">
           <tr>
-            <th className="px-1 py-2 sm:p-3 text-center">#</th>
-            <th className="px-1 py-2 sm:p-3 text-left">Team</th>
-            <th className="px-0.5 py-2 sm:p-3 text-center">P</th>
-            <th className="px-0.5 py-2 sm:p-3 text-center">W</th>
-            <th className="px-0.5 py-2 sm:p-3 text-center">D</th>
-            <th className="px-0.5 py-2 sm:p-3 text-center">L</th>
-            <th className="px-0.5 py-2 sm:p-3 text-right">PF</th>
-            <th className="px-0.5 py-2 sm:p-3 text-right">PA</th>
-            <th className="hidden lg:table-cell p-3 text-right">PD</th>
-            <th className="px-1 py-2 sm:p-3 text-right">Pts</th>
+            <SortableTh k="position" label="#" className="px-1 py-2 sm:p-3 text-center" />
+            <SortableTh k="team" label="Team" className="px-1 py-2 sm:p-3 text-left" />
+            <SortableTh k="P" label="P" className="px-0.5 py-2 sm:p-3 text-center" />
+            <SortableTh k="W" label="W" className="px-0.5 py-2 sm:p-3 text-center" />
+            <SortableTh k="D" label="D" className="px-0.5 py-2 sm:p-3 text-center" />
+            <SortableTh k="L" label="L" className="px-0.5 py-2 sm:p-3 text-center" />
+            <SortableTh k="PF" label="PF" className="px-0.5 py-2 sm:p-3 text-right" />
+            <SortableTh k="PA" label="PA" className="px-0.5 py-2 sm:p-3 text-right" />
+            <SortableTh k="PD" label="PD" className="hidden lg:table-cell p-3 text-right" />
+            <SortableTh k="Pts" label="Pts" className="px-1 py-2 sm:p-3 text-right" />
             <th className="hidden md:table-cell p-3 text-center">Form</th>
           </tr>
         </thead>
         <tbody>
-          {standings.map((row: any) => {
+          {sortedRows.map((row: any) => {
             const m = mById(row.manager_id);
             const branding = getBranding(row.manager_id);
             const games = (row.wins ?? 0) + (row.draws ?? 0) + (row.losses ?? 0);
