@@ -33,7 +33,7 @@ type Entry = {
 type RecordDef = {
   key: string;
   label: string;
-  icon: JSX.Element;
+  icon: ReactNode;
   tint: string;
   // pre-sorted DESC by value, top-N entries to show
   entries: Entry[];
