@@ -227,7 +227,7 @@ function buildRecords(d: any) {
       formatted: String(f.margin),
       context: `${f.season_name} · GW${f.gameweek} · beat ${f.loser_name} ${f.winning_score}–${f.losing_score}`,
     }))
-    .sort((a, b) => b.value - a.value);
+    .sort((a: Entry, b: Entry) => b.value - a.value);
 
   // Combined-fixture totals (held by both managers — credit the winner / first listed)
   const combined: Entry[] = fx
