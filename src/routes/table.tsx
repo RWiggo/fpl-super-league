@@ -118,6 +118,7 @@ function TablePage() {
     { key: "pf", label: "FPL Points", sortBy: (r) => r._pf, format: (r) => Math.round(r._pf).toLocaleString(), valueLabel: "PF", tone: "positive" },
     { key: "winpct", label: "Win %", sortBy: (r) => r._played >= 20 ? r._winpct : -1, format: (r) => `${r._winpct.toFixed(1)}%`, valueLabel: "Win%", tone: "positive" },
     { key: "wins", label: "Most Wins", sortBy: (r) => r._wins, format: (r) => String(r._wins), valueLabel: "Wins", tone: "positive" },
+    { key: "pd", label: "Biggest Points Difference", sortBy: (r) => r._pd, format: (r) => (r._pd >= 0 ? "+" : "") + Math.round(r._pd).toLocaleString(), valueLabel: "PD", tone: "positive" },
   ];
   const NEGATIVE_AWARDS: AwardDef[] = [
     { key: "draws", label: "Most Draws", sortBy: (r) => r._draws, format: (r) => String(r._draws), valueLabel: "Draws", tone: "negative" },
