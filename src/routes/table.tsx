@@ -115,8 +115,7 @@ function TablePage() {
     { key: "titles", label: "Most Titles", sortBy: (r) => r._titles, format: (r) => String(r._titles), valueLabel: "Titles", tone: "positive" },
     { key: "ppg", label: "Points / Game", sortBy: (r) => r._ppg, format: (r) => r._ppg.toFixed(2), valueLabel: "PPG", tone: "positive" },
     { key: "pts", label: "League Points", sortBy: (r) => r._pts, format: (r) => String(r._pts), valueLabel: "Pts", tone: "positive" },
-    { key: "wins", label: "Most Wins", sortBy: (r) => r._wins, format: (r) => String(r._wins), valueLabel: "Wins", tone: "positive" },
-    { key: "pf", label: "Points For", sortBy: (r) => r._pf, format: (r) => Math.round(r._pf).toLocaleString(), valueLabel: "PF", tone: "positive" },
+    { key: "pf", label: "FPL Points", sortBy: (r) => r._pf, format: (r) => Math.round(r._pf).toLocaleString(), valueLabel: "PF", tone: "positive" },
     { key: "winpct", label: "Win %", sortBy: (r) => r._played >= 20 ? r._winpct : -1, format: (r) => `${r._winpct.toFixed(1)}%`, valueLabel: "Win%", tone: "positive" },
     { key: "pd", label: "Biggest Points Difference", sortBy: (r) => r._pd, format: (r) => (r._pd >= 0 ? "+" : "") + Math.round(r._pd).toLocaleString(), valueLabel: "PD", tone: "positive" },
   ];
