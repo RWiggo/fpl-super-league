@@ -1,8 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
 const s = createClient("https://ckqfiwcixkzkmdxqyxqq.supabase.co","sb_publishable_iPNkQlWTSlkyCeTC5NFqIg_AYJP_xBV");
-for (const t of ["fixture_records","win_streaks","season_standings","player_team_alltime","team_of_the_season","player_of_season","player_team_history","team_legends","seasons","alltime_table","fixtures","gameweek_scores","gameweek_results","manager_gameweek_scores"]) {
-  const { data, error, count } = await s.from(t).select("*", { count: "exact" }).limit(1);
-  console.log("===",t,"===");
-  if (error) console.log("ERR", error.message);
-  else console.log("count="+count, "keys=", data?.[0] ? Object.keys(data[0]).join(", ") : "(empty)");
-}
+const { data: fr } = await s.from("fixture_records").select("*").limit(2);
+console.log("fixture_records sample:", JSON.stringify(fr,null,2));
+const { data: ws } = await s.from("win_streaks").select("*").order("streak_length",{ascending:false}).limit(5);
+console.log("top streaks:", JSON.stringify(ws,null,2));
+const { data: outcomes } = await s.from("win_streaks").select("outcome");
+const set = new Set(outcomes.map(o=>o.outcome));
+console.log("outcomes:", [...set]);
+const { data: ss } = await s.from("season_standings").select("*").limit(2);
+console.log("season_standings sample:", JSON.stringify(ss,null,2));
+const { data: tots } = await s.from("team_of_the_season").select("season_name, manager_name, player_name").limit(5);
+console.log("tots:", tots);
