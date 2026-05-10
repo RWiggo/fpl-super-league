@@ -238,8 +238,8 @@ function buildRecords(d: any) {
       formatted: String(f.combined_score ?? f.home_score + f.away_score),
       context: `${f.season_name} · GW${f.gameweek} · ${f.home_manager} ${f.home_score}–${f.away_score} ${f.away_manager}`,
     }))
-    .sort((a, b) => b.value - a.value);
-  const combinedLow = [...combined].sort((a, b) => a.value - b.value);
+    .sort((a: Entry, b: Entry) => b.value - a.value);
+  const combinedLow = [...combined].sort((a: Entry, b: Entry) => a.value - b.value);
 
   const gameweek: RecordDef[] = [
     { key: "gw-high", label: "Highest GW Score", icon: <Flame />, tint: "hsl(15 85% 55%)", entries: highestGW, unit: "pts" },
