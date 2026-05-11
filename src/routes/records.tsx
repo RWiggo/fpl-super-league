@@ -451,25 +451,36 @@ function RecordCard({ def, onOpen, mById }: { def: RecordDef; onOpen: () => void
         {top.map((e, i) => {
           const m = e.managerId != null ? mById(e.managerId) : null;
           const b = e.managerId != null ? getBranding(String(e.managerId)) : null;
+          const m2 = e.secondaryManagerId != null ? mById(e.secondaryManagerId) : null;
+          const b2 = e.secondaryManagerId != null ? getBranding(String(e.secondaryManagerId)) : null;
           const tint = b?.primary ?? def.tint;
           const pct = max > 0 ? Math.max(4, (e.value / max) * 100) : 0;
           const name = m?.name ?? e.managerName ?? "—";
+          const name2 = m2?.name ?? e.secondaryManagerName;
           return (
             <div key={i} className="flex items-center gap-2">
               <span className={`font-display text-sm w-4 text-right ${i === 0 ? "text-gold" : "text-white/40"}`}>{i + 1}</span>
-              {b?.badge ? (
-                <img src={b.badge} alt="" className="w-6 h-6 object-contain flex-shrink-0" />
-              ) : (
-                <div
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0"
-                  style={{ background: tint }}
-                >
-                  {String(name).charAt(0).toUpperCase()}
-                </div>
-              )}
+              <div className="flex items-center -space-x-2 flex-shrink-0">
+                {b?.badge ? (
+                  <img src={b.badge} alt="" className="w-6 h-6 object-contain" />
+                ) : (
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white" style={{ background: tint }}>
+                    {String(name).charAt(0).toUpperCase()}
+                  </div>
+                )}
+                {name2 && (b2?.badge ? (
+                  <img src={b2.badge} alt="" className="w-6 h-6 object-contain ring-1 ring-background rounded-full" />
+                ) : (
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white ring-1 ring-background" style={{ background: b2?.primary ?? def.tint }}>
+                    {String(name2).charAt(0).toUpperCase()}
+                  </div>
+                ))}
+              </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-xs capitalize truncate text-white/85 font-medium">{name}</span>
+                  <span className="text-xs capitalize truncate text-white/85 font-medium">
+                    {name2 ? `${name} vs ${name2}` : name}
+                  </span>
                   <span className="font-display text-base text-white tabular-nums">{e.formatted}</span>
                 </div>
                 <div className="h-1.5 mt-1 rounded-full overflow-hidden bg-white/5">
