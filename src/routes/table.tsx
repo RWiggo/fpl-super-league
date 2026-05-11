@@ -262,6 +262,7 @@ function TablePage() {
                     </div>
                   )}
                   <span className="capitalize font-bold text-sm truncate">{m?.name ?? r.manager_name}</span>
+                  {r._titles > 0 && <TitleStars count={r._titles} />}
                   <span className="ml-auto font-display text-gold text-base tabular-nums">{r._ppg.toFixed(1)}</span>
                 </div>
                 <div className="grid grid-cols-7 gap-px text-center text-[9px] leading-tight">
