@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/StatCard";
 import { getBranding } from "@/lib/managerBranding";
-import { Trophy, Crown, Medal, ArrowUp, ArrowDown, ChevronsUpDown, X } from "lucide-react";
+import { Trophy, Crown, Medal, ArrowUp, ArrowDown, ChevronsUpDown, X, Star } from "lucide-react";
 import logo from "@/assets/fpl-super-league-logo.png";
 
 export const Route = createFileRoute("/table")({
