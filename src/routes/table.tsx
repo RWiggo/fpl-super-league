@@ -323,6 +323,7 @@ function TablePage() {
                           </div>
                         )}
                         <span className="hidden sm:inline whitespace-nowrap font-medium">{m?.name ?? r.manager_name}</span>
+                        {r._titles > 0 && <TitleStars count={r._titles} className="hidden sm:inline-flex" />}
                       </Link>
                     </td>
                     <td className="text-center px-0.5 py-1 sm:p-3">{r.seasons_played ?? "—"}</td>
