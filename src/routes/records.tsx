@@ -391,13 +391,14 @@ function buildBestXI(history: any[]) {
     const total = all.reduce((s, p) => s + (p.fantasy_points ?? 0), 0);
     if (total > best.total) best = { total, formation: f, players: all };
   }
-  // Normalise for FormationPitch
+  // Normalise for FormationPitch (carry manager_id so each player wears their kit)
   const mapped = best.players.map((p) => ({
     player_name: p.player_name,
     position: ({ G: "GK", D: "DEF", M: "MID", F: "FWD" } as any)[p.position],
     club: p.club,
     total_fantasy_points: p.fantasy_points,
     avg_points_per_game: p.avg_points_per_game,
+    manager_id: p.manager_id,
   }));
   return { formation: best.formation, players: mapped };
 }
