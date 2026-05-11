@@ -319,17 +319,8 @@ function buildRecords(d: any) {
   ];
 
   // ---- Streaks ----
-  const streakOf = (predicate: (o: string) => boolean): Entry[] => {
-    // Group consecutive same-outcome rows in the right order? The win_streaks table
-    // already stores discrete maximal runs. To compute "unbeaten" or "winless", we
-    // need to merge — but since the table only stores W/L/D individually, the best
-    // approximation we have is the longest single-outcome run that satisfies the
-    // predicate. For longest unbeaten/winless, we treat it as max(streak) where
-    // outcome matches the predicate set; if both W and D rows exist back-to-back
-    // for the same manager/season, the merged streak isn't represented here, so
-    // we fall back to the longest single-outcome qualifying run.
-    return [...d.streaks]
-      .filter((s: any) => predicate(s.outcome))
+  const fromStreakTable = (rows: any[]): Entry[] =>
+    [...rows]
       .map((s: any) => ({
         managerId: mIdByName(s.manager_name),
         managerName: s.manager_name,
@@ -338,17 +329,17 @@ function buildRecords(d: any) {
         context: `${s.season_name} · GW${s.streak_start_gw}–${s.streak_end_gw}`,
       }))
       .sort((a, b) => b.value - a.value);
-  };
 
-  // For unbeaten / winless we compute properly from raw fixtures because the
-  // streaks table only stores single-outcome maximal runs.
-  const merged = computeMergedStreaks(d.fixtures, d.managers, seasonById);
+  const winRows = (d.streaks ?? []).filter((s: any) => s.outcome === "W");
+  const lossRows = (d.losing ?? []).length
+    ? d.losing
+    : (d.streaks ?? []).filter((s: any) => s.outcome === "L");
 
   const streaks: RecordDef[] = [
-    { key: "st-win", label: "Longest Winning Streak", icon: <Flame />, tint: "hsl(45 90% 55%)", entries: streakOf((o) => o === "W"), unit: "wins" },
-    { key: "st-unbeaten", label: "Longest Unbeaten Streak", icon: <Shield />, tint: "hsl(145 70% 50%)", entries: merged.unbeaten, unit: "matches" },
-    { key: "st-winless", label: "Longest Winless Run", icon: <TrendingDown />, tint: "hsl(30 60% 50%)", entries: merged.winless, unit: "matches" },
-    { key: "st-loss", label: "Longest Losing Run", icon: <TrendingDown />, tint: "hsl(0 75% 50%)", entries: streakOf((o) => o === "L"), unit: "losses" },
+    { key: "st-win", label: "Longest Winning Streak", icon: <Flame />, tint: "hsl(45 90% 55%)", entries: fromStreakTable(winRows), unit: "wins" },
+    { key: "st-unbeaten", label: "Longest Unbeaten Streak", icon: <Shield />, tint: "hsl(145 70% 50%)", entries: fromStreakTable(d.unbeaten ?? []), unit: "matches" },
+    { key: "st-winless", label: "Longest Winless Run", icon: <TrendingDown />, tint: "hsl(30 60% 50%)", entries: fromStreakTable(d.winless ?? []), unit: "matches" },
+    { key: "st-loss", label: "Longest Losing Run", icon: <TrendingDown />, tint: "hsl(0 75% 50%)", entries: fromStreakTable(lossRows), unit: "losses" },
   ];
 
   // ---- All-Time XI from single-season performances ----
