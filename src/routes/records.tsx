@@ -236,7 +236,8 @@ function buildRecords(d: any) {
     });
   });
   const highestGW = [...sideScores].sort((a, b) => b.value - a.value);
-  const lowestGW = [...sideScores].sort((a, b) => a.value - b.value);
+  // Lowest GW score: exclude 0s as outliers (missed deadlines, etc.)
+  const lowestGW = [...sideScores].filter((e) => e.value > 0).sort((a, b) => a.value - b.value);
 
   // Margins (winner's margin — held by the winning manager)
   const margins: Entry[] = fx
@@ -250,17 +251,26 @@ function buildRecords(d: any) {
     }))
     .sort((a: Entry, b: Entry) => b.value - a.value);
 
-  // Combined-fixture totals (held by both managers — credit the winner / first listed)
+  // Combined-fixture totals (held by both managers)
   const combined: Entry[] = fx
     .map((f: any) => ({
-      managerId: mIdByName(f.winner_name ?? f.home_manager),
-      managerName: f.winner_name ?? f.home_manager,
+      managerId: mIdByName(f.home_manager),
+      managerName: f.home_manager,
+      secondaryManagerId: mIdByName(f.away_manager),
+      secondaryManagerName: f.away_manager,
       value: Number(f.combined_score ?? f.home_score + f.away_score),
       formatted: String(f.combined_score ?? f.home_score + f.away_score),
       context: `${f.season_name} · GW${f.gameweek} · ${f.home_manager} ${f.home_score}–${f.away_score} ${f.away_manager}`,
     }))
     .sort((a: Entry, b: Entry) => b.value - a.value);
-  const combinedLow = [...combined].sort((a: Entry, b: Entry) => a.value - b.value);
+  // Lowest combined: exclude fixtures where either side scored 0 (outliers)
+  const combinedLow = [...combined]
+    .filter((e: any) => {
+      const ctxScores = String(e.context).match(/(\d+)–(\d+)/);
+      if (!ctxScores) return e.value > 0;
+      return Number(ctxScores[1]) > 0 && Number(ctxScores[2]) > 0;
+    })
+    .sort((a: Entry, b: Entry) => a.value - b.value);
 
   const gameweek: RecordDef[] = [
     { key: "gw-high", label: "Highest GW Score", icon: <Flame />, tint: "hsl(15 85% 55%)", entries: highestGW, unit: "pts" },
