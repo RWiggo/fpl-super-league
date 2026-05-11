@@ -541,3 +541,13 @@ function ord(n: number) {
 function compactNumber(value: number) {
   return Math.round(value).toLocaleString(undefined, { notation: "compact", maximumFractionDigits: 1 });
 }
+
+function TitleStars({ count, className = "" }: { count: number; className?: string }) {
+  return (
+    <span className={`inline-flex items-center gap-px flex-shrink-0 ${className}`} title={`${count} title${count === 1 ? "" : "s"}`}>
+      {Array.from({ length: count }).map((_, i) => (
+        <Star key={i} className="w-3 h-3 fill-gold text-gold" />
+      ))}
+    </span>
+  );
+}
