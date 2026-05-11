@@ -59,7 +59,10 @@ function RecordsPage() {
       supabase.from("season_standings").select("*"),
       supabase.from("team_of_the_season").select("*"),
       supabase.from("player_team_history").select("*"),
-    ]).then(([s, m, a, f, st, sd, tots, pth]) =>
+      supabase.from("unbeaten_streaks").select("*"),
+      supabase.from("winless_streaks").select("*"),
+      supabase.from("losing_streaks").select("*"),
+    ]).then(([s, m, a, f, st, sd, tots, pth, ub, wl, ls]) =>
       setD({
         seasons: s.data ?? [],
         managers: m.data ?? [],
@@ -69,6 +72,9 @@ function RecordsPage() {
         standings: sd.data ?? [],
         tots: tots.data ?? [],
         playerHistory: pth.data ?? [],
+        unbeaten: ub.data ?? [],
+        winless: wl.data ?? [],
+        losing: ls.data ?? [],
       })
     );
   }, []);
