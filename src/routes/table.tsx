@@ -55,6 +55,28 @@ function TablePage() {
     ]).then(([a, m, s, st]) => setD({ alltime: a.data ?? [], managers: m.data ?? [], seasons: s.data ?? [], standings: st.data ?? [] }));
   }, []);
 
+  const spoonsByMgr = useMemo(() => {
+    if (!d) return new Map<string, number>();
+    // Group standings by season, find max position per season => last place
+    const bySeason = new Map<string, any[]>();
+    for (const r of d.standings) {
+      const k = String(r.season_id);
+      if (!bySeason.has(k)) bySeason.set(k, []);
+      bySeason.get(k)!.push(r);
+    }
+    const counts = new Map<string, number>();
+    for (const arr of bySeason.values()) {
+      const maxPos = Math.max(...arr.map((x) => x.position ?? 0));
+      for (const x of arr) {
+        if (x.position === maxPos) {
+          const k = String(x.manager_id);
+          counts.set(k, (counts.get(k) ?? 0) + 1);
+        }
+      }
+    }
+    return counts;
+  }, [d]);
+
   const enriched = useMemo(() => {
     if (!d) return [];
     const mapped = [...d.alltime].map((r) => {
@@ -76,12 +98,13 @@ function TablePage() {
           _pts: r.total_league_points ?? 0,
           _best: r.best_finish ?? null,
           _titles: r.titles_won ?? 0,
+          _spoons: spoonsByMgr.get(String(r.manager_id)) ?? 0,
         };
       });
     return mapped
       .sort((a, b) => (b._titles - a._titles) || (b._ppgRaw - a._ppgRaw) || (b._pf - a._pf))
       .map((r, i) => ({ ...r, _rank: i + 1 }));
-  }, [d]);
+  }, [d, spoonsByMgr]);
 
   const rows = useMemo(() => {
     const dir = sortDir === "asc" ? 1 : -1;
