@@ -194,11 +194,23 @@ function buildRecords(d: any) {
       }))
       .sort((a, b) => b.value - a.value);
 
+  const fplCareer = (asc = false): Entry[] =>
+    [...d.alltime]
+      .map((r: any) => ({
+        managerId: r.manager_id,
+        managerName: r.manager_name,
+        value: Number(r.total_points_for ?? 0),
+        formatted: Number(r.total_points_for ?? 0).toLocaleString(),
+      }))
+      .sort((a, b) => (asc ? a.value - b.value : b.value - a.value));
+
   const competition: RecordDef[] = [
     { key: "titles", label: "Most Titles", icon: <Crown />, tint: "hsl(45 90% 55%)", entries: titlesEntries, unit: "titles" },
     { key: "career-wins", label: "Most Wins", icon: <Trophy />, tint: "hsl(145 70% 50%)", entries: careerEntry("total_wins"), unit: "wins" },
     { key: "career-draws", label: "Most Draws", icon: <Shield />, tint: "hsl(45 60% 60%)", entries: careerEntry("total_draws"), unit: "draws" },
     { key: "career-losses", label: "Most Losses", icon: <TrendingDown />, tint: "hsl(0 70% 55%)", entries: careerEntry("total_losses"), unit: "losses" },
+    { key: "career-fpl-high", label: "Most FPL Points", icon: <Flame />, tint: "hsl(15 85% 55%)", entries: fplCareer(false), unit: "pts" },
+    { key: "career-fpl-low", label: "Fewest FPL Points", icon: <TrendingDown />, tint: "hsl(200 40% 55%)", entries: fplCareer(true), unit: "pts" },
   ];
 
   // ---- Gameweek (per fixture / per side) ----
