@@ -295,28 +295,15 @@ function buildRecords(d: any) {
     return arr.sort((a, b) => (asc ? a.value - b.value : b.value - a.value));
   };
 
-  // Most TOTS appearances by manager (one per season)
-  const totsByMgrSeason: Record<string, number> = {};
-  d.tots.forEach((t: any) => {
-    const k = `${t.manager_name}__${t.season_name}`;
-    totsByMgrSeason[k] = (totsByMgrSeason[k] ?? 0) + 1;
-  });
-  const totsBestSingleSeason: Entry[] = Object.entries(totsByMgrSeason)
-    .map(([k, count]) => {
-      const [name, season] = k.split("__");
-      return {
-        managerId: mIdByName(name),
-        managerName: name,
-        value: count,
-        formatted: String(count),
-        context: season,
-      };
-    })
-    .sort((a, b) => b.value - a.value);
+  // TOTS: only seasons 1-3 (the original three TOTS selections, ~33 players total)
+  const tots1to3SeasonNames = new Set(
+    [...d.seasons].sort((a: any, b: any) => a.year_start - b.year_start).slice(0, 3).map((s: any) => s.name),
+  );
+  const totsRows = d.tots.filter((t: any) => tots1to3SeasonNames.has(t.season_name));
 
-  // Most TOTS players across all seasons (career)
+  // Most TOTS players across seasons 1-3 (career)
   const totsCareer: Record<string, number> = {};
-  d.tots.forEach((t: any) => {
+  totsRows.forEach((t: any) => {
     totsCareer[t.manager_name] = (totsCareer[t.manager_name] ?? 0) + 1;
   });
   const totsCareerEntries: Entry[] = Object.entries(totsCareer)
@@ -328,7 +315,6 @@ function buildRecords(d: any) {
     { key: "s-pts", label: "Most League Points (Season)", icon: <Crown />, tint: "hsl(285 70% 60%)", entries: seasonEntry("total_points"), unit: "pts" },
     { key: "s-pf", label: "Most FPL Points (Season)", icon: <Flame />, tint: "hsl(15 85% 55%)", entries: seasonEntry("points_for", (v) => v.toFixed(0)), unit: "pts" },
     { key: "s-losses", label: "Fewest Losses (Season)", icon: <Shield />, tint: "hsl(195 80% 55%)", entries: seasonEntry("losses", String, true), unit: "losses" },
-    { key: "s-tots-season", label: "Most TOTS Players (Season)", icon: <Trophy />, tint: "hsl(45 80% 50%)", entries: totsBestSingleSeason, unit: "players" },
     { key: "s-tots-career", label: "Most TOTS Players (All-Time)", icon: <Crown />, tint: "hsl(45 90% 60%)", entries: totsCareerEntries, unit: "players" },
   ];
 
