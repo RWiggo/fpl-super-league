@@ -148,6 +148,7 @@ function TablePage() {
     { key: "draws", label: "Most Draws", sortBy: (r) => r._draws, format: (r) => String(r._draws), valueLabel: "Draws", tone: "negative" },
     { key: "losses", label: "Most Losses", sortBy: (r) => r._losses, format: (r) => String(r._losses), valueLabel: "Losses", tone: "negative" },
     { key: "pa", label: "Most Points Against", sortBy: (r) => r._pa, format: (r) => Math.round(r._pa).toLocaleString(), valueLabel: "PA", tone: "negative" },
+    { key: "spoons", label: "Most Wooden Spoons", sortBy: (r) => r._spoons, format: (r) => `${r._spoons} 🥄`, valueLabel: "Spoons", tone: "negative" },
   ];
   const AWARDS: AwardDef[] = [...POSITIVE_AWARDS, ...NEGATIVE_AWARDS];
   const top5For = (a: AwardDef) => [...enriched].sort((x, y) => a.sortBy(y) - a.sortBy(x)).slice(0, 5);
