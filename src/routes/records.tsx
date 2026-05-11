@@ -540,7 +540,11 @@ function RecordModal({ def, mById, onClose }: { def: RecordDef; mById: (id: any)
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <div className="capitalize font-medium truncate">{name}</div>
+                  <div className="capitalize font-medium truncate">
+                    {e.secondaryManagerName || e.secondaryManagerId
+                      ? `${name} vs ${(e.secondaryManagerId != null ? mById(e.secondaryManagerId)?.name : null) ?? e.secondaryManagerName}`
+                      : name}
+                  </div>
                   {e.context && <div className="text-[11px] text-muted-foreground truncate">{e.context}</div>}
                 </div>
                 <span className="font-display text-lg text-gold tabular-nums">
