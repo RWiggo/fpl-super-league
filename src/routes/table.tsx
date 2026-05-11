@@ -37,7 +37,7 @@ const COLS: { key: SortKey; label: string; tip: string; align: "left" | "center"
   { key: "pts", label: "Pts", tip: "Total League Points (3W/1D)", align: "right" },
 ];
 
-type AwardKey = "wins" | "pf" | "pa" | "ppg" | "winpct" | "titles" | "pts" | "draws" | "losses" | "pd";
+type AwardKey = "wins" | "pf" | "pa" | "ppg" | "winpct" | "titles" | "pts" | "draws" | "losses" | "pd" | "spoons";
 
 function TablePage() {
   const [d, setD] = useState<any>(null);
@@ -51,7 +51,8 @@ function TablePage() {
       supabase.from("alltime_table").select("*"),
       supabase.from("managers").select("*"),
       supabase.from("seasons").select("*"),
-    ]).then(([a, m, s]) => setD({ alltime: a.data ?? [], managers: m.data ?? [], seasons: s.data ?? [] }));
+      supabase.from("season_standings").select("season_id,manager_id,position"),
+    ]).then(([a, m, s, st]) => setD({ alltime: a.data ?? [], managers: m.data ?? [], seasons: s.data ?? [], standings: st.data ?? [] }));
   }, []);
 
   const enriched = useMemo(() => {
