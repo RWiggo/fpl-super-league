@@ -26,6 +26,9 @@ type Entry = {
   // Manager identification (id preferred so we can link/badge)
   managerId?: string | number | null;
   managerName?: string | null;
+  // Optional second manager (used for joint records like a fixture)
+  secondaryManagerId?: string | number | null;
+  secondaryManagerName?: string | null;
   // Optional second line of context (season, gameweek, etc.)
   context?: string;
 };
