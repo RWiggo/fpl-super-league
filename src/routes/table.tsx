@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/StatCard";
 import { getBranding } from "@/lib/managerBranding";
-import { Trophy, Crown, Medal, ArrowUp, ArrowDown, ChevronsUpDown, X } from "lucide-react";
+import { Trophy, Crown, Medal, ArrowUp, ArrowDown, ChevronsUpDown, X, Star } from "lucide-react";
 import logo from "@/assets/fpl-super-league-logo.png";
 
 export const Route = createFileRoute("/table")({
@@ -37,7 +37,7 @@ const COLS: { key: SortKey; label: string; tip: string; align: "left" | "center"
   { key: "pts", label: "Pts", tip: "Total League Points (3W/1D)", align: "right" },
 ];
 
-type AwardKey = "wins" | "pf" | "pa" | "ppg" | "winpct" | "titles" | "pts" | "draws" | "losses" | "pd";
+type AwardKey = "wins" | "pf" | "pa" | "ppg" | "winpct" | "titles" | "pts" | "draws" | "losses" | "pd" | "spoons";
 
 function TablePage() {
   const [d, setD] = useState<any>(null);
@@ -51,8 +51,31 @@ function TablePage() {
       supabase.from("alltime_table").select("*"),
       supabase.from("managers").select("*"),
       supabase.from("seasons").select("*"),
-    ]).then(([a, m, s]) => setD({ alltime: a.data ?? [], managers: m.data ?? [], seasons: s.data ?? [] }));
+      supabase.from("season_standings").select("season_id,manager_id,position"),
+    ]).then(([a, m, s, st]) => setD({ alltime: a.data ?? [], managers: m.data ?? [], seasons: s.data ?? [], standings: st.data ?? [] }));
   }, []);
+
+  const spoonsByMgr = useMemo(() => {
+    if (!d) return new Map<string, number>();
+    // Group standings by season, find max position per season => last place
+    const bySeason = new Map<string, any[]>();
+    for (const r of d.standings) {
+      const k = String(r.season_id);
+      if (!bySeason.has(k)) bySeason.set(k, []);
+      bySeason.get(k)!.push(r);
+    }
+    const counts = new Map<string, number>();
+    for (const arr of bySeason.values()) {
+      const maxPos = Math.max(...arr.map((x) => x.position ?? 0));
+      for (const x of arr) {
+        if (x.position === maxPos) {
+          const k = String(x.manager_id);
+          counts.set(k, (counts.get(k) ?? 0) + 1);
+        }
+      }
+    }
+    return counts;
+  }, [d]);
 
   const enriched = useMemo(() => {
     if (!d) return [];
@@ -75,12 +98,13 @@ function TablePage() {
           _pts: r.total_league_points ?? 0,
           _best: r.best_finish ?? null,
           _titles: r.titles_won ?? 0,
+          _spoons: spoonsByMgr.get(String(r.manager_id)) ?? 0,
         };
       });
     return mapped
       .sort((a, b) => (b._titles - a._titles) || (b._ppgRaw - a._ppgRaw) || (b._pf - a._pf))
       .map((r, i) => ({ ...r, _rank: i + 1 }));
-  }, [d]);
+  }, [d, spoonsByMgr]);
 
   const rows = useMemo(() => {
     const dir = sortDir === "asc" ? 1 : -1;
@@ -124,6 +148,7 @@ function TablePage() {
     { key: "draws", label: "Most Draws", sortBy: (r) => r._draws, format: (r) => String(r._draws), valueLabel: "Draws", tone: "negative" },
     { key: "losses", label: "Most Losses", sortBy: (r) => r._losses, format: (r) => String(r._losses), valueLabel: "Losses", tone: "negative" },
     { key: "pa", label: "Most Points Against", sortBy: (r) => r._pa, format: (r) => Math.round(r._pa).toLocaleString(), valueLabel: "PA", tone: "negative" },
+    { key: "spoons", label: "Most Wooden Spoons", sortBy: (r) => r._spoons, format: (r) => `${r._spoons} 🥄`, valueLabel: "Spoons", tone: "negative" },
   ];
   const AWARDS: AwardDef[] = [...POSITIVE_AWARDS, ...NEGATIVE_AWARDS];
   const top5For = (a: AwardDef) => [...enriched].sort((x, y) => a.sortBy(y) - a.sortBy(x)).slice(0, 5);
@@ -237,6 +262,7 @@ function TablePage() {
                     </div>
                   )}
                   <span className="capitalize font-bold text-sm truncate">{m?.name ?? r.manager_name}</span>
+                  {r._titles > 0 && <TitleStars count={r._titles} />}
                   <span className="ml-auto font-display text-gold text-base tabular-nums">{r._ppg.toFixed(1)}</span>
                 </div>
                 <div className="grid grid-cols-7 gap-px text-center text-[9px] leading-tight">
@@ -297,6 +323,7 @@ function TablePage() {
                           </div>
                         )}
                         <span className="hidden sm:inline whitespace-nowrap font-medium">{m?.name ?? r.manager_name}</span>
+                        {r._titles > 0 && <TitleStars count={r._titles} className="hidden sm:inline-flex" />}
                       </Link>
                     </td>
                     <td className="text-center px-0.5 py-1 sm:p-3">{r.seasons_played ?? "—"}</td>
@@ -513,4 +540,14 @@ function ord(n: number) {
 
 function compactNumber(value: number) {
   return Math.round(value).toLocaleString(undefined, { notation: "compact", maximumFractionDigits: 1 });
+}
+
+function TitleStars({ count, className = "" }: { count: number; className?: string }) {
+  return (
+    <span className={`inline-flex items-center gap-px flex-shrink-0 ${className}`} title={`${count} title${count === 1 ? "" : "s"}`}>
+      {Array.from({ length: count }).map((_, i) => (
+        <Star key={i} className="w-3 h-3 fill-gold text-gold" />
+      ))}
+    </span>
+  );
 }
