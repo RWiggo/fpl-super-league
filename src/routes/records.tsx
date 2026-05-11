@@ -26,6 +26,9 @@ type Entry = {
   // Manager identification (id preferred so we can link/badge)
   managerId?: string | number | null;
   managerName?: string | null;
+  // Optional second manager (used for joint records like a fixture)
+  secondaryManagerId?: string | number | null;
+  secondaryManagerName?: string | null;
   // Optional second line of context (season, gameweek, etc.)
   context?: string;
 };
@@ -56,7 +59,10 @@ function RecordsPage() {
       supabase.from("season_standings").select("*"),
       supabase.from("team_of_the_season").select("*"),
       supabase.from("player_team_history").select("*"),
-    ]).then(([s, m, a, f, st, sd, tots, pth]) =>
+      supabase.from("unbeaten_streaks").select("*"),
+      supabase.from("winless_streaks").select("*"),
+      supabase.from("losing_streaks").select("*"),
+    ]).then(([s, m, a, f, st, sd, tots, pth, ub, wl, ls]) =>
       setD({
         seasons: s.data ?? [],
         managers: m.data ?? [],
@@ -66,6 +72,9 @@ function RecordsPage() {
         standings: sd.data ?? [],
         tots: tots.data ?? [],
         playerHistory: pth.data ?? [],
+        unbeaten: ub.data ?? [],
+        winless: wl.data ?? [],
+        losing: ls.data ?? [],
       })
     );
   }, []);
@@ -185,11 +194,23 @@ function buildRecords(d: any) {
       }))
       .sort((a, b) => b.value - a.value);
 
+  const fplCareer = (asc = false): Entry[] =>
+    [...d.alltime]
+      .map((r: any) => ({
+        managerId: r.manager_id,
+        managerName: r.manager_name,
+        value: Number(r.total_points_for ?? 0),
+        formatted: Number(r.total_points_for ?? 0).toLocaleString(),
+      }))
+      .sort((a, b) => (asc ? a.value - b.value : b.value - a.value));
+
   const competition: RecordDef[] = [
     { key: "titles", label: "Most Titles", icon: <Crown />, tint: "hsl(45 90% 55%)", entries: titlesEntries, unit: "titles" },
     { key: "career-wins", label: "Most Wins", icon: <Trophy />, tint: "hsl(145 70% 50%)", entries: careerEntry("total_wins"), unit: "wins" },
     { key: "career-draws", label: "Most Draws", icon: <Shield />, tint: "hsl(45 60% 60%)", entries: careerEntry("total_draws"), unit: "draws" },
     { key: "career-losses", label: "Most Losses", icon: <TrendingDown />, tint: "hsl(0 70% 55%)", entries: careerEntry("total_losses"), unit: "losses" },
+    { key: "career-fpl-high", label: "Most FPL Points", icon: <Flame />, tint: "hsl(15 85% 55%)", entries: fplCareer(false), unit: "pts" },
+    { key: "career-fpl-low", label: "Fewest FPL Points", icon: <TrendingDown />, tint: "hsl(200 40% 55%)", entries: fplCareer(true), unit: "pts" },
   ];
 
   // ---- Gameweek (per fixture / per side) ----
@@ -215,7 +236,8 @@ function buildRecords(d: any) {
     });
   });
   const highestGW = [...sideScores].sort((a, b) => b.value - a.value);
-  const lowestGW = [...sideScores].sort((a, b) => a.value - b.value);
+  // Lowest GW score: exclude 0s as outliers (missed deadlines, etc.)
+  const lowestGW = [...sideScores].filter((e) => e.value > 0).sort((a, b) => a.value - b.value);
 
   // Margins (winner's margin — held by the winning manager)
   const margins: Entry[] = fx
@@ -229,17 +251,26 @@ function buildRecords(d: any) {
     }))
     .sort((a: Entry, b: Entry) => b.value - a.value);
 
-  // Combined-fixture totals (held by both managers — credit the winner / first listed)
+  // Combined-fixture totals (held by both managers)
   const combined: Entry[] = fx
     .map((f: any) => ({
-      managerId: mIdByName(f.winner_name ?? f.home_manager),
-      managerName: f.winner_name ?? f.home_manager,
+      managerId: mIdByName(f.home_manager),
+      managerName: f.home_manager,
+      secondaryManagerId: mIdByName(f.away_manager),
+      secondaryManagerName: f.away_manager,
       value: Number(f.combined_score ?? f.home_score + f.away_score),
       formatted: String(f.combined_score ?? f.home_score + f.away_score),
       context: `${f.season_name} · GW${f.gameweek} · ${f.home_manager} ${f.home_score}–${f.away_score} ${f.away_manager}`,
     }))
     .sort((a: Entry, b: Entry) => b.value - a.value);
-  const combinedLow = [...combined].sort((a: Entry, b: Entry) => a.value - b.value);
+  // Lowest combined: exclude fixtures where either side scored 0 (outliers)
+  const combinedLow = [...combined]
+    .filter((e: any) => {
+      const ctxScores = String(e.context).match(/(\d+)–(\d+)/);
+      if (!ctxScores) return e.value > 0;
+      return Number(ctxScores[1]) > 0 && Number(ctxScores[2]) > 0;
+    })
+    .sort((a: Entry, b: Entry) => a.value - b.value);
 
   const gameweek: RecordDef[] = [
     { key: "gw-high", label: "Highest GW Score", icon: <Flame />, tint: "hsl(15 85% 55%)", entries: highestGW, unit: "pts" },
@@ -264,28 +295,15 @@ function buildRecords(d: any) {
     return arr.sort((a, b) => (asc ? a.value - b.value : b.value - a.value));
   };
 
-  // Most TOTS appearances by manager (one per season)
-  const totsByMgrSeason: Record<string, number> = {};
-  d.tots.forEach((t: any) => {
-    const k = `${t.manager_name}__${t.season_name}`;
-    totsByMgrSeason[k] = (totsByMgrSeason[k] ?? 0) + 1;
-  });
-  const totsBestSingleSeason: Entry[] = Object.entries(totsByMgrSeason)
-    .map(([k, count]) => {
-      const [name, season] = k.split("__");
-      return {
-        managerId: mIdByName(name),
-        managerName: name,
-        value: count,
-        formatted: String(count),
-        context: season,
-      };
-    })
-    .sort((a, b) => b.value - a.value);
+  // TOTS: only seasons 1-3 (the original three TOTS selections, ~33 players total)
+  const tots1to3SeasonNames = new Set(
+    [...d.seasons].sort((a: any, b: any) => a.year_start - b.year_start).slice(0, 3).map((s: any) => s.name),
+  );
+  const totsRows = d.tots.filter((t: any) => tots1to3SeasonNames.has(t.season_name));
 
-  // Most TOTS players across all seasons (career)
+  // Most TOTS players across seasons 1-3 (career)
   const totsCareer: Record<string, number> = {};
-  d.tots.forEach((t: any) => {
+  totsRows.forEach((t: any) => {
     totsCareer[t.manager_name] = (totsCareer[t.manager_name] ?? 0) + 1;
   });
   const totsCareerEntries: Entry[] = Object.entries(totsCareer)
@@ -297,22 +315,12 @@ function buildRecords(d: any) {
     { key: "s-pts", label: "Most League Points (Season)", icon: <Crown />, tint: "hsl(285 70% 60%)", entries: seasonEntry("total_points"), unit: "pts" },
     { key: "s-pf", label: "Most FPL Points (Season)", icon: <Flame />, tint: "hsl(15 85% 55%)", entries: seasonEntry("points_for", (v) => v.toFixed(0)), unit: "pts" },
     { key: "s-losses", label: "Fewest Losses (Season)", icon: <Shield />, tint: "hsl(195 80% 55%)", entries: seasonEntry("losses", String, true), unit: "losses" },
-    { key: "s-tots-season", label: "Most TOTS Players (Season)", icon: <Trophy />, tint: "hsl(45 80% 50%)", entries: totsBestSingleSeason, unit: "players" },
     { key: "s-tots-career", label: "Most TOTS Players (All-Time)", icon: <Crown />, tint: "hsl(45 90% 60%)", entries: totsCareerEntries, unit: "players" },
   ];
 
   // ---- Streaks ----
-  const streakOf = (predicate: (o: string) => boolean): Entry[] => {
-    // Group consecutive same-outcome rows in the right order? The win_streaks table
-    // already stores discrete maximal runs. To compute "unbeaten" or "winless", we
-    // need to merge — but since the table only stores W/L/D individually, the best
-    // approximation we have is the longest single-outcome run that satisfies the
-    // predicate. For longest unbeaten/winless, we treat it as max(streak) where
-    // outcome matches the predicate set; if both W and D rows exist back-to-back
-    // for the same manager/season, the merged streak isn't represented here, so
-    // we fall back to the longest single-outcome qualifying run.
-    return [...d.streaks]
-      .filter((s: any) => predicate(s.outcome))
+  const fromStreakTable = (rows: any[]): Entry[] =>
+    [...rows]
       .map((s: any) => ({
         managerId: mIdByName(s.manager_name),
         managerName: s.manager_name,
@@ -321,87 +329,23 @@ function buildRecords(d: any) {
         context: `${s.season_name} · GW${s.streak_start_gw}–${s.streak_end_gw}`,
       }))
       .sort((a, b) => b.value - a.value);
-  };
 
-  // For unbeaten / winless we compute properly from raw fixtures because the
-  // streaks table only stores single-outcome maximal runs.
-  const merged = computeMergedStreaks(d.fixtures, d.managers, seasonById);
+  const winRows = (d.streaks ?? []).filter((s: any) => s.outcome === "W");
+  const lossRows = (d.losing ?? []).length
+    ? d.losing
+    : (d.streaks ?? []).filter((s: any) => s.outcome === "L");
 
   const streaks: RecordDef[] = [
-    { key: "st-win", label: "Longest Winning Streak", icon: <Flame />, tint: "hsl(45 90% 55%)", entries: streakOf((o) => o === "W"), unit: "wins" },
-    { key: "st-unbeaten", label: "Longest Unbeaten Streak", icon: <Shield />, tint: "hsl(145 70% 50%)", entries: merged.unbeaten, unit: "matches" },
-    { key: "st-winless", label: "Longest Winless Run", icon: <TrendingDown />, tint: "hsl(30 60% 50%)", entries: merged.winless, unit: "matches" },
-    { key: "st-loss", label: "Longest Losing Run", icon: <TrendingDown />, tint: "hsl(0 75% 50%)", entries: streakOf((o) => o === "L"), unit: "losses" },
+    { key: "st-win", label: "Longest Winning Streak", icon: <Flame />, tint: "hsl(45 90% 55%)", entries: fromStreakTable(winRows), unit: "wins" },
+    { key: "st-unbeaten", label: "Longest Unbeaten Streak", icon: <Shield />, tint: "hsl(145 70% 50%)", entries: fromStreakTable(d.unbeaten ?? []), unit: "matches" },
+    { key: "st-winless", label: "Longest Winless Run", icon: <TrendingDown />, tint: "hsl(30 60% 50%)", entries: fromStreakTable(d.winless ?? []), unit: "matches" },
+    { key: "st-loss", label: "Longest Losing Run", icon: <TrendingDown />, tint: "hsl(0 75% 50%)", entries: fromStreakTable(lossRows), unit: "losses" },
   ];
 
   // ---- All-Time XI from single-season performances ----
   const bestXI = buildBestXI(d.playerHistory);
 
   return { competition, gameweek, season, streaks, bestXI };
-}
-
-// Compute longest unbeaten (W/D) and winless (D/L) per (manager, season) by
-// scanning fixtures in gameweek order. Returns the longest run per manager.
-function computeMergedStreaks(fixtures: any[], managers: any[], seasonById: Record<string, any>) {
-  const fxByMgrSeason: Record<string, any[]> = {};
-  fixtures
-    .filter((f) => f.home_score != null && f.away_score != null)
-    .forEach((f) => {
-      const homeId = f.home_manager_id;
-      const awayId = f.away_manager_id;
-      const homeRes = f.home_score > f.away_score ? "W" : f.home_score < f.away_score ? "L" : "D";
-      const awayRes = f.away_score > f.home_score ? "W" : f.away_score < f.home_score ? "L" : "D";
-      const kH = `${homeId}__${f.season_id}`;
-      const kA = `${awayId}__${f.season_id}`;
-      (fxByMgrSeason[kH] ||= []).push({ gw: f.gameweek, res: homeRes });
-      (fxByMgrSeason[kA] ||= []).push({ gw: f.gameweek, res: awayRes });
-    });
-
-  const longest = (predicate: (r: string) => boolean) => {
-    const best: Record<string, { len: number; season: string; start: number; end: number }> = {};
-    for (const k of Object.keys(fxByMgrSeason)) {
-      const [mgrId, seasonId] = k.split("__");
-      const arr = fxByMgrSeason[k].sort((a, b) => a.gw - b.gw);
-      let cur = 0;
-      let curStart = 0;
-      let topLen = 0;
-      let topStart = 0;
-      let topEnd = 0;
-      for (const r of arr) {
-        if (predicate(r.res)) {
-          if (cur === 0) curStart = r.gw;
-          cur += 1;
-          if (cur > topLen) {
-            topLen = cur;
-            topStart = curStart;
-            topEnd = r.gw;
-          }
-        } else {
-          cur = 0;
-        }
-      }
-      if (topLen > (best[mgrId]?.len ?? 0)) {
-        best[mgrId] = { len: topLen, season: seasonById[seasonId]?.name ?? "", start: topStart, end: topEnd };
-      }
-    }
-    return Object.entries(best)
-      .map(([mgrId, v]) => {
-        const m = managers.find((mm) => String(mm.id) === String(mgrId));
-        return {
-          managerId: mgrId,
-          managerName: m?.name,
-          value: v.len,
-          formatted: String(v.len),
-          context: `${v.season} · GW${v.start}–${v.end}`,
-        } as Entry;
-      })
-      .sort((a, b) => b.value - a.value);
-  };
-
-  return {
-    unbeaten: longest((r) => r === "W" || r === "D"),
-    winless: longest((r) => r === "L" || r === "D"),
-  };
 }
 
 // Build an All-Time XI from the best single-season performances per player,
@@ -447,13 +391,14 @@ function buildBestXI(history: any[]) {
     const total = all.reduce((s, p) => s + (p.fantasy_points ?? 0), 0);
     if (total > best.total) best = { total, formation: f, players: all };
   }
-  // Normalise for FormationPitch
+  // Normalise for FormationPitch (carry manager_id so each player wears their kit)
   const mapped = best.players.map((p) => ({
     player_name: p.player_name,
     position: ({ G: "GK", D: "DEF", M: "MID", F: "FWD" } as any)[p.position],
     club: p.club,
     total_fantasy_points: p.fantasy_points,
     avg_points_per_game: p.avg_points_per_game,
+    manager_id: p.manager_id,
   }));
   return { formation: best.formation, players: mapped };
 }
@@ -506,25 +451,36 @@ function RecordCard({ def, onOpen, mById }: { def: RecordDef; onOpen: () => void
         {top.map((e, i) => {
           const m = e.managerId != null ? mById(e.managerId) : null;
           const b = e.managerId != null ? getBranding(String(e.managerId)) : null;
+          const m2 = e.secondaryManagerId != null ? mById(e.secondaryManagerId) : null;
+          const b2 = e.secondaryManagerId != null ? getBranding(String(e.secondaryManagerId)) : null;
           const tint = b?.primary ?? def.tint;
           const pct = max > 0 ? Math.max(4, (e.value / max) * 100) : 0;
           const name = m?.name ?? e.managerName ?? "—";
+          const name2 = m2?.name ?? e.secondaryManagerName;
           return (
             <div key={i} className="flex items-center gap-2">
               <span className={`font-display text-sm w-4 text-right ${i === 0 ? "text-gold" : "text-white/40"}`}>{i + 1}</span>
-              {b?.badge ? (
-                <img src={b.badge} alt="" className="w-6 h-6 object-contain flex-shrink-0" />
-              ) : (
-                <div
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0"
-                  style={{ background: tint }}
-                >
-                  {String(name).charAt(0).toUpperCase()}
-                </div>
-              )}
+              <div className="flex items-center -space-x-2 flex-shrink-0">
+                {b?.badge ? (
+                  <img src={b.badge} alt="" className="w-6 h-6 object-contain" />
+                ) : (
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white" style={{ background: tint }}>
+                    {String(name).charAt(0).toUpperCase()}
+                  </div>
+                )}
+                {name2 && (b2?.badge ? (
+                  <img src={b2.badge} alt="" className="w-6 h-6 object-contain ring-1 ring-background rounded-full" />
+                ) : (
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white ring-1 ring-background" style={{ background: b2?.primary ?? def.tint }}>
+                    {String(name2).charAt(0).toUpperCase()}
+                  </div>
+                ))}
+              </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-xs capitalize truncate text-white/85 font-medium">{name}</span>
+                  <span className="text-xs capitalize truncate text-white/85 font-medium">
+                    {name2 ? `${name} vs ${name2}` : name}
+                  </span>
                   <span className="font-display text-base text-white tabular-nums">{e.formatted}</span>
                 </div>
                 <div className="h-1.5 mt-1 rounded-full overflow-hidden bg-white/5">
@@ -584,7 +540,11 @@ function RecordModal({ def, mById, onClose }: { def: RecordDef; mById: (id: any)
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <div className="capitalize font-medium truncate">{name}</div>
+                  <div className="capitalize font-medium truncate">
+                    {e.secondaryManagerName || e.secondaryManagerId
+                      ? `${name} vs ${(e.secondaryManagerId != null ? mById(e.secondaryManagerId)?.name : null) ?? e.secondaryManagerName}`
+                      : name}
+                  </div>
                   {e.context && <div className="text-[11px] text-muted-foreground truncate">{e.context}</div>}
                 </div>
                 <span className="font-display text-lg text-gold tabular-nums">
