@@ -308,27 +308,14 @@ export function Layout() {
                   })}
                 </div>
               </details>
-              <Link
-                to="/records"
-                onClick={() => setOpen(false)}
-                className="block py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-white/85 hover:text-cyan-300 border-l-2 border-transparent hover:border-cyan-400 pl-3 transition-all border-t border-cyan-500/15 pt-3 mt-2"
-              >
-                Records
-              </Link>
-              <Link
-                to="/h2h"
-                onClick={() => setOpen(false)}
-                className="block py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-white/85 hover:text-cyan-300 border-l-2 border-transparent hover:border-cyan-400 pl-3 transition-all"
-              >
-                H2H
-              </Link>
-              <Link
-                to="/table"
-                onClick={() => setOpen(false)}
-                className="block py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-white/85 hover:text-cyan-300 border-l-2 border-transparent hover:border-cyan-400 pl-3 transition-all"
-              >
-                Table
-              </Link>
+              <details className="border-t border-cyan-500/15 pt-2 mt-2">
+                <summary className="py-2 text-xs font-bold uppercase tracking-[0.18em] cursor-pointer text-white/85">Historic Overviews</summary>
+                <div className="grid grid-cols-1 gap-2 pt-2 pb-1">
+                  <Link to="/records" onClick={() => setOpen(false)} className="block px-3 py-2 rounded-md border border-white/10 text-[11px] font-bold uppercase tracking-wider text-white/90" style={{ background: "linear-gradient(120deg, hsl(15 85% 55% / 0.25) 0%, rgba(10,17,48,0.5) 100%)" }}>All-Time Records</Link>
+                  <Link to="/h2h" onClick={() => setOpen(false)} className="block px-3 py-2 rounded-md border border-white/10 text-[11px] font-bold uppercase tracking-wider text-white/90" style={{ background: "linear-gradient(120deg, hsl(0 80% 55% / 0.25) 0%, rgba(10,17,48,0.5) 100%)" }}>H2H History</Link>
+                  <Link to="/table" onClick={() => setOpen(false)} className="block px-3 py-2 rounded-md border border-white/10 text-[11px] font-bold uppercase tracking-wider text-white/90" style={{ background: "linear-gradient(120deg, hsl(45 90% 55% / 0.25) 0%, rgba(10,17,48,0.5) 100%)" }}>All-Time League Table</Link>
+                </div>
+              </details>
             </div>
           </div>
         )}
