@@ -300,16 +300,39 @@ function buildRecords(d: any) {
     return arr.sort((a, b) => (asc ? a.value - b.value : b.value - a.value));
   };
 
-  // TOTS: only seasons 1-3 (the original three TOTS selections, ~33 players total)
+  // League TOTS = best legal-formation 11 across all managers per season.
+  // Across the league's first 3 seasons that's exactly 33 selections.
   const tots1to3SeasonNames = new Set(
     [...d.seasons].sort((a: any, b: any) => a.year_start - b.year_start).slice(0, 3).map((s: any) => s.name),
   );
   const totsRows = d.tots.filter((t: any) => tots1to3SeasonNames.has(t.season_name));
-
-  // Most TOTS players across seasons 1-3 (career)
   const totsCareer: Record<string, number> = {};
-  totsRows.forEach((t: any) => {
-    totsCareer[t.manager_name] = (totsCareer[t.manager_name] ?? 0) + 1;
+  const totsBySeason: Record<string, any[]> = {};
+  totsRows.forEach((r: any) => { (totsBySeason[r.season_name] ??= []).push(r); });
+  const tFormations = [
+    { def: 3, mid: 4, fwd: 3 }, { def: 3, mid: 5, fwd: 2 }, { def: 4, mid: 3, fwd: 3 },
+    { def: 4, mid: 4, fwd: 2 }, { def: 4, mid: 5, fwd: 1 }, { def: 5, mid: 3, fwd: 2 }, { def: 5, mid: 4, fwd: 1 },
+  ];
+  const posMapTots: Record<string, string> = { G: "GK", D: "DEF", M: "MID", F: "FWD" };
+  Object.values(totsBySeason).forEach((rows: any[]) => {
+    const byPos: Record<string, any[]> = { GK: [], DEF: [], MID: [], FWD: [] };
+    for (const p of rows) {
+      const pos = posMapTots[p.position];
+      if (pos) byPos[pos].push(p);
+    }
+    Object.keys(byPos).forEach((k) => byPos[k].sort((a, b) => (b.fantasy_points ?? 0) - (a.fantasy_points ?? 0)));
+    let best = { total: -1, players: [] as any[] };
+    for (const f of tFormations) {
+      const gk = byPos.GK.slice(0, 1);
+      const def = byPos.DEF.slice(0, f.def);
+      const mid = byPos.MID.slice(0, f.mid);
+      const fwd = byPos.FWD.slice(0, f.fwd);
+      if (gk.length < 1 || def.length < f.def || mid.length < f.mid || fwd.length < f.fwd) continue;
+      const all = [...gk, ...def, ...mid, ...fwd];
+      const total = all.reduce((s, p) => s + (p.fantasy_points ?? 0), 0);
+      if (total > best.total) best = { total, players: all };
+    }
+    for (const p of best.players) totsCareer[p.manager_name] = (totsCareer[p.manager_name] ?? 0) + 1;
   });
   const totsCareerEntries: Entry[] = Object.entries(totsCareer)
     .map(([name, c]) => ({ managerId: mIdByName(name), managerName: name, value: c, formatted: String(c) }))
