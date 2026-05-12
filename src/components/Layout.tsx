@@ -321,6 +321,20 @@ export function Layout() {
         )}
       </header>
 
+      <main className="flex-1">
+        <Outlet />
+      </main>
+
+      <footer className="border-t border-silver/20 mt-20 py-10 text-center text-sm text-muted-foreground">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col items-center gap-3">
+          <img src={logo} alt="FPL Super League" width={40} height={40} className="w-10 h-10 opacity-80" loading="lazy" />
+          <p className="font-display tracking-[0.3em] text-foreground/80">THE FPL SUPER LEAGUE</p>
+          <p className="text-xs tracking-widest uppercase">A Fantasy Archive</p>
+        </div>
+      </footer>
+    </div>
+  );
+}
 
 function HistoryTile({ to, tint, kicker, title, desc }: { to: string; tint: string; kicker: string; title: string; desc: string }) {
   return (
@@ -337,17 +351,3 @@ function HistoryTile({ to, tint, kicker, title, desc }: { to: string; tint: stri
   );
 }
 
-      <main className="flex-1">
-        <Outlet />
-      </main>
-
-      <footer className="border-t border-silver/20 mt-20 py-10 text-center text-sm text-muted-foreground">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col items-center gap-3">
-          <img src={logo} alt="FPL Super League" width={40} height={40} className="w-10 h-10 opacity-80" loading="lazy" />
-          <p className="font-display tracking-[0.3em] text-foreground/80">THE FPL SUPER LEAGUE</p>
-          <p className="text-xs tracking-widest uppercase">A Fantasy Archive</p>
-        </div>
-      </footer>
-    </div>
-  );
-}
