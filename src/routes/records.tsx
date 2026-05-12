@@ -103,15 +103,21 @@ function RecordsPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
           <div className="flex flex-col lg:flex-row items-center gap-10">
             <div className="relative w-[180px] h-[180px] sm:w-[220px] sm:h-[220px] flex-shrink-0">
-              <div className="absolute inset-0 rounded-full" style={{ border: "2px solid hsl(15 85% 55% / 0.4)" }} />
-              <div className="absolute inset-4 rounded-full" style={{ border: "1px solid hsl(15 85% 55% / 0.25)" }} />
-              <img
-                src={logo}
-                alt=""
-                className="relative w-full h-full object-contain p-6 drop-shadow-[0_8px_24px_rgba(0,0,0,0.55)]"
-                style={{ filter: "hue-rotate(155deg) saturate(1.05)" }}
+              <div
+                className="absolute inset-0 rounded-2xl rotate-[8deg]"
+                style={{
+                  background: "linear-gradient(140deg, hsl(15 85% 55% / 0.35) 0%, hsl(0 0% 0% / 0.25) 100%)",
+                  border: "1.5px solid hsl(15 85% 55% / 0.5)",
+                  boxShadow: "0 8px 40px hsl(15 85% 55% / 0.25)",
+                }}
               />
-              <Flame className="absolute -top-3 left-1/2 -translate-x-1/2 w-10 h-10 text-orange-400 drop-shadow-lg" />
+              <div className="absolute inset-2 rounded-2xl -rotate-[8deg] border border-gold/30 bg-background/60 backdrop-blur-sm" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="relative">
+                  <Flame className="w-24 h-24 sm:w-28 sm:h-28 text-orange-400 drop-shadow-[0_4px_18px_rgba(255,140,40,0.6)]" />
+                  <Award className="absolute -bottom-2 -right-2 w-9 h-9 text-gold drop-shadow-lg" />
+                </div>
+              </div>
             </div>
             <div className="text-center lg:text-left">
               <div className="text-xs uppercase tracking-[0.35em] text-gold mb-4">Greatest Feats</div>
