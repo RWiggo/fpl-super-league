@@ -4,8 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/StatCard";
 import { FormationPitch } from "@/components/FormationPitch";
 import { getBranding } from "@/lib/managerBranding";
-import { Flame, Trophy, Crown, Target, Zap, Shield, TrendingDown, X } from "lucide-react";
-import logo from "@/assets/fpl-super-league-logo.png";
+import { Flame, Trophy, Crown, Target, Zap, Shield, TrendingDown, X, Award } from "lucide-react";
 
 export const Route = createFileRoute("/records")({
   component: RecordsPage,
@@ -104,15 +103,21 @@ function RecordsPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
           <div className="flex flex-col lg:flex-row items-center gap-10">
             <div className="relative w-[180px] h-[180px] sm:w-[220px] sm:h-[220px] flex-shrink-0">
-              <div className="absolute inset-0 rounded-full" style={{ border: "2px solid hsl(15 85% 55% / 0.4)" }} />
-              <div className="absolute inset-4 rounded-full" style={{ border: "1px solid hsl(15 85% 55% / 0.25)" }} />
-              <img
-                src={logo}
-                alt=""
-                className="relative w-full h-full object-contain p-6 drop-shadow-[0_8px_24px_rgba(0,0,0,0.55)]"
-                style={{ filter: "hue-rotate(155deg) saturate(1.05)" }}
+              <div
+                className="absolute inset-0 rounded-2xl rotate-[8deg]"
+                style={{
+                  background: "linear-gradient(140deg, hsl(15 85% 55% / 0.35) 0%, hsl(0 0% 0% / 0.25) 100%)",
+                  border: "1.5px solid hsl(15 85% 55% / 0.5)",
+                  boxShadow: "0 8px 40px hsl(15 85% 55% / 0.25)",
+                }}
               />
-              <Flame className="absolute -top-3 left-1/2 -translate-x-1/2 w-10 h-10 text-orange-400 drop-shadow-lg" />
+              <div className="absolute inset-2 rounded-2xl -rotate-[8deg] border border-gold/30 bg-background/60 backdrop-blur-sm" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="relative">
+                  <Flame className="w-24 h-24 sm:w-28 sm:h-28 text-orange-400 drop-shadow-[0_4px_18px_rgba(255,140,40,0.6)]" />
+                  <Award className="absolute -bottom-2 -right-2 w-9 h-9 text-gold drop-shadow-lg" />
+                </div>
+              </div>
             </div>
             <div className="text-center lg:text-left">
               <div className="text-xs uppercase tracking-[0.35em] text-gold mb-4">Greatest Feats</div>
@@ -295,16 +300,39 @@ function buildRecords(d: any) {
     return arr.sort((a, b) => (asc ? a.value - b.value : b.value - a.value));
   };
 
-  // TOTS: only seasons 1-3 (the original three TOTS selections, ~33 players total)
+  // League TOTS = best legal-formation 11 across all managers per season.
+  // Across the league's first 3 seasons that's exactly 33 selections.
   const tots1to3SeasonNames = new Set(
     [...d.seasons].sort((a: any, b: any) => a.year_start - b.year_start).slice(0, 3).map((s: any) => s.name),
   );
   const totsRows = d.tots.filter((t: any) => tots1to3SeasonNames.has(t.season_name));
-
-  // Most TOTS players across seasons 1-3 (career)
   const totsCareer: Record<string, number> = {};
-  totsRows.forEach((t: any) => {
-    totsCareer[t.manager_name] = (totsCareer[t.manager_name] ?? 0) + 1;
+  const totsBySeason: Record<string, any[]> = {};
+  totsRows.forEach((r: any) => { (totsBySeason[r.season_name] ??= []).push(r); });
+  const tFormations = [
+    { def: 3, mid: 4, fwd: 3 }, { def: 3, mid: 5, fwd: 2 }, { def: 4, mid: 3, fwd: 3 },
+    { def: 4, mid: 4, fwd: 2 }, { def: 4, mid: 5, fwd: 1 }, { def: 5, mid: 3, fwd: 2 }, { def: 5, mid: 4, fwd: 1 },
+  ];
+  const posMapTots: Record<string, string> = { G: "GK", D: "DEF", M: "MID", F: "FWD" };
+  Object.values(totsBySeason).forEach((rows: any[]) => {
+    const byPos: Record<string, any[]> = { GK: [], DEF: [], MID: [], FWD: [] };
+    for (const p of rows) {
+      const pos = posMapTots[p.position];
+      if (pos) byPos[pos].push(p);
+    }
+    Object.keys(byPos).forEach((k) => byPos[k].sort((a, b) => (b.fantasy_points ?? 0) - (a.fantasy_points ?? 0)));
+    let best = { total: -1, players: [] as any[] };
+    for (const f of tFormations) {
+      const gk = byPos.GK.slice(0, 1);
+      const def = byPos.DEF.slice(0, f.def);
+      const mid = byPos.MID.slice(0, f.mid);
+      const fwd = byPos.FWD.slice(0, f.fwd);
+      if (gk.length < 1 || def.length < f.def || mid.length < f.mid || fwd.length < f.fwd) continue;
+      const all = [...gk, ...def, ...mid, ...fwd];
+      const total = all.reduce((s, p) => s + (p.fantasy_points ?? 0), 0);
+      if (total > best.total) best = { total, players: all };
+    }
+    for (const p of best.players) totsCareer[p.manager_name] = (totsCareer[p.manager_name] ?? 0) + 1;
   });
   const totsCareerEntries: Entry[] = Object.entries(totsCareer)
     .map(([name, c]) => ({ managerId: mIdByName(name), managerName: name, value: c, formatted: String(c) }))
@@ -343,14 +371,14 @@ function buildRecords(d: any) {
   ];
 
   // ---- All-Time XI from single-season performances ----
-  const bestXI = buildBestXI(d.playerHistory);
+  const bestXI = buildBestXI(d.playerHistory, mgrByName);
 
   return { competition, gameweek, season, streaks, bestXI };
 }
 
 // Build an All-Time XI from the best single-season performances per player,
 // trying every legal formation and picking the one with the highest total.
-function buildBestXI(history: any[]) {
+function buildBestXI(history: any[], mgrByName: Record<string, any>) {
   // Best single season per player (by player_name, since player_id may collide across managers)
   const bestPerPlayer: Record<string, any> = {};
   for (const r of history) {
@@ -398,7 +426,7 @@ function buildBestXI(history: any[]) {
     club: p.club,
     total_fantasy_points: p.fantasy_points,
     avg_points_per_game: p.avg_points_per_game,
-    manager_id: p.manager_id,
+    manager_id: p.manager_id ?? mgrByName[p.manager_name]?.id,
   }));
   return { formation: best.formation, players: mapped };
 }

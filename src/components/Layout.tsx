@@ -43,6 +43,7 @@ export function Layout() {
   const [open, setOpen] = useState(false);
   const [teamsOpen, setTeamsOpen] = useState(false);
   const [seasonsOpen, setSeasonsOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   useEffect(() => {
     supabase.from("managers").select("*").then(({ data }) => setManagers(data ?? []));
@@ -209,27 +210,27 @@ export function Layout() {
               )}
             </div>
 
-            <Link
-              to="/records"
-              className={`${navItemBase} ${underline} ${underlineHover}`}
-              activeProps={{ className: `${navItemBase} ${underline} ${activeUnderline}` }}
+            <div
+              className="relative h-full flex items-stretch"
+              onMouseEnter={() => setHistoryOpen(true)}
+              onMouseLeave={() => setHistoryOpen(false)}
             >
-              Records
-            </Link>
-            <Link
-              to="/h2h"
-              className={`${navItemBase} ${underline} ${underlineHover}`}
-              activeProps={{ className: `${navItemBase} ${underline} ${activeUnderline}` }}
-            >
-              H2H
-            </Link>
-            <Link
-              to="/table"
-              className={`${navItemBase} ${underline} ${underlineHover}`}
-              activeProps={{ className: `${navItemBase} ${underline} ${activeUnderline}` }}
-            >
-              Table
-            </Link>
+              <button className={`${navItemBase} ${underline} ${underlineHover} ${historyOpen ? "after:scale-x-100" : ""} gap-1`}>
+                Historic Overviews
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${historyOpen ? "rotate-180" : ""}`} />
+              </button>
+              {historyOpen && (
+                <div className="fixed left-0 right-0 top-[68px] bg-[#15164a] border-y border-cyan-500/20 shadow-2xl shadow-black/60">
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <HistoryTile to="/records" tint="hsl(15 85% 55%)" kicker="Greatest Feats" title="All-Time Records" desc="Every record. Every milestone." />
+                      <HistoryTile to="/h2h" tint="hsl(0 80% 55%)" kicker="Rivalries" title="H2H History" desc="Every battle, every grudge." />
+                      <HistoryTile to="/table" tint="hsl(45 90% 55%)" kicker="Eternal Standings" title="All-Time League Table" desc="The undisputed ranking." />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </nav>
 
           <button
@@ -307,27 +308,14 @@ export function Layout() {
                   })}
                 </div>
               </details>
-              <Link
-                to="/records"
-                onClick={() => setOpen(false)}
-                className="block py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-white/85 hover:text-cyan-300 border-l-2 border-transparent hover:border-cyan-400 pl-3 transition-all border-t border-cyan-500/15 pt-3 mt-2"
-              >
-                Records
-              </Link>
-              <Link
-                to="/h2h"
-                onClick={() => setOpen(false)}
-                className="block py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-white/85 hover:text-cyan-300 border-l-2 border-transparent hover:border-cyan-400 pl-3 transition-all"
-              >
-                H2H
-              </Link>
-              <Link
-                to="/table"
-                onClick={() => setOpen(false)}
-                className="block py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-white/85 hover:text-cyan-300 border-l-2 border-transparent hover:border-cyan-400 pl-3 transition-all"
-              >
-                Table
-              </Link>
+              <details className="border-t border-cyan-500/15 pt-2 mt-2">
+                <summary className="py-2 text-xs font-bold uppercase tracking-[0.18em] cursor-pointer text-white/85">Historic Overviews</summary>
+                <div className="grid grid-cols-1 gap-2 pt-2 pb-1">
+                  <Link to="/records" onClick={() => setOpen(false)} className="block px-3 py-2 rounded-md border border-white/10 text-[11px] font-bold uppercase tracking-wider text-white/90" style={{ background: "linear-gradient(120deg, hsl(15 85% 55% / 0.25) 0%, rgba(10,17,48,0.5) 100%)" }}>All-Time Records</Link>
+                  <Link to="/h2h" onClick={() => setOpen(false)} className="block px-3 py-2 rounded-md border border-white/10 text-[11px] font-bold uppercase tracking-wider text-white/90" style={{ background: "linear-gradient(120deg, hsl(0 80% 55% / 0.25) 0%, rgba(10,17,48,0.5) 100%)" }}>H2H History</Link>
+                  <Link to="/table" onClick={() => setOpen(false)} className="block px-3 py-2 rounded-md border border-white/10 text-[11px] font-bold uppercase tracking-wider text-white/90" style={{ background: "linear-gradient(120deg, hsl(45 90% 55% / 0.25) 0%, rgba(10,17,48,0.5) 100%)" }}>All-Time League Table</Link>
+                </div>
+              </details>
             </div>
           </div>
         )}
@@ -347,3 +335,19 @@ export function Layout() {
     </div>
   );
 }
+
+function HistoryTile({ to, tint, kicker, title, desc }: { to: string; tint: string; kicker: string; title: string; desc: string }) {
+  return (
+    <Link
+      to={to}
+      className="group relative flex flex-col gap-1 px-4 py-3 rounded-md overflow-hidden border border-white/10 hover:border-white/40 transition-all hover:scale-[1.02]"
+      style={{ background: `linear-gradient(120deg, ${tint}38 0%, ${tint}10 55%, rgba(10,17,48,0.6) 100%)` }}
+    >
+      <span className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: tint }} />
+      <span className="text-[9px] uppercase tracking-[0.25em] font-bold" style={{ color: tint }}>{kicker}</span>
+      <span className="text-sm font-bold uppercase tracking-wider text-white">{title}</span>
+      <span className="text-[10px] text-white/60">{desc}</span>
+    </Link>
+  );
+}
+
