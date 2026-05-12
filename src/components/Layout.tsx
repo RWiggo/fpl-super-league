@@ -321,6 +321,22 @@ export function Layout() {
         )}
       </header>
 
+
+function HistoryTile({ to, tint, kicker, title, desc }: { to: string; tint: string; kicker: string; title: string; desc: string }) {
+  return (
+    <Link
+      to={to}
+      className="group relative flex flex-col gap-1 px-4 py-3 rounded-md overflow-hidden border border-white/10 hover:border-white/40 transition-all hover:scale-[1.02]"
+      style={{ background: `linear-gradient(120deg, ${tint}38 0%, ${tint}10 55%, rgba(10,17,48,0.6) 100%)` }}
+    >
+      <span className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: tint }} />
+      <span className="text-[9px] uppercase tracking-[0.25em] font-bold" style={{ color: tint }}>{kicker}</span>
+      <span className="text-sm font-bold uppercase tracking-wider text-white">{title}</span>
+      <span className="text-[10px] text-white/60">{desc}</span>
+    </Link>
+  );
+}
+
       <main className="flex-1">
         <Outlet />
       </main>
