@@ -426,7 +426,7 @@ function buildBestXI(history: any[], mgrByName: Record<string, any>) {
     club: p.club,
     total_fantasy_points: p.fantasy_points,
     avg_points_per_game: p.avg_points_per_game,
-    manager_id: p.manager_id,
+    manager_id: p.manager_id ?? mgrByName[p.manager_name]?.id,
   }));
   return { formation: best.formation, players: mapped };
 }
