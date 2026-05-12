@@ -4,8 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/StatCard";
 import { FormationPitch } from "@/components/FormationPitch";
 import { getBranding } from "@/lib/managerBranding";
-import { Flame, Trophy, Crown, Target, Zap, Shield, TrendingDown, X } from "lucide-react";
-import logo from "@/assets/fpl-super-league-logo.png";
+import { Flame, Trophy, Crown, Target, Zap, Shield, TrendingDown, X, Award } from "lucide-react";
 
 export const Route = createFileRoute("/records")({
   component: RecordsPage,
