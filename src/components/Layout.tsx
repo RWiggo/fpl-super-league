@@ -210,27 +210,27 @@ export function Layout() {
               )}
             </div>
 
-            <Link
-              to="/records"
-              className={`${navItemBase} ${underline} ${underlineHover}`}
-              activeProps={{ className: `${navItemBase} ${underline} ${activeUnderline}` }}
+            <div
+              className="relative h-full flex items-stretch"
+              onMouseEnter={() => setHistoryOpen(true)}
+              onMouseLeave={() => setHistoryOpen(false)}
             >
-              Records
-            </Link>
-            <Link
-              to="/h2h"
-              className={`${navItemBase} ${underline} ${underlineHover}`}
-              activeProps={{ className: `${navItemBase} ${underline} ${activeUnderline}` }}
-            >
-              H2H
-            </Link>
-            <Link
-              to="/table"
-              className={`${navItemBase} ${underline} ${underlineHover}`}
-              activeProps={{ className: `${navItemBase} ${underline} ${activeUnderline}` }}
-            >
-              Table
-            </Link>
+              <button className={`${navItemBase} ${underline} ${underlineHover} ${historyOpen ? "after:scale-x-100" : ""} gap-1`}>
+                Historic Overviews
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${historyOpen ? "rotate-180" : ""}`} />
+              </button>
+              {historyOpen && (
+                <div className="fixed left-0 right-0 top-[68px] bg-[#15164a] border-y border-cyan-500/20 shadow-2xl shadow-black/60">
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <HistoryTile to="/records" tint="hsl(15 85% 55%)" kicker="Greatest Feats" title="All-Time Records" desc="Every record. Every milestone." />
+                      <HistoryTile to="/h2h" tint="hsl(0 80% 55%)" kicker="Rivalries" title="H2H History" desc="Every battle, every grudge." />
+                      <HistoryTile to="/table" tint="hsl(45 90% 55%)" kicker="Eternal Standings" title="All-Time League Table" desc="The undisputed ranking." />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </nav>
 
           <button
