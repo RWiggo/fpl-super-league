@@ -177,12 +177,26 @@ function TablePage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
           <div className="flex flex-col lg:flex-row items-center gap-10">
             <div className="relative w-[180px] h-[180px] sm:w-[220px] sm:h-[220px] flex-shrink-0">
-              <div className="absolute inset-0 rounded-full border-2 border-gold/40" />
-              <div className="absolute inset-4 rounded-full border border-gold/25" />
-              <div className="absolute inset-6 rounded-full blur-2xl pointer-events-none"
-                style={{ background: "radial-gradient(circle, hsl(45 90% 55%) 0%, transparent 70%)", opacity: 0.55 }} />
-              <img src={logo} alt="" className="relative w-full h-full object-contain p-6 drop-shadow-[0_8px_24px_rgba(0,0,0,0.55)]" />
-              <Crown className="absolute -top-3 left-1/2 -translate-x-1/2 w-10 h-10 text-gold drop-shadow-lg" />
+              {/* Stacked layered "table" plinth — distinct from season crests */}
+              <div className="absolute inset-0 rounded-[2rem] border border-gold/30 bg-gradient-to-br from-gold/15 via-amber-900/10 to-background/60 backdrop-blur-sm" />
+              <div className="absolute inset-3 rounded-[1.6rem] border border-gold/40 bg-gradient-to-tr from-amber-950/40 to-transparent" />
+              <div className="absolute inset-0 flex items-center justify-center flex-col gap-1.5">
+                <div className="flex flex-col gap-1">
+                  {[0, 1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="rounded-sm"
+                      style={{
+                        height: 8,
+                        width: 110 - i * 14,
+                        background: `linear-gradient(90deg, hsl(45 90% ${65 - i * 8}%) 0%, hsl(45 70% ${45 - i * 5}%) 100%)`,
+                        boxShadow: i === 0 ? "0 0 18px hsl(45 90% 55% / 0.5)" : undefined,
+                      }}
+                    />
+                  ))}
+                </div>
+                <Crown className="w-9 h-9 text-gold mt-2 drop-shadow-[0_2px_8px_rgba(212,175,55,0.55)]" />
+              </div>
             </div>
             <div className="text-center lg:text-left">
               <div className="text-xs uppercase tracking-[0.35em] text-gold mb-4">Eternal Standings</div>
