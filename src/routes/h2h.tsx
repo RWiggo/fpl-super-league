@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/StatCard";
 import { getBranding } from "@/lib/managerBranding";
-import { Swords, ChevronDown, Flame, Snowflake, Trophy, Skull, Crosshair } from "lucide-react";
+import { Swords, ChevronDown, Flame, Snowflake, Trophy, Skull } from "lucide-react";
 
 export const Route = createFileRoute("/h2h")({
   component: H2HPage,
