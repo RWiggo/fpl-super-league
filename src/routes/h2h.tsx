@@ -3,8 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/StatCard";
 import { getBranding } from "@/lib/managerBranding";
-import { Swords, ChevronDown } from "lucide-react";
-import logo from "@/assets/fpl-super-league-logo.png";
+import { Swords, ChevronDown, Flame, Snowflake, Trophy, Skull, Crosshair } from "lucide-react";
 
 export const Route = createFileRoute("/h2h")({
   component: H2HPage,
@@ -16,72 +15,126 @@ export const Route = createFileRoute("/h2h")({
   }),
 });
 
+type Rivalry = {
+  opponent_id: any;
+  wins: number;
+  draws: number;
+  losses: number;
+  pf: number;
+  pa: number;
+  games: number;
+  winpct: number;
+  diff: number;
+};
+
 function H2HPage() {
   const [d, setD] = useState<any>(null);
   const [openMgr, setOpenMgr] = useState<string | null>(null);
+  const [openRival, setOpenRival] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
       supabase.from("managers").select("*"),
       supabase.from("h2h_records").select("*"),
-    ]).then(([m, h]) => {
+      supabase.from("fixture_records").select("*"),
+    ]).then(([m, h, f]) => {
       const managers = (m.data ?? []).slice().sort((a: any, b: any) => (a.name ?? "").localeCompare(b.name ?? ""));
-      setD({ managers, h2h: h.data ?? [] });
-      if (managers[0]) setOpenMgr(managers[0].id);
+      setD({ managers, h2h: h.data ?? [], fixtures: f.data ?? [] });
+      if (managers[0]) setOpenMgr(String(managers[0].id));
     });
   }, []);
 
   const recordsByManager = useMemo(() => {
-    if (!d) return new Map();
-    const map = new Map<string, any[]>();
-    for (const m of d.managers) map.set(m.id, []);
+    const map = new Map<string, Rivalry[]>();
+    if (!d) return map;
+    for (const m of d.managers) map.set(String(m.id), []);
     for (const r of d.h2h) {
-      // Each h2h row is one pair. Compose from the perspective of A and B.
-      const aRow = {
-        opponent_id: r.manager_b_id,
-        wins: r.manager_a_wins ?? 0,
-        losses: r.manager_b_wins ?? 0,
+      const aRow: Rivalry = {
+        opponent_id: r.manager2_id,
+        wins: r.manager1_wins ?? 0,
+        losses: r.manager2_wins ?? 0,
         draws: r.draws ?? 0,
+        pf: Number(r.manager1_points_for ?? 0),
+        pa: Number(r.manager2_points_for ?? 0),
+        games: r.total_played ?? 0,
+        winpct: Number(r.manager1_win_pct ?? 0),
+        diff: Number(r.manager1_points_for ?? 0) - Number(r.manager2_points_for ?? 0),
       };
-      const bRow = {
-        opponent_id: r.manager_a_id,
-        wins: r.manager_b_wins ?? 0,
-        losses: r.manager_a_wins ?? 0,
+      const bRow: Rivalry = {
+        opponent_id: r.manager1_id,
+        wins: r.manager2_wins ?? 0,
+        losses: r.manager1_wins ?? 0,
         draws: r.draws ?? 0,
+        pf: Number(r.manager2_points_for ?? 0),
+        pa: Number(r.manager1_points_for ?? 0),
+        games: r.total_played ?? 0,
+        winpct: r.total_played ? ((r.manager2_wins ?? 0) / r.total_played) * 100 : 0,
+        diff: Number(r.manager2_points_for ?? 0) - Number(r.manager1_points_for ?? 0),
       };
-      map.get(r.manager_a_id)?.push(aRow);
-      map.get(r.manager_b_id)?.push(bRow);
+      map.get(String(r.manager1_id))?.push(aRow);
+      map.get(String(r.manager2_id))?.push(bRow);
     }
     return map;
   }, [d]);
 
+  // index fixture history by manager-pair: key = "lo|hi" (sorted ids)
+  const fixturesByPair = useMemo(() => {
+    const m = new Map<string, any[]>();
+    if (!d) return m;
+    const nameToId = new Map<string, any>();
+    for (const mgr of d.managers) nameToId.set(mgr.name, mgr.id);
+    for (const f of d.fixtures) {
+      const ha = nameToId.get(f.home_manager);
+      const aw = nameToId.get(f.away_manager);
+      if (ha == null || aw == null) continue;
+      const lo = Math.min(Number(ha), Number(aw));
+      const hi = Math.max(Number(ha), Number(aw));
+      const k = `${lo}|${hi}`;
+      if (!m.has(k)) m.set(k, []);
+      m.get(k)!.push(f);
+    }
+    return m;
+  }, [d]);
+
   if (!d) return <div className="max-w-7xl mx-auto px-4 py-20"><Skeleton className="h-96" /></div>;
 
-  const mById = (id: string) => d.managers.find((m: any) => m.id === id);
+  const mById = (id: any) => d.managers.find((m: any) => String(m.id) === String(id));
 
   return (
     <div>
-      {/* HERO */}
+      {/* HERO — distinct: crossed swords on a shield */}
       <section className="relative overflow-hidden border-b border-border/50">
         <div className="absolute inset-0 ucl-stars opacity-70" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
-        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full blur-3xl pointer-events-none opacity-50"
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full blur-3xl pointer-events-none opacity-40"
           style={{ background: "radial-gradient(circle, hsl(0 85% 55%) 0%, transparent 65%)" }} />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
           <div className="flex flex-col lg:flex-row items-center gap-10">
             <div className="relative w-[180px] h-[180px] sm:w-[220px] sm:h-[220px] flex-shrink-0">
-              <div className="absolute inset-0 rounded-full" style={{ border: "2px solid hsl(0 85% 55% / 0.4)" }} />
-              <div className="absolute inset-4 rounded-full" style={{ border: "1px solid hsl(0 85% 55% / 0.25)" }} />
-              <div className="absolute inset-0 rounded-full"
-                style={{ background: "conic-gradient(from 90deg, hsl(0 85% 55%) 0%, transparent 25%, hsl(0 70% 35%) 50%, transparent 75%, hsl(0 85% 55%) 100%)", opacity: 0.25 }} />
-              <img src={logo} alt="" className="relative w-full h-full object-contain p-6 drop-shadow-[0_8px_24px_rgba(0,0,0,0.55)]"
-                style={{ filter: "hue-rotate(140deg) saturate(1.1)" }} />
-              <Swords className="absolute -top-3 left-1/2 -translate-x-1/2 w-10 h-10 text-red-400 drop-shadow-lg" />
+              <div
+                className="absolute inset-0"
+                style={{
+                  clipPath: "polygon(50% 0%, 100% 18%, 92% 78%, 50% 100%, 8% 78%, 0% 18%)",
+                  background: "linear-gradient(160deg, hsl(0 80% 45%) 0%, hsl(0 70% 25%) 100%)",
+                  boxShadow: "0 8px 40px hsl(0 80% 50% / 0.35)",
+                }}
+              />
+              <div
+                className="absolute inset-2"
+                style={{
+                  clipPath: "polygon(50% 0%, 100% 18%, 92% 78%, 50% 100%, 8% 78%, 0% 18%)",
+                  background: "linear-gradient(160deg, hsl(0 60% 22%) 0%, hsl(0 30% 12%) 100%)",
+                  border: "1.5px solid hsl(0 60% 50% / 0.5)",
+                }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Swords className="w-24 h-24 sm:w-28 sm:h-28 text-red-300 drop-shadow-[0_4px_18px_rgba(255,80,80,0.55)]" />
+              </div>
             </div>
             <div className="text-center lg:text-left">
               <div className="text-xs uppercase tracking-[0.35em] text-gold mb-4">Rivalries</div>
               <h1 className="font-display text-5xl md:text-7xl lg:text-8xl leading-none mb-4">
-                <span className="gold-gradient">H2H RECORDS</span>
+                <span className="gold-gradient">H2H HISTORY</span>
               </h1>
               <div className="h-px w-24 bg-gold/60 my-6 mx-auto lg:mx-0" />
               <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
@@ -95,25 +148,26 @@ function H2HPage() {
       {/* MANAGER ACCORDIONS */}
       <section className="max-w-7xl mx-auto px-4 py-16 space-y-3">
         {d.managers.map((m: any) => {
-          const rows = (recordsByManager.get(m.id) ?? [])
-            .map((r: any) => {
-              const games = r.wins + r.losses + r.draws;
-              return { ...r, games, winpct: games ? r.wins / games : 0 };
-            })
-            .sort((a: any, b: any) => b.games - a.games || b.winpct - a.winpct);
+          const id = String(m.id);
+          const rows = (recordsByManager.get(id) ?? [])
+            .filter((r) => r.games > 0)
+            .sort((a, b) => b.winpct - a.winpct || b.diff - a.diff);
           const totals = rows.reduce(
-            (acc: any, r: any) => ({ w: acc.w + r.wins, d: acc.d + r.draws, l: acc.l + r.losses }),
-            { w: 0, d: 0, l: 0 }
+            (acc, r) => ({ w: acc.w + r.wins, d: acc.d + r.draws, l: acc.l + r.losses, pf: acc.pf + r.pf, pa: acc.pa + r.pa }),
+            { w: 0, d: 0, l: 0, pf: 0, pa: 0 },
           );
           const totalGames = totals.w + totals.d + totals.l;
           const overallPct = totalGames ? (totals.w / totalGames) * 100 : 0;
-          const b = getBranding(m.id);
+          const b = getBranding(id);
           const tint = b?.primary ?? "#508cff";
-          const isOpen = openMgr === m.id;
+          const isOpen = openMgr === id;
+          const bestRival = rows[0];
+          const worstRival = rows[rows.length - 1];
+
           return (
-            <div key={m.id} className="premium-card rounded-lg overflow-hidden">
+            <div key={id} className="premium-card rounded-lg overflow-hidden">
               <button
-                onClick={() => setOpenMgr(isOpen ? null : m.id)}
+                onClick={() => { setOpenMgr(isOpen ? null : id); setOpenRival(null); }}
                 className="w-full flex items-center gap-4 p-5 hover:bg-white/5 transition text-left"
                 style={{ background: isOpen ? `linear-gradient(90deg, ${tint}25 0%, transparent 60%)` : undefined }}
               >
@@ -126,84 +180,148 @@ function H2HPage() {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <Link to="/team/$managerId" params={{ managerId: m.id }}
+                  <Link to="/team/$managerId" params={{ managerId: id }}
                     onClick={(e) => e.stopPropagation()}
                     className="font-display text-xl md:text-2xl capitalize hover:text-gold transition block truncate">
                     {m.name}
                   </Link>
-                  <div className="text-[11px] uppercase tracking-widest text-muted-foreground">vs every rival</div>
+                  <div className="text-[11px] uppercase tracking-widest text-muted-foreground">{rows.length} rivalries · {totalGames} matches</div>
                 </div>
                 <div className="hidden sm:flex items-center gap-3 text-sm">
-                  <div className="text-center">
-                    <div className="font-display text-lg text-emerald-400">{totals.w}</div>
-                    <div className="text-[9px] uppercase tracking-wider text-muted-foreground">W</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="font-display text-lg text-muted-foreground">{totals.d}</div>
-                    <div className="text-[9px] uppercase tracking-wider text-muted-foreground">D</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="font-display text-lg text-red-400">{totals.l}</div>
-                    <div className="text-[9px] uppercase tracking-wider text-muted-foreground">L</div>
-                  </div>
+                  <Tally label="W" value={totals.w} colorClass="text-emerald-400" />
+                  <Tally label="D" value={totals.d} colorClass="text-muted-foreground" />
+                  <Tally label="L" value={totals.l} colorClass="text-red-400" />
                   <div className="text-center pl-3 border-l border-border/40">
                     <div className="font-display text-lg text-gold">{overallPct.toFixed(0)}%</div>
                     <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Win</div>
+                  </div>
+                  <div className="text-center pl-3 border-l border-border/40">
+                    <div className={`font-display text-lg ${totals.pf - totals.pa >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                      {totals.pf - totals.pa >= 0 ? "+" : ""}{(totals.pf - totals.pa).toLocaleString()}
+                    </div>
+                    <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Diff</div>
                   </div>
                 </div>
                 <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
               </button>
 
               {isOpen && (
-                <div className="border-t border-border/40 p-4 sm:p-6">
+                <div className="border-t border-border/40 p-4 sm:p-6 space-y-6">
+                  {/* Best / worst rival highlights */}
+                  {bestRival && worstRival && bestRival !== worstRival && (
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      <RivalHighlight kind="best" rivalry={bestRival} oppMgr={mById(bestRival.opponent_id)} />
+                      <RivalHighlight kind="worst" rivalry={worstRival} oppMgr={mById(worstRival.opponent_id)} />
+                    </div>
+                  )}
+
+                  {/* Ranked list of every rivalry */}
                   {rows.length === 0 ? (
                     <div className="text-center text-muted-foreground py-6">No head-to-head records yet.</div>
                   ) : (
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {rows.map((r: any) => {
+                    <div className="space-y-2">
+                      <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground font-bold">
+                        Rivalries ranked best → worst
+                      </div>
+                      {rows.map((r, i) => {
                         const opp = mById(r.opponent_id);
                         if (!opp) return null;
-                        const ob = getBranding(opp.id);
+                        const ob = getBranding(String(opp.id));
                         const oTint = ob?.primary ?? "#508cff";
                         const wPct = r.games ? (r.wins / r.games) * 100 : 0;
                         const dPct = r.games ? (r.draws / r.games) * 100 : 0;
                         const lPct = 100 - wPct - dPct;
                         const verdict = r.wins > r.losses ? "lead" : r.wins < r.losses ? "trail" : "level";
-                        const verdictColor = verdict === "lead" ? "text-emerald-400" : verdict === "trail" ? "text-red-400" : "text-muted-foreground";
+                        const vColor =
+                          verdict === "lead" ? "text-emerald-400" : verdict === "trail" ? "text-red-400" : "text-muted-foreground";
+                        const lo = Math.min(Number(m.id), Number(opp.id));
+                        const hi = Math.max(Number(m.id), Number(opp.id));
+                        const pairKey = `${id}|${opp.id}`;
+                        const isFxOpen = openRival === pairKey;
+                        const fixtures = (fixturesByPair.get(`${lo}|${hi}`) ?? []).slice().sort(
+                          (a, b) => (a.season_id - b.season_id) || (a.gameweek - b.gameweek),
+                        );
+
                         return (
-                          <div key={r.opponent_id} className="rounded-lg border border-border/40 p-4 bg-card/30 hover:border-white/30 transition">
-                            <div className="flex items-center gap-2 mb-3">
+                          <div key={r.opponent_id} className="rounded-lg border border-border/40 bg-card/30 overflow-hidden">
+                            <button
+                              onClick={() => setOpenRival(isFxOpen ? null : pairKey)}
+                              className="w-full flex items-center gap-3 p-3 hover:bg-white/5 transition text-left"
+                            >
+                              <span className="font-display text-sm w-6 text-center text-gold/80">{i + 1}</span>
                               {ob?.badge ? (
-                                <img src={ob.badge} alt="" className="w-7 h-7 object-contain" />
+                                <img src={ob.badge} alt="" className="w-9 h-9 object-contain flex-shrink-0" />
                               ) : (
-                                <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ background: oTint }}>
+                                <div className="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0" style={{ background: oTint }}>
                                   {opp.name?.charAt(0).toUpperCase()}
                                 </div>
                               )}
-                              <Link to="/team/$managerId" params={{ managerId: opp.id }} className="text-sm font-bold capitalize hover:text-gold transition truncate flex-1">
-                                {opp.name}
-                              </Link>
-                              <span className={`text-[10px] uppercase tracking-widest font-bold ${verdictColor}`}>{verdict}</span>
-                            </div>
-                            <div className="h-2 rounded-full overflow-hidden flex bg-secondary">
-                              <div className="bg-emerald-500" style={{ width: `${wPct}%` }} />
-                              <div className="bg-muted-foreground/60" style={{ width: `${dPct}%` }} />
-                              <div className="bg-red-500/80" style={{ width: `${lPct}%` }} />
-                            </div>
-                            <div className="grid grid-cols-3 mt-3 text-center text-sm">
-                              <div>
-                                <div className="font-display text-lg text-emerald-400">{r.wins}</div>
-                                <div className="text-[9px] uppercase tracking-wider text-muted-foreground">W</div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-bold capitalize truncate">{opp.name}</span>
+                                  <span className={`text-[9px] uppercase tracking-widest font-bold ${vColor}`}>{verdict}</span>
+                                </div>
+                                <div className="h-1.5 mt-1.5 rounded-full overflow-hidden flex bg-secondary/60">
+                                  <div className="bg-emerald-500" style={{ width: `${wPct}%` }} />
+                                  <div className="bg-muted-foreground/60" style={{ width: `${dPct}%` }} />
+                                  <div className="bg-red-500/80" style={{ width: `${lPct}%` }} />
+                                </div>
                               </div>
-                              <div>
-                                <div className="font-display text-lg text-muted-foreground">{r.draws}</div>
-                                <div className="text-[9px] uppercase tracking-wider text-muted-foreground">D</div>
+                              <div className="hidden sm:grid grid-cols-5 gap-3 text-center">
+                                <Mini value={r.wins} label="W" color="text-emerald-400" />
+                                <Mini value={r.draws} label="D" color="text-muted-foreground" />
+                                <Mini value={r.losses} label="L" color="text-red-400" />
+                                <Mini value={`${r.winpct.toFixed(0)}%`} label="Win" color="text-gold" />
+                                <Mini
+                                  value={`${r.diff >= 0 ? "+" : ""}${r.diff}`}
+                                  label="FPL"
+                                  color={r.diff >= 0 ? "text-emerald-400" : "text-red-400"}
+                                />
                               </div>
-                              <div>
-                                <div className="font-display text-lg text-red-400">{r.losses}</div>
-                                <div className="text-[9px] uppercase tracking-wider text-muted-foreground">L</div>
+                              <div className="sm:hidden text-right">
+                                <div className="font-display text-sm">
+                                  <span className="text-emerald-400">{r.wins}</span>
+                                  <span className="text-muted-foreground">-{r.draws}-</span>
+                                  <span className="text-red-400">{r.losses}</span>
+                                </div>
+                                <div className="text-[9px] uppercase text-muted-foreground tracking-wider">
+                                  {r.winpct.toFixed(0)}% · {r.diff >= 0 ? "+" : ""}{r.diff}
+                                </div>
                               </div>
-                            </div>
+                              <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isFxOpen ? "rotate-180" : ""}`} />
+                            </button>
+
+                            {isFxOpen && (
+                              <div className="border-t border-border/40 bg-background/40 p-3 space-y-1.5">
+                                {fixtures.length === 0 ? (
+                                  <div className="text-xs text-muted-foreground text-center py-3">No fixture history.</div>
+                                ) : fixtures.map((f: any, j: number) => {
+                                  const youAreHome = f.home_manager === m.name;
+                                  const yourScore = youAreHome ? f.home_score : f.away_score;
+                                  const theirScore = youAreHome ? f.away_score : f.home_score;
+                                  const result = yourScore > theirScore ? "W" : yourScore < theirScore ? "L" : "D";
+                                  const resColor = result === "W" ? "bg-emerald-500/25 text-emerald-300 border-emerald-500/40" :
+                                    result === "L" ? "bg-red-500/25 text-red-300 border-red-500/40" :
+                                    "bg-white/10 text-muted-foreground border-white/20";
+                                  return (
+                                    <div key={j} className="flex items-center gap-3 text-xs px-2 py-1.5 rounded hover:bg-white/5">
+                                      <span className={`px-1.5 py-0.5 rounded border text-[10px] font-bold w-6 text-center ${resColor}`}>{result}</span>
+                                      <span className="text-muted-foreground tabular-nums w-32 truncate">
+                                        {f.season_name} · GW{f.gameweek}
+                                      </span>
+                                      <span className="font-display tabular-nums text-sm flex-1 text-center">
+                                        <span className={result === "W" ? "text-emerald-300" : ""}>{yourScore}</span>
+                                        <span className="text-muted-foreground mx-1.5">–</span>
+                                        <span className={result === "L" ? "text-red-300" : ""}>{theirScore}</span>
+                                      </span>
+                                      <span className="text-[10px] uppercase text-muted-foreground tracking-wider hidden sm:inline">
+                                        {youAreHome ? "Home" : "Away"}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
                         );
                       })}
@@ -215,6 +333,72 @@ function H2HPage() {
           );
         })}
       </section>
+    </div>
+  );
+}
+
+function Tally({ label, value, colorClass }: { label: string; value: number; colorClass: string }) {
+  return (
+    <div className="text-center">
+      <div className={`font-display text-lg ${colorClass}`}>{value}</div>
+      <div className="text-[9px] uppercase tracking-wider text-muted-foreground">{label}</div>
+    </div>
+  );
+}
+
+function Mini({ value, label, color }: { value: any; label: string; color: string }) {
+  return (
+    <div>
+      <div className={`font-display text-base tabular-nums ${color}`}>{value}</div>
+      <div className="text-[9px] uppercase tracking-wider text-muted-foreground">{label}</div>
+    </div>
+  );
+}
+
+function RivalHighlight({ kind, rivalry, oppMgr }: { kind: "best" | "worst"; rivalry: Rivalry; oppMgr: any }) {
+  if (!oppMgr) return null;
+  const b = getBranding(String(oppMgr.id));
+  const tint = b?.primary ?? "#508cff";
+  const isBest = kind === "best";
+  const Icon = isBest ? Flame : Snowflake;
+  const accent = isBest ? "hsl(15 85% 55%)" : "hsl(200 70% 60%)";
+  return (
+    <div
+      className="relative rounded-lg border border-white/10 p-4 overflow-hidden"
+      style={{ background: `linear-gradient(135deg, ${accent}25 0%, ${tint}15 70%, rgba(10,17,48,0.6) 100%)` }}
+    >
+      <div className="flex items-center gap-2 mb-3">
+        <span className="p-1.5 rounded" style={{ background: `${accent}30`, color: accent }}>
+          <Icon className="w-4 h-4" />
+        </span>
+        <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-white/85">
+          {isBest ? "Favourite Opponent" : "Bogey Manager"}
+        </span>
+      </div>
+      <div className="flex items-center gap-3">
+        {b?.badge ? (
+          <img src={b.badge} alt="" className="w-12 h-12 object-contain" />
+        ) : (
+          <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-white" style={{ background: tint }}>
+            {oppMgr.name?.charAt(0).toUpperCase()}
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <Link to="/team/$managerId" params={{ managerId: String(oppMgr.id) }} className="font-display text-lg capitalize hover:text-gold transition block truncate">
+            {oppMgr.name}
+          </Link>
+          <div className="text-xs text-muted-foreground">
+            <span className="text-emerald-400 font-bold">{rivalry.wins}W</span>
+            <span className="mx-1">·</span>
+            <span>{rivalry.draws}D</span>
+            <span className="mx-1">·</span>
+            <span className="text-red-400 font-bold">{rivalry.losses}L</span>
+            <span className="mx-2">·</span>
+            <span className="text-gold font-bold">{rivalry.winpct.toFixed(0)}%</span>
+          </div>
+        </div>
+        {isBest ? <Trophy className="w-6 h-6 text-gold" /> : <Skull className="w-6 h-6 text-blue-300" />}
+      </div>
     </div>
   );
 }
