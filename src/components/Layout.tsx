@@ -43,6 +43,7 @@ export function Layout() {
   const [open, setOpen] = useState(false);
   const [teamsOpen, setTeamsOpen] = useState(false);
   const [seasonsOpen, setSeasonsOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   useEffect(() => {
     supabase.from("managers").select("*").then(({ data }) => setManagers(data ?? []));
