@@ -371,14 +371,14 @@ function buildRecords(d: any) {
   ];
 
   // ---- All-Time XI from single-season performances ----
-  const bestXI = buildBestXI(d.playerHistory);
+  const bestXI = buildBestXI(d.playerHistory, mgrByName);
 
   return { competition, gameweek, season, streaks, bestXI };
 }
 
 // Build an All-Time XI from the best single-season performances per player,
 // trying every legal formation and picking the one with the highest total.
-function buildBestXI(history: any[]) {
+function buildBestXI(history: any[], mgrByName: Record<string, any>) {
   // Best single season per player (by player_name, since player_id may collide across managers)
   const bestPerPlayer: Record<string, any> = {};
   for (const r of history) {
