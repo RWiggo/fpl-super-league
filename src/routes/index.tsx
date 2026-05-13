@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { StatCard, Skeleton } from "@/components/StatCard";
-import { Trophy, Flame, Target, Crown, TrendingUp, Zap } from "lucide-react";
+import { Trophy, Flame, Target, Crown, TrendingUp, Zap, Skull } from "lucide-react";
 import logo from "@/assets/fpl-super-league-logo.png";
+import { getBranding } from "@/lib/managerBranding";
+import { MANAGER_KITS } from "@/lib/managerKits";
 
 export const Route = createFileRoute("/")({
   component: Home,
