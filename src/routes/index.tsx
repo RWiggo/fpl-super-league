@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { StatCard, Skeleton } from "@/components/StatCard";
 import { Trophy, Flame, Target, Crown, TrendingUp, Zap, Skull } from "lucide-react";
@@ -387,6 +387,64 @@ function Home() {
           ))}
         </div>
       </section>
+    </div>
+  );
+}
+
+function TeamConstellation({ managers, logoSrc }: { managers: any[]; logoSrc: string }) {
+  const teams = managers.slice(0, 12);
+  const n = teams.length;
+  return (
+    <div className="relative mx-auto mt-10 md:mt-14 w-[min(92vw,640px)] aspect-square">
+      {/* orbit rings */}
+      <div className="absolute inset-[6%] rounded-full border border-silver/15" />
+      <div className="absolute inset-[18%] rounded-full border border-silver/10" />
+      <div className="absolute inset-[32%] rounded-full border border-silver/10" />
+
+      {/* central crest */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <img
+          src={logoSrc}
+          alt="FPL Super League crest"
+          className="w-[42%] h-[42%] object-contain drop-shadow-[0_0_60px_rgba(80,140,255,0.55)] animate-pulse-slow"
+        />
+      </div>
+
+      {/* badges */}
+      {teams.map((m, i) => {
+        const b = getBranding(String(m.id));
+        const tint = b?.primary ?? "#508cff";
+        const angle = (i / n) * 2 * Math.PI - Math.PI / 2;
+        const radius = 44; // % from centre
+        const x = 50 + Math.cos(angle) * radius;
+        const y = 50 + Math.sin(angle) * radius;
+        return (
+          <Link
+            key={m.id}
+            to="/team/$managerId"
+            params={{ managerId: String(m.id) }}
+            className="group absolute -translate-x-1/2 -translate-y-1/2"
+            style={{ left: `${x}%`, top: `${y}%` }}
+            title={m.team_name ?? m.name}
+          >
+            <div
+              className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center border border-white/15 backdrop-blur-sm transition-all group-hover:scale-110 group-hover:border-white/60"
+              style={{
+                background: `radial-gradient(circle, ${tint}40 0%, rgba(10,17,48,0.7) 70%)`,
+                boxShadow: `0 0 24px ${tint}55`,
+              }}
+            >
+              {b?.badge ? (
+                <img src={b.badge} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain" />
+              ) : (
+                <span className="font-display text-base sm:text-lg text-white">
+                  {(m.team_name ?? m.name)?.charAt(0).toUpperCase()}
+                </span>
+              )}
+            </div>
+          </Link>
+        );
+      })}
     </div>
   );
 }
