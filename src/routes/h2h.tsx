@@ -176,14 +176,14 @@ function H2HPage() {
                   <img src={b.badge} alt="" className="w-12 h-12 object-contain flex-shrink-0" />
                 ) : (
                   <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white flex-shrink-0" style={{ background: tint }}>
-                    {m.name?.charAt(0).toUpperCase()}
+                    {(m.team_name ?? m.name)?.charAt(0).toUpperCase()}
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <Link to="/team/$managerId" params={{ managerId: id }}
                     onClick={(e) => e.stopPropagation()}
                     className="font-display text-xl md:text-2xl capitalize hover:text-gold transition block truncate">
-                    {m.name}
+                    {m.team_name ?? m.name}
                   </Link>
                   <div className="text-[11px] uppercase tracking-widest text-muted-foreground">{rows.length} rivalries · {totalGames} matches</div>
                 </div>
@@ -253,12 +253,12 @@ function H2HPage() {
                                 <img src={ob.badge} alt="" className="w-9 h-9 object-contain flex-shrink-0" />
                               ) : (
                                 <div className="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0" style={{ background: oTint }}>
-                                  {opp.name?.charAt(0).toUpperCase()}
+                                  {(opp.team_name ?? opp.name)?.charAt(0).toUpperCase()}
                                 </div>
                               )}
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-sm font-bold capitalize truncate">{opp.name}</span>
+                                  <span className="text-sm font-bold capitalize truncate">{opp.team_name ?? opp.name}</span>
                                   <span className={`text-[9px] uppercase tracking-widest font-bold ${vColor}`}>{verdict}</span>
                                 </div>
                                 <div className="h-1.5 mt-1.5 rounded-full overflow-hidden flex bg-secondary/60">
@@ -380,12 +380,12 @@ function RivalHighlight({ kind, rivalry, oppMgr }: { kind: "best" | "worst"; riv
           <img src={b.badge} alt="" className="w-12 h-12 object-contain" />
         ) : (
           <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-white" style={{ background: tint }}>
-            {oppMgr.name?.charAt(0).toUpperCase()}
+            {(oppMgr.team_name ?? oppMgr.name)?.charAt(0).toUpperCase()}
           </div>
         )}
         <div className="flex-1 min-w-0">
           <Link to="/team/$managerId" params={{ managerId: String(oppMgr.id) }} className="font-display text-lg capitalize hover:text-gold transition block truncate">
-            {oppMgr.name}
+            {oppMgr.team_name ?? oppMgr.name}
           </Link>
           <div className="text-xs text-muted-foreground">
             <span className="text-emerald-400 font-bold">{rivalry.wins}W</span>

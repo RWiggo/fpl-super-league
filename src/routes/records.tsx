@@ -146,7 +146,7 @@ function RecordsPage() {
           ({records.bestXI.formation.def}-{records.bestXI.formation.mid}-{records.bestXI.formation.fwd}) that maximises total fantasy points.
         </p>
         <div className="mt-6">
-          <FormationPitch players={records.bestXI.players} getManagerName={(id: string) => mById(id)?.name ?? ""} />
+          <FormationPitch players={records.bestXI.players} getManagerName={(id: string) => { const mm = mById(id); return mm?.team_name ?? mm?.name ?? ""; }} />
         </div>
       </section>
 
@@ -483,8 +483,8 @@ function RecordCard({ def, onOpen, mById }: { def: RecordDef; onOpen: () => void
           const b2 = e.secondaryManagerId != null ? getBranding(String(e.secondaryManagerId)) : null;
           const tint = b?.primary ?? def.tint;
           const pct = max > 0 ? Math.max(4, (e.value / max) * 100) : 0;
-          const name = m?.name ?? e.managerName ?? "—";
-          const name2 = m2?.name ?? e.secondaryManagerName;
+          const name = m?.team_name ?? m?.name ?? e.managerName ?? "—";
+          const name2 = m2?.team_name ?? m2?.name ?? e.secondaryManagerName;
           return (
             <div key={i} className="flex items-center gap-2">
               <span className={`font-display text-sm w-4 text-right ${i === 0 ? "text-gold" : "text-white/40"}`}>{i + 1}</span>
@@ -553,7 +553,7 @@ function RecordModal({ def, mById, onClose }: { def: RecordDef; mById: (id: any)
             const m = e.managerId != null ? mById(e.managerId) : null;
             const b = e.managerId != null ? getBranding(String(e.managerId)) : null;
             const tint = b?.primary ?? def.tint;
-            const name = m?.name ?? e.managerName ?? "—";
+            const name = m?.team_name ?? m?.name ?? e.managerName ?? "—";
             const inner = (
               <div
                 className="flex items-center gap-3 p-3 rounded-lg border border-white/10 hover:border-white/40 transition"
@@ -570,7 +570,7 @@ function RecordModal({ def, mById, onClose }: { def: RecordDef; mById: (id: any)
                 <div className="flex-1 min-w-0">
                   <div className="capitalize font-medium truncate">
                     {e.secondaryManagerName || e.secondaryManagerId
-                      ? `${name} vs ${(e.secondaryManagerId != null ? mById(e.secondaryManagerId)?.name : null) ?? e.secondaryManagerName}`
+                      ? `${name} vs ${(e.secondaryManagerId != null ? (mById(e.secondaryManagerId)?.team_name ?? mById(e.secondaryManagerId)?.name) : null) ?? e.secondaryManagerName}`
                       : name}
                   </div>
                   {e.context && <div className="text-[11px] text-muted-foreground truncate">{e.context}</div>}

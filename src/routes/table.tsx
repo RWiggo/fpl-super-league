@@ -272,10 +272,10 @@ function TablePage() {
                     <img src={b.badge} alt="" className="w-7 h-7 object-contain flex-shrink-0" />
                   ) : (
                     <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: tint }}>
-                      {(m?.name ?? r.manager_name ?? "?").charAt(0).toUpperCase()}
+                      {(m?.team_name ?? m?.name ?? r.manager_name ?? "?").charAt(0).toUpperCase()}
                     </div>
                   )}
-                  <span className="capitalize font-bold text-sm truncate">{m?.name ?? r.manager_name}</span>
+                  <span className="capitalize font-bold text-sm truncate">{m?.team_name ?? m?.name ?? r.manager_name}</span>
                   {r._titles > 0 && <TitleStars count={r._titles} />}
                   <span className="ml-auto font-display text-gold text-base tabular-nums">{r._ppg.toFixed(1)}</span>
                 </div>
@@ -333,10 +333,10 @@ function TablePage() {
                           <img src={b.badge} alt="" className="w-4 h-4 min-[390px]:w-5 min-[390px]:h-5 sm:w-8 sm:h-8 object-contain flex-shrink-0" />
                         ) : (
                           <div className="w-4 h-4 min-[390px]:w-5 min-[390px]:h-5 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[7px] min-[390px]:text-[9px] sm:text-xs font-bold text-white flex-shrink-0" style={{ background: tint }}>
-                            {(m?.name ?? r.manager_name ?? "?").charAt(0).toUpperCase()}
+                            {(m?.team_name ?? m?.name ?? r.manager_name ?? "?").charAt(0).toUpperCase()}
                           </div>
                         )}
-                        <span className="hidden sm:inline whitespace-nowrap font-medium">{m?.name ?? r.manager_name}</span>
+                        <span className="hidden sm:inline whitespace-nowrap font-medium">{m?.team_name ?? m?.name ?? r.manager_name}</span>
                         {r._titles > 0 && <TitleStars count={r._titles} className="hidden sm:inline-flex" />}
                       </Link>
                     </td>
@@ -416,10 +416,10 @@ function TablePage() {
                       <img src={b.badge} alt="" className="w-7 h-7 object-contain" />
                     ) : (
                       <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ background: tint }}>
-                        {(m?.name ?? leader.manager_name ?? "?").charAt(0).toUpperCase()}
+                        {(m?.team_name ?? m?.name ?? leader.manager_name ?? "?").charAt(0).toUpperCase()}
                       </div>
                     )}
-                    <span className="text-sm font-bold capitalize text-white truncate">{m?.name ?? leader.manager_name}</span>
+                    <span className="text-sm font-bold capitalize text-white truncate">{m?.team_name ?? m?.name ?? leader.manager_name}</span>
                   </div>
                   <div className="text-[10px] uppercase tracking-widest mt-3 opacity-70" style={{ color: tint }}>
                     Tap for top 5 →
@@ -491,10 +491,10 @@ function TablePage() {
                         <img src={b.badge} alt="" className="w-9 h-9 object-contain" />
                       ) : (
                         <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ background: tint }}>
-                          {(m?.name ?? r.manager_name ?? "?").charAt(0).toUpperCase()}
+                          {(m?.team_name ?? m?.name ?? r.manager_name ?? "?").charAt(0).toUpperCase()}
                         </div>
                       )}
-                      <span className="flex-1 capitalize font-medium truncate">{m?.name ?? r.manager_name}</span>
+                      <span className="flex-1 capitalize font-medium truncate">{m?.team_name ?? m?.name ?? r.manager_name}</span>
                       <span className="font-display text-lg text-gold tabular-nums">{openAwardDef.format(r)}</span>
                     </Link>
                   </li>

@@ -2,8 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { StatCard, Skeleton } from "@/components/StatCard";
-import { Trophy, Flame, Target, Crown, TrendingUp, Zap } from "lucide-react";
+import { Trophy, Flame, Target, Crown, TrendingUp, Zap, Skull } from "lucide-react";
 import logo from "@/assets/fpl-super-league-logo.png";
+import { getBranding } from "@/lib/managerBranding";
+import { MANAGER_KITS } from "@/lib/managerKits";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -99,45 +101,56 @@ function Home() {
     `📊 ${data.fixtures.length} Fixtures Played`,
   ];
 
+  // Wooden spoons (most last-place finishes)
+  const spoonCounts: Record<string, number> = {};
+  data.seasons.forEach((s: any) => {
+    const rows = data.standings.filter((r: any) => r.season_id === s.id);
+    if (!rows.length) return;
+    const maxPos = Math.max(...rows.map((r: any) => r.position ?? 0));
+    if (!maxPos) return;
+    rows.filter((r: any) => r.position === maxPos).forEach((r: any) => {
+      spoonCounts[r.manager_id] = (spoonCounts[r.manager_id] ?? 0) + 1;
+    });
+  });
+  const stinkers = Object.entries(spoonCounts)
+    .map(([id, count]) => ({ manager: managerById(id), count }))
+    .filter((x: any) => x.manager)
+    .sort((a, b) => b.count - a.count);
+
   return (
     <div>
-      {/* HERO */}
-      <section className="relative overflow-hidden border-b border-silver/20 min-h-[80vh] flex items-center">
-        <div className="absolute inset-0 ucl-stars opacity-60" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background" />
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full blur-3xl pointer-events-none animate-pulse"
-             style={{ background: "radial-gradient(circle, var(--color-primary) 0%, transparent 65%)", opacity: 0.35 }} />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
-          <div className="grid lg:grid-cols-[1fr_auto] gap-12 items-center">
-            <div>
-              <div className="text-xs uppercase tracking-[0.4em] text-silver mb-6">EST. 2022 · The Official Archive</div>
-              <h1 className="font-display text-6xl sm:text-7xl md:text-8xl lg:text-[8.5rem] leading-[0.85] mb-4">
-                THE<br />
-                <span className="silver-gradient">FPL SUPER</span><br />
-                <span className="silver-gradient">LEAGUE</span>
-              </h1>
-              <div className="h-px w-32 bg-silver/50 my-6" />
-              <p className="text-lg md:text-2xl text-muted-foreground max-w-2xl mb-10">
-                Three seasons. One archive. Every champion, every record, every legend.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <Link to="/records" className="px-7 py-3 bg-primary text-primary-foreground font-semibold uppercase tracking-[0.18em] text-xs rounded hover:opacity-90 transition primary-glow">
-                  Enter The Archive
-                </Link>
-                {currentSeason && (
-                  <Link to="/season/$seasonId" params={{ seasonId: currentSeason.id }} className="px-7 py-3 border border-silver/50 hover:border-primary hover:text-primary font-semibold uppercase tracking-[0.18em] text-xs rounded transition">
-                    Live Season →
-                  </Link>
-                )}
-              </div>
-            </div>
-            <img
-              src={logo}
-              alt="FPL Super League crest"
-              width={420}
-              height={420}
-              className="hidden lg:block w-[320px] xl:w-[420px] h-auto drop-shadow-[0_0_60px_rgba(80,140,255,0.45)]"
-            />
+      {/* HERO — league crest centred, every competing team orbiting */}
+      <section className="relative overflow-hidden border-b border-silver/20 min-h-[92vh] flex items-center">
+        <div className="absolute inset-0 ucl-stars opacity-70" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-background/20 to-background" />
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] max-w-[1200px] aspect-square rounded-full blur-3xl pointer-events-none animate-pulse"
+          style={{ background: "radial-gradient(circle, var(--color-primary) 0%, transparent 60%)", opacity: 0.3 }}
+        />
+
+        <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+          <div className="text-center">
+            <div className="text-[10px] sm:text-xs uppercase tracking-[0.45em] text-silver mb-4">EST. 2022 · The Official Archive</div>
+            <h1 className="font-display text-5xl sm:text-7xl md:text-8xl lg:text-[8.5rem] leading-[0.85] mb-6">
+              <span className="block">THE</span>
+              <span className="block silver-gradient">FPL SUPER LEAGUE</span>
+            </h1>
+            <p className="text-base sm:text-lg md:text-2xl text-muted-foreground max-w-2xl mx-auto">
+              Three seasons. {data.managers.length} managers. One eternal archive.
+            </p>
+          </div>
+
+          <TeamConstellation managers={data.managers} logoSrc={logo} />
+
+          <div className="flex flex-wrap gap-3 justify-center mt-12">
+            <Link to="/records" className="px-6 py-3 bg-primary text-primary-foreground font-semibold uppercase tracking-[0.18em] text-xs rounded hover:opacity-90 transition primary-glow">
+              Enter The Archive
+            </Link>
+            {currentSeason && (
+              <Link to="/season/$seasonId" params={{ seasonId: currentSeason.id }} className="px-6 py-3 border border-silver/50 hover:border-primary hover:text-primary font-semibold uppercase tracking-[0.18em] text-xs rounded transition">
+                Live Season →
+              </Link>
+            )}
           </div>
         </div>
       </section>
@@ -159,18 +172,87 @@ function Home() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
           {completedSeasons.map((s: any) => {
             const champ = managerById(s.champion_manager_id);
+            const b = champ ? getBranding(String(champ.id)) : null;
+            const tint = b?.primary ?? "#d4af37";
+            const kit = champ ? MANAGER_KITS[String(champ.id)]?.home : null;
             return (
-              <Link key={s.id} to="/season/$seasonId" params={{ seasonId: s.id }} className="premium-card rounded-lg p-8 group hover:border-gold transition-all hover:-translate-y-2 relative overflow-hidden">
-                <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-gold/10 blur-2xl group-hover:bg-gold/20 transition" />
-                <Trophy className="w-12 h-12 text-gold mb-4" strokeWidth={1.2} />
-                <div className="text-xs uppercase tracking-widest text-muted-foreground mb-2">{s.name} Champion</div>
-                <div className="font-display text-4xl mb-2 capitalize">{champ?.name ?? "—"}</div>
-                <div className="text-sm text-muted-foreground capitalize">{champ?.team_name}</div>
+              <Link
+                key={s.id}
+                to="/season/$seasonId"
+                params={{ seasonId: s.id }}
+                className="group relative overflow-hidden rounded-xl border border-white/10 hover:border-gold/70 transition-all hover:-translate-y-2 p-7 min-h-[260px] flex flex-col"
+                style={{ background: `linear-gradient(135deg, ${tint}30 0%, ${tint}08 50%, rgba(10,17,48,0.85) 100%)` }}
+              >
+                <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition" style={{ background: tint }} />
+                {kit && <img src={kit} alt="" className="absolute -bottom-6 -right-6 w-44 h-44 object-contain opacity-25 group-hover:opacity-40 transition" />}
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Crown className="w-6 h-6 text-gold" />
+                    <span className="text-[10px] uppercase tracking-[0.3em] text-gold/90 font-bold">{s.name} Champion</span>
+                  </div>
+                  {b?.badge && <img src={b.badge} alt="" className="w-16 h-16 object-contain mb-4 drop-shadow-[0_0_20px_rgba(212,175,55,0.4)]" />}
+                  <div className="font-display text-4xl mb-1 capitalize text-white">{champ?.team_name ?? champ?.name ?? "—"}</div>
+                  <div className="text-sm text-muted-foreground capitalize">Managed by {champ?.name}</div>
+                </div>
               </Link>
             );
           })}
         </div>
       </section>
+
+      {/* HALL OF STINKERS */}
+      {stinkers.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-border/50">
+          <div className="text-center mb-10">
+            <div className="text-xs uppercase tracking-[0.3em] text-red-400/90 mb-2 inline-flex items-center gap-2 justify-center">
+              <Skull className="w-4 h-4" /> Wall of Shame
+            </div>
+            <h2 className="font-display text-4xl md:text-5xl">Hall of Stinkers</h2>
+            <p className="text-sm text-muted-foreground mt-3 max-w-xl mx-auto">
+              Wooden-spoon winners. Last place isn't an accident — it's a legacy.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {stinkers.map((s: any, i: number) => {
+              const b = getBranding(String(s.manager.id));
+              const tint = b?.primary ?? "#b34747";
+              const kit = MANAGER_KITS[String(s.manager.id)]?.home;
+              return (
+                <Link
+                  key={s.manager.id}
+                  to="/team/$managerId"
+                  params={{ managerId: String(s.manager.id) }}
+                  className="group relative overflow-hidden rounded-xl border border-white/10 hover:border-red-400/60 transition-all hover:-translate-y-1 p-6 flex items-center gap-5 min-h-[140px]"
+                  style={{ background: `linear-gradient(135deg, rgba(120,30,30,0.45) 0%, ${tint}15 60%, rgba(10,17,48,0.85) 100%)` }}
+                >
+                  <div className="absolute -top-12 -right-12 w-44 h-44 rounded-full blur-3xl opacity-40 group-hover:opacity-60 transition bg-red-500/40" />
+                  {kit && <img src={kit} alt="" className="absolute -right-6 bottom-0 w-32 h-32 object-contain opacity-20 grayscale group-hover:opacity-30 transition" />}
+                  <div className="relative flex items-center gap-4 w-full">
+                    <div className="font-display text-5xl text-red-300/90 w-10 text-center leading-none">{i + 1}</div>
+                    {b?.badge ? (
+                      <img src={b.badge} alt="" className="w-14 h-14 object-contain grayscale-[0.4] flex-shrink-0" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold text-white flex-shrink-0" style={{ background: tint }}>
+                        {(s.manager.team_name ?? s.manager.name)?.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-display text-2xl capitalize text-white truncate">{s.manager.team_name ?? s.manager.name}</div>
+                      <div className="text-[11px] uppercase tracking-widest text-muted-foreground capitalize">{s.manager.name}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-display text-3xl text-red-300">{s.count}</div>
+                      <div className="text-[9px] uppercase tracking-widest text-muted-foreground">spoon{s.count > 1 ? "s" : ""}</div>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
 
       {/* RECORDS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-border/50">
@@ -305,6 +387,64 @@ function Home() {
           ))}
         </div>
       </section>
+    </div>
+  );
+}
+
+function TeamConstellation({ managers, logoSrc }: { managers: any[]; logoSrc: string }) {
+  const teams = managers.slice(0, 12);
+  const n = teams.length;
+  return (
+    <div className="relative mx-auto mt-10 md:mt-14 w-[min(92vw,640px)] aspect-square">
+      {/* orbit rings */}
+      <div className="absolute inset-[6%] rounded-full border border-silver/15" />
+      <div className="absolute inset-[18%] rounded-full border border-silver/10" />
+      <div className="absolute inset-[32%] rounded-full border border-silver/10" />
+
+      {/* central crest */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <img
+          src={logoSrc}
+          alt="FPL Super League crest"
+          className="w-[42%] h-[42%] object-contain drop-shadow-[0_0_60px_rgba(80,140,255,0.55)] animate-pulse-slow"
+        />
+      </div>
+
+      {/* badges */}
+      {teams.map((m, i) => {
+        const b = getBranding(String(m.id));
+        const tint = b?.primary ?? "#508cff";
+        const angle = (i / n) * 2 * Math.PI - Math.PI / 2;
+        const radius = 44; // % from centre
+        const x = 50 + Math.cos(angle) * radius;
+        const y = 50 + Math.sin(angle) * radius;
+        return (
+          <Link
+            key={m.id}
+            to="/team/$managerId"
+            params={{ managerId: String(m.id) }}
+            className="group absolute -translate-x-1/2 -translate-y-1/2"
+            style={{ left: `${x}%`, top: `${y}%` }}
+            title={m.team_name ?? m.name}
+          >
+            <div
+              className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center border border-white/15 backdrop-blur-sm transition-all group-hover:scale-110 group-hover:border-white/60"
+              style={{
+                background: `radial-gradient(circle, ${tint}40 0%, rgba(10,17,48,0.7) 70%)`,
+                boxShadow: `0 0 24px ${tint}55`,
+              }}
+            >
+              {b?.badge ? (
+                <img src={b.badge} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain" />
+              ) : (
+                <span className="font-display text-base sm:text-lg text-white">
+                  {(m.team_name ?? m.name)?.charAt(0).toUpperCase()}
+                </span>
+              )}
+            </div>
+          </Link>
+        );
+      })}
     </div>
   );
 }
