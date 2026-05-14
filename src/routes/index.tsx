@@ -350,7 +350,7 @@ function Home() {
           {data.managers.map((m: any) => {
             const b = getBranding(String(m.id));
             const tint = b?.primary ?? "#508cff";
-            const accent = b?.secondary ?? tint;
+            const accent = (b as any)?.secondary ?? tint;
             const kit = MANAGER_KITS[String(m.id)]?.home;
             const titles = titleCounts[m.id] ?? 0;
             const spoons = spoonCounts[m.id] ?? 0;
