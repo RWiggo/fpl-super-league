@@ -246,6 +246,89 @@ function Home() {
       )}
 
 
+      {/* CURRENT SEASON — LIVE TABLE (mobile-first) */}
+      {currentSeason && currentStandings.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 border-t border-border/50">
+          <div className="flex items-end justify-between flex-wrap gap-4 mb-8">
+            <div>
+              <div className="text-[11px] uppercase tracking-[0.3em] text-gold mb-2 flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-destructive animate-pulse" /> Live Now
+              </div>
+              <h2 className="font-display text-3xl sm:text-4xl md:text-5xl">{currentSeason.name} Table</h2>
+            </div>
+            <Link to="/season/$seasonId" params={{ seasonId: currentSeason.id }} className="text-xs sm:text-sm uppercase tracking-wider text-gold hover:underline">View Season →</Link>
+          </div>
+
+          <div className="premium-card rounded-xl overflow-hidden">
+            {/* Header row */}
+            <div className="hidden sm:grid grid-cols-[42px_1fr_36px_36px_36px_64px_64px] gap-2 px-4 py-3 bg-card/60 text-[10px] uppercase tracking-widest text-muted-foreground">
+              <div>#</div><div>Team</div>
+              <div className="text-center">W</div><div className="text-center">D</div><div className="text-center">L</div>
+              <div className="text-right">PF</div><div className="text-right">Pts</div>
+            </div>
+            <div className="sm:hidden grid grid-cols-[28px_1fr_44px_52px] gap-2 px-3 py-2 bg-card/60 text-[10px] uppercase tracking-widest text-muted-foreground">
+              <div>#</div><div>Team</div><div className="text-center">W-D-L</div><div className="text-right">Pts</div>
+            </div>
+
+            {currentStandings.map((row: any) => {
+              const m = managerById(row.manager_id);
+              const b = getBranding(String(row.manager_id));
+              const tint = b?.primary ?? "#508cff";
+              const display = m?.team_name ?? m?.name ?? "—";
+              const isTop = row.position === 1;
+              const isBottom = row.position === currentStandings.length;
+              return (
+                <Link
+                  key={row.id}
+                  to="/team/$managerId"
+                  params={{ managerId: String(row.manager_id) }}
+                  className="block border-t border-border/40 hover:bg-gold/5 transition"
+                >
+                  {/* Desktop / tablet */}
+                  <div className="hidden sm:grid grid-cols-[42px_1fr_36px_36px_36px_64px_64px] gap-2 px-4 py-3 items-center">
+                    <div className={`font-display text-lg ${isTop ? "text-gold" : isBottom ? "text-red-400/80" : "text-foreground/70"}`}>{row.position}</div>
+                    <div className="flex items-center gap-3 min-w-0">
+                      {b?.badge ? (
+                        <img src={b.badge} alt="" className="w-7 h-7 object-contain shrink-0" />
+                      ) : (
+                        <div className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold text-white" style={{ background: tint }}>{display.charAt(0)}</div>
+                      )}
+                      <div className="min-w-0">
+                        <div className="font-medium capitalize truncate">{display}</div>
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground capitalize truncate">{m?.name}</div>
+                      </div>
+                    </div>
+                    <div className="text-center text-sm tabular-nums">{row.wins}</div>
+                    <div className="text-center text-sm tabular-nums">{row.draws}</div>
+                    <div className="text-center text-sm tabular-nums">{row.losses}</div>
+                    <div className="text-right text-sm tabular-nums">{Number(row.points_for ?? 0).toFixed(0)}</div>
+                    <div className="text-right font-display text-lg text-gold tabular-nums">{row.total_points}</div>
+                  </div>
+
+                  {/* Mobile */}
+                  <div className="sm:hidden grid grid-cols-[28px_1fr_44px_52px] gap-2 px-3 py-3 items-center">
+                    <div className={`font-display text-base leading-none ${isTop ? "text-gold" : isBottom ? "text-red-400/80" : "text-foreground/70"}`}>{row.position}</div>
+                    <div className="flex items-center gap-2 min-w-0">
+                      {b?.badge ? (
+                        <img src={b.badge} alt="" className="w-6 h-6 object-contain shrink-0" />
+                      ) : (
+                        <div className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[9px] font-bold text-white" style={{ background: tint }}>{display.charAt(0)}</div>
+                      )}
+                      <div className="min-w-0">
+                        <div className="text-[12px] font-medium capitalize truncate leading-tight">{display}</div>
+                        <div className="text-[9px] uppercase tracking-wider text-muted-foreground capitalize truncate">{m?.name}</div>
+                      </div>
+                    </div>
+                    <div className="text-center text-[11px] tabular-nums text-muted-foreground">{row.wins}-{row.draws}-{row.losses}</div>
+                    <div className="text-right font-display text-lg text-gold tabular-nums leading-none">{row.total_points}</div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {/* RECORDS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-border/50">
         <SectionHeader kicker="The Numbers" title="All-Time Records" />
@@ -258,57 +341,6 @@ function Home() {
           <StatCard label="Total Fixtures" value={data.fixtures.length} sub="and counting" icon={<Trophy className="w-5 h-5" />} />
         </div>
       </section>
-
-      {/* CURRENT SEASON */}
-      {currentSeason && currentStandings.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-border/50">
-          <div className="flex items-end justify-between flex-wrap gap-4 mb-10">
-            <div>
-              <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2 flex items-center gap-2">
-                <span className="inline-block w-2 h-2 rounded-full bg-destructive animate-pulse" /> LIVE
-              </div>
-              <h2 className="font-display text-4xl md:text-5xl">Season {currentSeason.name}</h2>
-            </div>
-            <Link to="/season/$seasonId" params={{ seasonId: currentSeason.id }} className="text-sm uppercase tracking-wider text-gold hover:underline">View Full Season →</Link>
-          </div>
-          <div className="premium-card rounded-lg overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-card/60 text-xs uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="text-left p-4 w-12">#</th>
-                  <th className="text-left p-4">Manager / Team</th>
-                  <th className="text-center p-4">W</th>
-                  <th className="text-center p-4">D</th>
-                  <th className="text-center p-4">L</th>
-                  <th className="text-right p-4">PF</th>
-                  <th className="text-right p-4">Pts</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentStandings.map((row: any) => {
-                  const m = managerById(row.manager_id);
-                  return (
-                    <tr key={row.id} className="border-t border-border/40 hover:bg-gold/5">
-                      <td className="p-4 font-display text-lg text-gold">{row.position}</td>
-                      <td className="p-4 capitalize">
-                        <Link to="/team/$managerId" params={{ managerId: row.manager_id }} className="hover:text-gold">
-                          <div className="font-medium">{m?.name}</div>
-                          <div className="text-xs text-muted-foreground">{m?.team_name}</div>
-                        </Link>
-                      </td>
-                      <td className="text-center p-4">{row.wins}</td>
-                      <td className="text-center p-4">{row.draws}</td>
-                      <td className="text-center p-4">{row.losses}</td>
-                      <td className="text-right p-4">{Number(row.points_for ?? 0).toFixed(0)}</td>
-                      <td className="text-right p-4 font-display text-lg text-gold">{row.total_points}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
 
       {/* ALL TIME PREVIEW */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-border/50">
