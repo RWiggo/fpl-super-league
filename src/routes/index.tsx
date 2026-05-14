@@ -337,17 +337,100 @@ function Home() {
         </section>
       )}
 
-      {/* TEAM TEASERS */}
+      {/* THE ENCYCLOPAEDIA OF TEAMS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-border/50">
-        <SectionHeader kicker="The Managers" title="Every Team" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-10">
-          {data.managers.map((m: any) => (
-            <Link key={m.id} to="/team/$managerId" params={{ managerId: m.id }} className="premium-card rounded-lg p-5 hover:border-gold hover:-translate-y-1 transition-all group">
-              <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Manager</div>
-              <div className="font-display text-xl capitalize group-hover:text-gold transition">{m.name}</div>
-              {m.team_name && <div className="text-xs text-muted-foreground mt-1 truncate">{m.team_name}</div>}
-            </Link>
-          ))}
+        <div className="text-center mb-10">
+          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">Every Competitor</div>
+          <h2 className="font-display text-4xl md:text-5xl">The Encyclopaedia of Teams</h2>
+          <p className="text-sm text-muted-foreground mt-3 max-w-xl mx-auto">
+            Every manager. Every crest. Every story. Tap a club to enter their archive.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-10">
+          {data.managers.map((m: any) => {
+            const b = getBranding(String(m.id));
+            const tint = b?.primary ?? "#508cff";
+            const accent = b?.secondary ?? tint;
+            const kit = MANAGER_KITS[String(m.id)]?.home;
+            const titles = titleCounts[m.id] ?? 0;
+            const spoons = spoonCounts[m.id] ?? 0;
+            const allTime = data.alltime.find((r: any) => r.manager_id === m.id);
+            const display = m.team_name ?? m.name;
+            return (
+              <Link
+                key={m.id}
+                to="/team/$managerId"
+                params={{ managerId: String(m.id) }}
+                className="group relative overflow-hidden rounded-xl border border-white/10 hover:border-white/40 transition-all hover:-translate-y-1 min-h-[180px] flex flex-col"
+                style={{ background: `linear-gradient(135deg, ${tint}40 0%, ${accent}15 55%, rgba(10,17,48,0.9) 100%)` }}
+              >
+                {/* Diagonal stripe */}
+                <div className="absolute inset-0 opacity-[0.07] pointer-events-none" style={{ background: `repeating-linear-gradient(45deg, ${tint} 0 14px, transparent 14px 28px)` }} />
+                {/* Glow blob */}
+                <div className="absolute -top-12 -left-12 w-44 h-44 rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition" style={{ background: tint }} />
+                {/* Kit ghost */}
+                {kit && <img src={kit} alt="" loading="lazy" className="absolute -right-4 -bottom-6 w-32 h-32 object-contain opacity-20 group-hover:opacity-35 group-hover:scale-105 transition-all duration-500" />}
+                {/* Tint bar */}
+                <span className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: tint }} />
+
+                <div className="relative p-5 flex flex-col flex-1">
+                  <div className="flex items-start gap-3">
+                    {b?.badge ? (
+                      <img src={b.badge} alt="" className="w-14 h-14 object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)] flex-shrink-0" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold text-white flex-shrink-0" style={{ background: tint }}>
+                        {display?.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[9px] uppercase tracking-[0.25em] font-bold mb-0.5" style={{ color: tint }}>FC · Est. S1</div>
+                      <div className="font-display text-xl capitalize text-white truncate leading-tight">{display}</div>
+                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground capitalize truncate mt-0.5">{m.name}</div>
+                    </div>
+                  </div>
+
+                  {/* Honours strip */}
+                  <div className="mt-auto pt-4 flex items-center gap-1.5 flex-wrap">
+                    {titles > 0 && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border border-gold/40 bg-gold/10 text-gold">
+                        <Crown className="w-3 h-3" /> {titles}× Champion
+                      </span>
+                    )}
+                    {spoons > 0 && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border border-red-400/40 bg-red-500/10 text-red-300">
+                        <Skull className="w-3 h-3" /> {spoons}× Spoon
+                      </span>
+                    )}
+                    {allTime && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border border-white/15 bg-white/5 text-white/80">
+                        {allTime.total_points} pts
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="mt-3 text-[10px] uppercase tracking-[0.25em] text-white/50 group-hover:text-white transition flex items-center gap-1">
+                    Enter Archive <span className="group-hover:translate-x-1 transition-transform">→</span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* EXPLORE — internal cross-links */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-border/50">
+        <div className="text-center mb-10">
+          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">Keep Digging</div>
+          <h2 className="font-display text-4xl md:text-5xl">Explore the Archive</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <ExploreTile to="/records" tint="hsl(15 85% 55%)" kicker="The Numbers" title="All-Time Records" desc="Every record, milestone & milestone moment." />
+          <ExploreTile to="/h2h" tint="hsl(0 80% 55%)" kicker="Rivalries" title="H2H History" desc="Manager vs manager, every meeting tracked." />
+          <ExploreTile to="/table" tint="hsl(45 90% 55%)" kicker="Eternal" title="All-Time Table" desc="Where everyone sits across all seasons." />
+          {currentSeason && (
+            <ExploreTile to="/season/$seasonId" params={{ seasonId: currentSeason.id }} tint="hsl(195 80% 55%)" kicker="Live Now" title={`${currentSeason.name} Season`} desc="The campaign in motion. Follow the title race." />
+          )}
         </div>
       </section>
     </div>
