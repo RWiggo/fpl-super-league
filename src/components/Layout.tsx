@@ -325,11 +325,48 @@ export function Layout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-silver/20 mt-20 py-10 text-center text-sm text-muted-foreground">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col items-center gap-3">
-          <img src={logo} alt="FPL Super League" width={40} height={40} className="w-10 h-10 opacity-80" loading="lazy" />
-          <p className="font-display tracking-[0.3em] text-foreground/80">THE FPL SUPER LEAGUE</p>
-          <p className="text-xs tracking-widest uppercase">A Fantasy Archive</p>
+      <footer className="border-t border-silver/20 mt-20 pt-12 pb-10 text-sm text-muted-foreground">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-gold mb-3">The League</div>
+              <ul className="space-y-2 text-xs">
+                <li><Link to="/" className="hover:text-foreground">Home</Link></li>
+                {seasons.length > 0 && (
+                  <li><Link to="/season/$seasonId" params={{ seasonId: seasons[seasons.length - 1].id }} className="hover:text-foreground">Current Season</Link></li>
+                )}
+              </ul>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-gold mb-3">Historic</div>
+              <ul className="space-y-2 text-xs">
+                <li><Link to="/records" className="hover:text-foreground">All-Time Records</Link></li>
+                <li><Link to="/h2h" className="hover:text-foreground">H2H History</Link></li>
+                <li><Link to="/table" className="hover:text-foreground">All-Time Table</Link></li>
+              </ul>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-gold mb-3">Seasons</div>
+              <ul className="space-y-2 text-xs">
+                {seasons.map((s) => (
+                  <li key={s.id}><Link to="/season/$seasonId" params={{ seasonId: s.id }} className="hover:text-foreground">{s.name}</Link></li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-gold mb-3">Teams</div>
+              <ul className="space-y-2 text-xs max-h-48 overflow-auto pr-2">
+                {teamsList.map((m) => (
+                  <li key={m.id}><Link to="/team/$managerId" params={{ managerId: m.id }} className="hover:text-foreground capitalize">{m.displayName}</Link></li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-silver/15 pt-8 flex flex-col items-center gap-3 text-center">
+            <img src={logo} alt="FPL Super League" width={40} height={40} className="w-10 h-10 opacity-80" loading="lazy" />
+            <p className="font-display tracking-[0.3em] text-foreground/80">THE FPL SUPER LEAGUE</p>
+            <p className="text-xs tracking-widest uppercase">A Fantasy Archive</p>
+          </div>
         </div>
       </footer>
     </div>
