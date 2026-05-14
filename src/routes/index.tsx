@@ -495,6 +495,28 @@ function TeamConstellation({ managers, logoSrc }: { managers: any[]; logoSrc: st
   );
 }
 
+function ExploreTile({ to, params, tint, kicker, title, desc }: { to: string; params?: any; tint: string; kicker: string; title: string; desc: string }) {
+  const linkProps: any = params ? { to, params } : { to };
+  return (
+    <Link
+      {...linkProps}
+      className="group relative overflow-hidden rounded-xl border border-white/10 hover:border-white/40 transition-all hover:-translate-y-1 p-5 min-h-[140px] flex flex-col"
+      style={{ background: `linear-gradient(135deg, ${tint}30 0%, ${tint}08 55%, rgba(10,17,48,0.85) 100%)` }}
+    >
+      <span className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: tint }} />
+      <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full blur-3xl opacity-40 group-hover:opacity-70 transition" style={{ background: tint }} />
+      <div className="relative flex-1 flex flex-col">
+        <div className="text-[9px] uppercase tracking-[0.3em] font-bold mb-1" style={{ color: tint }}>{kicker}</div>
+        <div className="font-display text-2xl text-white leading-tight">{title}</div>
+        <div className="text-[11px] text-white/60 mt-1 flex-1">{desc}</div>
+        <div className="mt-3 text-[10px] uppercase tracking-[0.25em] text-white/70 group-hover:text-white flex items-center gap-1">
+          Open <span className="group-hover:translate-x-1 transition-transform">→</span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 function SectionHeader({ kicker, title, inline = false }: { kicker: string; title: string; inline?: boolean }) {
   return (
     <div className={inline ? "" : ""}>
