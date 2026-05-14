@@ -160,7 +160,15 @@ function Home() {
 
       {/* HALL OF CHAMPIONS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <SectionHeader kicker="Roll of Honour" title="Hall of Champions" />
+        <div className="text-center mb-10">
+          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2 inline-flex items-center gap-2 justify-center">
+            <Crown className="w-4 h-4" /> Roll of Honour
+          </div>
+          <h2 className="font-display text-4xl md:text-5xl">Hall of Champions</h2>
+          <p className="text-sm text-muted-foreground mt-3 max-w-xl mx-auto">
+            League winners enshrined forever. Lift the trophy, earn your place.
+          </p>
+        </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
           {completedSeasons.map((s: any) => {
             const champ = managerById(s.champion_manager_id);
