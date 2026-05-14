@@ -113,7 +113,10 @@ function Home() {
     });
   });
   const stinkers = Object.entries(spoonCounts)
-    .map(([id, count]) => ({ manager: managerById(id), count }))
+    .map(([id, count]) => ({
+      manager: data.managers.find((m: any) => String(m.id) === String(id)),
+      count,
+    }))
     .filter((x: any) => x.manager)
     .sort((a, b) => b.count - a.count);
 
