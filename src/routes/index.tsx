@@ -155,17 +155,6 @@ function Home() {
         </div>
       </section>
 
-      {/* TICKER */}
-      <div className="border-y border-border/50 bg-card/30 py-4 overflow-hidden">
-        <div className="marquee flex gap-12 whitespace-nowrap text-sm uppercase tracking-widest">
-          {[...tickerItems, ...tickerItems, ...tickerItems].map((t, i) => (
-            <span key={i} className="text-muted-foreground">
-              <span className="text-gold mr-2">●</span>{t}
-            </span>
-          ))}
-        </div>
-      </div>
-
       {/* HALL OF CHAMPIONS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <SectionHeader kicker="Roll of Honour" title="Hall of Champions" />
