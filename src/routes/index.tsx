@@ -386,21 +386,28 @@ function Home() {
             const spoons = spoonCounts[m.id] ?? 0;
             const allTime = data.alltime.find((r: any) => r.manager_id === m.id);
             const display = m.team_name ?? m.name;
+            const nickname = getNickname(m.id) ?? "The Originals";
+            const bestGw = bestGwByManager[String(m.id)];
+            let defining: { label: string; value: string } | null = null;
+            if (titles > 0) defining = { label: "Reigning Pedigree", value: `${titles}× League Champion` };
+            else if (spoons >= 2) defining = { label: "Cellar Specialist", value: `${spoons}× Wooden Spoon` };
+            else if (bestGw) defining = { label: "Career Best GW", value: `${bestGw.score} pts${bestGw.gw ? ` · GW${bestGw.gw}` : ""}` };
+            else if (allTime) defining = { label: "All-Time Tally", value: `${allTime.total_points} pts` };
             return (
               <Link
                 key={m.id}
                 to="/team/$managerId"
                 params={{ managerId: String(m.id) }}
-                className="group relative overflow-hidden rounded-xl border border-white/10 hover:border-white/40 transition-all hover:-translate-y-1 min-h-[180px] flex flex-col"
+                className="group relative overflow-hidden rounded-xl border border-white/10 hover:border-white/40 transition-all hover:-translate-y-1 min-h-[210px] flex flex-col"
                 style={{ background: `linear-gradient(135deg, ${tint}40 0%, ${accent}15 55%, rgba(10,17,48,0.9) 100%)` }}
               >
-                {/* Diagonal stripe */}
                 <div className="absolute inset-0 opacity-[0.07] pointer-events-none" style={{ background: `repeating-linear-gradient(45deg, ${tint} 0 14px, transparent 14px 28px)` }} />
-                {/* Glow blob */}
                 <div className="absolute -top-12 -left-12 w-44 h-44 rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition" style={{ background: tint }} />
-                {/* Kit ghost */}
-                {kit && <img src={kit} alt="" loading="lazy" className="absolute -right-4 -bottom-6 w-32 h-32 object-contain opacity-20 group-hover:opacity-35 group-hover:scale-105 transition-all duration-500" />}
-                {/* Tint bar */}
+                {kit ? (
+                  <img src={kit} alt="" loading="lazy" className="absolute -right-4 -bottom-6 w-32 h-32 object-contain opacity-20 group-hover:opacity-35 group-hover:scale-105 transition-all duration-500" />
+                ) : b?.badge ? (
+                  <img src={b.badge} alt="" loading="lazy" className="absolute -right-4 -bottom-6 w-32 h-32 object-contain opacity-15 group-hover:opacity-25 group-hover:scale-105 transition-all duration-500" />
+                ) : null}
                 <span className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: tint }} />
 
                 <div className="relative p-5 flex flex-col flex-1">
@@ -413,14 +420,20 @@ function Home() {
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <div className="text-[9px] uppercase tracking-[0.25em] font-bold mb-0.5" style={{ color: tint }}>FC · Est. S1</div>
+                      <div className="text-[9px] uppercase tracking-[0.3em] font-bold mb-0.5 truncate" style={{ color: tint }}>{nickname}</div>
                       <div className="font-display text-xl capitalize text-white truncate leading-tight">{display}</div>
                       <div className="text-[10px] uppercase tracking-widest text-muted-foreground capitalize truncate mt-0.5">{m.name}</div>
                     </div>
                   </div>
 
-                  {/* Honours strip */}
-                  <div className="mt-auto pt-4 flex items-center gap-1.5 flex-wrap">
+                  {defining && (
+                    <div className="relative mt-4 rounded-lg border border-white/10 bg-black/25 backdrop-blur-sm px-3 py-2">
+                      <div className="text-[9px] uppercase tracking-[0.25em] text-white/50">{defining.label}</div>
+                      <div className="font-display text-base text-white leading-tight mt-0.5 truncate">{defining.value}</div>
+                    </div>
+                  )}
+
+                  <div className="mt-3 flex items-center gap-1.5 flex-wrap">
                     {titles > 0 && (
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border border-gold/40 bg-gold/10 text-gold">
                         <Crown className="w-3 h-3" /> {titles}× Champion
