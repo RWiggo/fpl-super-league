@@ -267,7 +267,7 @@ function TablePage() {
                 style={{ borderLeftColor: tint, borderLeftWidth: 4 }}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="font-display text-lg text-gold w-6">{r._rank}</span>
+                  <span className={`font-display text-lg w-6 ${rankColor(r._rank, enriched.length)}`}>{r._rank}</span>
                   {b?.badge ? (
                     <img src={b.badge} alt="" className="w-7 h-7 object-contain flex-shrink-0" />
                   ) : (
@@ -315,7 +315,6 @@ function TablePage() {
                 const m = mById(r.manager_id);
                 const b = getBranding(String(r.manager_id));
                 const tint = b?.primary ?? "transparent";
-                const isTop3 = r._rank <= 3;
                 const pdPositive = r._pd > 0;
                 const pdZero = r._pd === 0;
                 return (
@@ -323,7 +322,7 @@ function TablePage() {
                     <td className="px-0.5 py-1 sm:p-3">
                       <div className="flex items-center justify-center sm:justify-start gap-0.5 sm:gap-2">
                         <span className="hidden sm:block w-1 h-8 rounded" style={{ background: tint }} />
-                        <span className={`font-display text-[9px] min-[390px]:text-[10px] sm:text-lg ${isTop3 ? "text-gold" : ""}`}>{r._rank}</span>
+                        <span className={`font-display text-[9px] min-[390px]:text-[10px] sm:text-lg ${rankColor(r._rank, enriched.length)}`}>{r._rank}</span>
                       </div>
                     </td>
                     <td className="px-0.5 py-1 sm:p-3 capitalize">
@@ -545,6 +544,16 @@ function MobileStat({ label, value, valueClass = "" }: { label: string; value: a
 
 function defaultSortDir(k: SortKey): "asc" | "desc" {
   return k === "rank" || k === "best" || k === "losses" ? "asc" : "desc";
+}
+
+function rankColor(rank: number, total: number): string {
+  if (rank === 1) return "text-emerald-500 font-bold";
+  if (rank === 2) return "text-emerald-400";
+  if (rank === 3) return "text-emerald-300";
+  if (rank === total) return "text-red-600 font-bold";
+  if (rank === total - 1) return "text-red-500";
+  if (rank === total - 2) return "text-red-400";
+  return "";
 }
 
 function ord(n: number) {
