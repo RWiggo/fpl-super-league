@@ -546,6 +546,16 @@ function defaultSortDir(k: SortKey): "asc" | "desc" {
   return k === "rank" || k === "best" || k === "losses" ? "asc" : "desc";
 }
 
+function rankColor(rank: number, total: number): string {
+  if (rank === 1) return "text-emerald-500 font-bold";
+  if (rank === 2) return "text-emerald-400";
+  if (rank === 3) return "text-emerald-300";
+  if (rank === total) return "text-red-600 font-bold";
+  if (rank === total - 1) return "text-red-500";
+  if (rank === total - 2) return "text-red-400";
+  return "";
+}
+
 function ord(n: number) {
   const s = ["th", "st", "nd", "rd"], v = n % 100;
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
