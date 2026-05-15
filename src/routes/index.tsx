@@ -131,6 +131,25 @@ function Home() {
     .filter((x: any) => x.manager)
     .sort((a, b) => b.count - a.count);
 
+  // Per-manager best single-gameweek score (for the team-card defining stat)
+  const bestGwByManager: Record<string, { score: number; season: string; gw: number | null }> = {};
+  data.fixtures.forEach((f: any) => {
+    if (f.home_score == null || f.away_score == null) return;
+    const tryAdd = (mid: string, score: number) => {
+      if (!mid) return;
+      const cur = bestGwByManager[mid];
+      if (!cur || score > cur.score) {
+        bestGwByManager[mid] = {
+          score,
+          season: seasonById(f.season_id)?.name ?? "",
+          gw: f.gameweek ?? null,
+        };
+      }
+    };
+    tryAdd(String(f.home_manager_id), Number(f.home_score));
+    tryAdd(String(f.away_manager_id), Number(f.away_score));
+  });
+
   return (
     <div>
       {/* HERO — league crest centred, every competing team orbiting */}
