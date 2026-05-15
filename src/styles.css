@@ -186,4 +186,21 @@
     from { transform: translateX(0); }
     to { transform: translateX(-50%); }
   }
+  .ferris-spin {
+    animation: ferris-spin 60s linear infinite;
+  }
+  .ferris-counter {
+    animation: ferris-counter 60s linear infinite;
+  }
+  @keyframes ferris-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes ferris-counter {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(-360deg); }
+  }
+  .animate-pulse-slow {
+    animation: pulse 4s ease-in-out infinite;
+  }
 }
