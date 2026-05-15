@@ -512,7 +512,7 @@ function TeamConstellation({ managers, logoSrc }: { managers: any[]; logoSrc: st
               to="/team/$managerId"
               params={{ managerId: String(m.id) }}
               className="group absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-              style={{ transform: `translate(-50%, -50%) rotate(${angleDeg}deg) translate(44cqw) rotate(${-angleDeg}deg)`, containerType: "inline-size" } as any}
+              style={{ transform: `translate(-50%, -50%) rotate(${angleDeg}deg) translate(44cqw) rotate(${-angleDeg}deg)` }}
               title={m.team_name ?? m.name}
             >
               <div className="ferris-counter">
