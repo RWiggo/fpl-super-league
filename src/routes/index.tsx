@@ -501,7 +501,7 @@ function TeamConstellation({ managers, logoSrc }: { managers: any[]; logoSrc: st
 
       {/* Ferris-wheel ring of badges. Outer wrapper rotates; each badge
           counter-rotates so the crests stay upright while orbiting. */}
-      <div className="absolute inset-0 ferris-spin">
+      <div className="absolute inset-0 ferris-spin" style={{ containerType: "size" } as any}>
         {teams.map((m, i) => {
           const b = getBranding(String(m.id));
           const tint = b?.primary ?? "#508cff";
