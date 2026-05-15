@@ -267,7 +267,7 @@ function TablePage() {
                 style={{ borderLeftColor: tint, borderLeftWidth: 4 }}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="font-display text-lg text-gold w-6">{r._rank}</span>
+                  <span className={`font-display text-lg w-6 ${rankColor(r._rank, enriched.length)}`}>{r._rank}</span>
                   {b?.badge ? (
                     <img src={b.badge} alt="" className="w-7 h-7 object-contain flex-shrink-0" />
                   ) : (
@@ -315,7 +315,6 @@ function TablePage() {
                 const m = mById(r.manager_id);
                 const b = getBranding(String(r.manager_id));
                 const tint = b?.primary ?? "transparent";
-                const isTop3 = r._rank <= 3;
                 const pdPositive = r._pd > 0;
                 const pdZero = r._pd === 0;
                 return (
@@ -323,7 +322,7 @@ function TablePage() {
                     <td className="px-0.5 py-1 sm:p-3">
                       <div className="flex items-center justify-center sm:justify-start gap-0.5 sm:gap-2">
                         <span className="hidden sm:block w-1 h-8 rounded" style={{ background: tint }} />
-                        <span className={`font-display text-[9px] min-[390px]:text-[10px] sm:text-lg ${isTop3 ? "text-gold" : ""}`}>{r._rank}</span>
+                        <span className={`font-display text-[9px] min-[390px]:text-[10px] sm:text-lg ${rankColor(r._rank, enriched.length)}`}>{r._rank}</span>
                       </div>
                     </td>
                     <td className="px-0.5 py-1 sm:p-3 capitalize">
