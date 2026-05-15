@@ -499,41 +499,43 @@ function TeamConstellation({ managers, logoSrc }: { managers: any[]; logoSrc: st
         />
       </div>
 
-      {/* badges */}
-      {teams.map((m, i) => {
-        const b = getBranding(String(m.id));
-        const tint = b?.primary ?? "#508cff";
-        const angle = (i / n) * 2 * Math.PI - Math.PI / 2;
-        const radius = 44; // % from centre
-        const x = 50 + Math.cos(angle) * radius;
-        const y = 50 + Math.sin(angle) * radius;
-        return (
-          <Link
-            key={m.id}
-            to="/team/$managerId"
-            params={{ managerId: String(m.id) }}
-            className="group absolute -translate-x-1/2 -translate-y-1/2"
-            style={{ left: `${x}%`, top: `${y}%` }}
-            title={m.team_name ?? m.name}
-          >
-            <div
-              className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center border border-white/15 backdrop-blur-sm transition-all group-hover:scale-110 group-hover:border-white/60"
-              style={{
-                background: `radial-gradient(circle, ${tint}40 0%, rgba(10,17,48,0.7) 70%)`,
-                boxShadow: `0 0 24px ${tint}55`,
-              }}
+      {/* Ferris-wheel ring of badges. Outer wrapper rotates; each badge
+          counter-rotates so the crests stay upright while orbiting. */}
+      <div className="absolute inset-0 ferris-spin">
+        {teams.map((m, i) => {
+          const b = getBranding(String(m.id));
+          const tint = b?.primary ?? "#508cff";
+          const angleDeg = (i / n) * 360 - 90;
+          return (
+            <Link
+              key={m.id}
+              to="/team/$managerId"
+              params={{ managerId: String(m.id) }}
+              className="group absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+              style={{ transform: `translate(-50%, -50%) rotate(${angleDeg}deg) translate(44cqw) rotate(${-angleDeg}deg)`, containerType: "inline-size" } as any}
+              title={m.team_name ?? m.name}
             >
-              {b?.badge ? (
-                <img src={b.badge} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain" />
-              ) : (
-                <span className="font-display text-base sm:text-lg text-white">
-                  {(m.team_name ?? m.name)?.charAt(0).toUpperCase()}
-                </span>
-              )}
-            </div>
-          </Link>
-        );
-      })}
+              <div className="ferris-counter">
+                <div
+                  className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center border border-white/15 backdrop-blur-sm transition-all group-hover:scale-110 group-hover:border-white/60"
+                  style={{
+                    background: `radial-gradient(circle, ${tint}40 0%, rgba(10,17,48,0.7) 70%)`,
+                    boxShadow: `0 0 24px ${tint}55`,
+                  }}
+                >
+                  {b?.badge ? (
+                    <img src={b.badge} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain" />
+                  ) : (
+                    <span className="font-display text-base sm:text-lg text-white">
+                      {(m.team_name ?? m.name)?.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }
