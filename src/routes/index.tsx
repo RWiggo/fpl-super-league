@@ -6,6 +6,17 @@ import { Trophy, Flame, Target, Crown, TrendingUp, Zap, Skull } from "lucide-rea
 import logo from "@/assets/fpl-super-league-logo.png";
 import { getBranding } from "@/lib/managerBranding";
 import { MANAGER_KITS } from "@/lib/managerKits";
+import { getNickname } from "@/lib/managerNicknames";
+
+function rankColor(pos: number, total: number) {
+  if (pos === 1) return "text-emerald-500 font-bold";
+  if (pos === 2) return "text-emerald-400";
+  if (pos === 3) return "text-emerald-300";
+  if (pos === total) return "text-red-600 font-bold";
+  if (pos === total - 1) return "text-red-500";
+  if (pos === total - 2) return "text-red-400";
+  return "text-foreground/70";
+}
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -119,6 +130,25 @@ function Home() {
     }))
     .filter((x: any) => x.manager)
     .sort((a, b) => b.count - a.count);
+
+  // Per-manager best single-gameweek score (for the team-card defining stat)
+  const bestGwByManager: Record<string, { score: number; season: string; gw: number | null }> = {};
+  data.fixtures.forEach((f: any) => {
+    if (f.home_score == null || f.away_score == null) return;
+    const tryAdd = (mid: string, score: number) => {
+      if (!mid) return;
+      const cur = bestGwByManager[mid];
+      if (!cur || score > cur.score) {
+        bestGwByManager[mid] = {
+          score,
+          season: seasonById(f.season_id)?.name ?? "",
+          gw: f.gameweek ?? null,
+        };
+      }
+    };
+    tryAdd(String(f.home_manager_id), Number(f.home_score));
+    tryAdd(String(f.away_manager_id), Number(f.away_score));
+  });
 
   return (
     <div>
@@ -284,8 +314,7 @@ function Home() {
               const b = getBranding(String(row.manager_id));
               const tint = b?.primary ?? "#508cff";
               const display = m?.team_name ?? m?.name ?? "—";
-              const isTop = row.position === 1;
-              const isBottom = row.position === currentStandings.length;
+              const rankCls = rankColor(row.position, currentStandings.length);
               return (
                 <Link
                   key={row.id}
@@ -295,7 +324,7 @@ function Home() {
                 >
                   {/* Desktop / tablet */}
                   <div className="hidden sm:grid grid-cols-[42px_1fr_36px_36px_36px_64px_64px] gap-2 px-4 py-3 items-center">
-                    <div className={`font-display text-lg ${isTop ? "text-gold" : isBottom ? "text-red-400/80" : "text-foreground/70"}`}>{row.position}</div>
+                    <div className={`font-display text-lg ${rankCls}`}>{row.position}</div>
                     <div className="flex items-center gap-3 min-w-0">
                       {b?.badge ? (
                         <img src={b.badge} alt="" className="w-7 h-7 object-contain shrink-0" />
@@ -316,7 +345,7 @@ function Home() {
 
                   {/* Mobile */}
                   <div className="sm:hidden grid grid-cols-[28px_1fr_44px_52px] gap-2 px-3 py-3 items-center">
-                    <div className={`font-display text-base leading-none ${isTop ? "text-gold" : isBottom ? "text-red-400/80" : "text-foreground/70"}`}>{row.position}</div>
+                    <div className={`font-display text-base leading-none ${rankCls}`}>{row.position}</div>
                     <div className="flex items-center gap-2 min-w-0">
                       {b?.badge ? (
                         <img src={b.badge} alt="" className="w-6 h-6 object-contain shrink-0" />
@@ -357,21 +386,28 @@ function Home() {
             const spoons = spoonCounts[m.id] ?? 0;
             const allTime = data.alltime.find((r: any) => r.manager_id === m.id);
             const display = m.team_name ?? m.name;
+            const nickname = getNickname(m.id) ?? "The Originals";
+            const bestGw = bestGwByManager[String(m.id)];
+            let defining: { label: string; value: string } | null = null;
+            if (titles > 0) defining = { label: "Reigning Pedigree", value: `${titles}× League Champion` };
+            else if (spoons >= 2) defining = { label: "Cellar Specialist", value: `${spoons}× Wooden Spoon` };
+            else if (bestGw) defining = { label: "Career Best GW", value: `${bestGw.score} pts${bestGw.gw ? ` · GW${bestGw.gw}` : ""}` };
+            else if (allTime) defining = { label: "All-Time Tally", value: `${allTime.total_points} pts` };
             return (
               <Link
                 key={m.id}
                 to="/team/$managerId"
                 params={{ managerId: String(m.id) }}
-                className="group relative overflow-hidden rounded-xl border border-white/10 hover:border-white/40 transition-all hover:-translate-y-1 min-h-[180px] flex flex-col"
+                className="group relative overflow-hidden rounded-xl border border-white/10 hover:border-white/40 transition-all hover:-translate-y-1 min-h-[210px] flex flex-col"
                 style={{ background: `linear-gradient(135deg, ${tint}40 0%, ${accent}15 55%, rgba(10,17,48,0.9) 100%)` }}
               >
-                {/* Diagonal stripe */}
                 <div className="absolute inset-0 opacity-[0.07] pointer-events-none" style={{ background: `repeating-linear-gradient(45deg, ${tint} 0 14px, transparent 14px 28px)` }} />
-                {/* Glow blob */}
                 <div className="absolute -top-12 -left-12 w-44 h-44 rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition" style={{ background: tint }} />
-                {/* Kit ghost */}
-                {kit && <img src={kit} alt="" loading="lazy" className="absolute -right-4 -bottom-6 w-32 h-32 object-contain opacity-20 group-hover:opacity-35 group-hover:scale-105 transition-all duration-500" />}
-                {/* Tint bar */}
+                {kit ? (
+                  <img src={kit} alt="" loading="lazy" className="absolute -right-4 -bottom-6 w-32 h-32 object-contain opacity-20 group-hover:opacity-35 group-hover:scale-105 transition-all duration-500" />
+                ) : b?.badge ? (
+                  <img src={b.badge} alt="" loading="lazy" className="absolute -right-4 -bottom-6 w-32 h-32 object-contain opacity-15 group-hover:opacity-25 group-hover:scale-105 transition-all duration-500" />
+                ) : null}
                 <span className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: tint }} />
 
                 <div className="relative p-5 flex flex-col flex-1">
@@ -384,14 +420,20 @@ function Home() {
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <div className="text-[9px] uppercase tracking-[0.25em] font-bold mb-0.5" style={{ color: tint }}>FC · Est. S1</div>
+                      <div className="text-[9px] uppercase tracking-[0.3em] font-bold mb-0.5 truncate" style={{ color: tint }}>{nickname}</div>
                       <div className="font-display text-xl capitalize text-white truncate leading-tight">{display}</div>
                       <div className="text-[10px] uppercase tracking-widest text-muted-foreground capitalize truncate mt-0.5">{m.name}</div>
                     </div>
                   </div>
 
-                  {/* Honours strip */}
-                  <div className="mt-auto pt-4 flex items-center gap-1.5 flex-wrap">
+                  {defining && (
+                    <div className="relative mt-4 rounded-lg border border-white/10 bg-black/25 backdrop-blur-sm px-3 py-2">
+                      <div className="text-[9px] uppercase tracking-[0.25em] text-white/50">{defining.label}</div>
+                      <div className="font-display text-base text-white leading-tight mt-0.5 truncate">{defining.value}</div>
+                    </div>
+                  )}
+
+                  <div className="mt-3 flex items-center gap-1.5 flex-wrap">
                     {titles > 0 && (
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border border-gold/40 bg-gold/10 text-gold">
                         <Crown className="w-3 h-3" /> {titles}× Champion
@@ -457,41 +499,43 @@ function TeamConstellation({ managers, logoSrc }: { managers: any[]; logoSrc: st
         />
       </div>
 
-      {/* badges */}
-      {teams.map((m, i) => {
-        const b = getBranding(String(m.id));
-        const tint = b?.primary ?? "#508cff";
-        const angle = (i / n) * 2 * Math.PI - Math.PI / 2;
-        const radius = 44; // % from centre
-        const x = 50 + Math.cos(angle) * radius;
-        const y = 50 + Math.sin(angle) * radius;
-        return (
-          <Link
-            key={m.id}
-            to="/team/$managerId"
-            params={{ managerId: String(m.id) }}
-            className="group absolute -translate-x-1/2 -translate-y-1/2"
-            style={{ left: `${x}%`, top: `${y}%` }}
-            title={m.team_name ?? m.name}
-          >
-            <div
-              className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center border border-white/15 backdrop-blur-sm transition-all group-hover:scale-110 group-hover:border-white/60"
-              style={{
-                background: `radial-gradient(circle, ${tint}40 0%, rgba(10,17,48,0.7) 70%)`,
-                boxShadow: `0 0 24px ${tint}55`,
-              }}
+      {/* Ferris-wheel ring of badges. Outer wrapper rotates; each badge
+          counter-rotates so the crests stay upright while orbiting. */}
+      <div className="absolute inset-0 ferris-spin" style={{ containerType: "size" } as any}>
+        {teams.map((m, i) => {
+          const b = getBranding(String(m.id));
+          const tint = b?.primary ?? "#508cff";
+          const angleDeg = (i / n) * 360 - 90;
+          return (
+            <Link
+              key={m.id}
+              to="/team/$managerId"
+              params={{ managerId: String(m.id) }}
+              className="group absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+              style={{ transform: `translate(-50%, -50%) rotate(${angleDeg}deg) translate(44cqw) rotate(${-angleDeg}deg)` }}
+              title={m.team_name ?? m.name}
             >
-              {b?.badge ? (
-                <img src={b.badge} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain" />
-              ) : (
-                <span className="font-display text-base sm:text-lg text-white">
-                  {(m.team_name ?? m.name)?.charAt(0).toUpperCase()}
-                </span>
-              )}
-            </div>
-          </Link>
-        );
-      })}
+              <div className="ferris-counter">
+                <div
+                  className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center border border-white/15 backdrop-blur-sm transition-all group-hover:scale-110 group-hover:border-white/60"
+                  style={{
+                    background: `radial-gradient(circle, ${tint}40 0%, rgba(10,17,48,0.7) 70%)`,
+                    boxShadow: `0 0 24px ${tint}55`,
+                  }}
+                >
+                  {b?.badge ? (
+                    <img src={b.badge} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain" />
+                  ) : (
+                    <span className="font-display text-base sm:text-lg text-white">
+                      {(m.team_name ?? m.name)?.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }
