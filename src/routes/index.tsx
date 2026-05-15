@@ -324,7 +324,7 @@ function Home() {
                 >
                   {/* Desktop / tablet */}
                   <div className="hidden sm:grid grid-cols-[42px_1fr_36px_36px_36px_64px_64px] gap-2 px-4 py-3 items-center">
-                    <div className={`font-display text-lg ${isTop ? "text-gold" : isBottom ? "text-red-400/80" : "text-foreground/70"}`}>{row.position}</div>
+                    <div className={`font-display text-lg ${rankCls}`}>{row.position}</div>
                     <div className="flex items-center gap-3 min-w-0">
                       {b?.badge ? (
                         <img src={b.badge} alt="" className="w-7 h-7 object-contain shrink-0" />
@@ -345,7 +345,7 @@ function Home() {
 
                   {/* Mobile */}
                   <div className="sm:hidden grid grid-cols-[28px_1fr_44px_52px] gap-2 px-3 py-3 items-center">
-                    <div className={`font-display text-base leading-none ${isTop ? "text-gold" : isBottom ? "text-red-400/80" : "text-foreground/70"}`}>{row.position}</div>
+                    <div className={`font-display text-base leading-none ${rankCls}`}>{row.position}</div>
                     <div className="flex items-center gap-2 min-w-0">
                       {b?.badge ? (
                         <img src={b.badge} alt="" className="w-6 h-6 object-contain shrink-0" />
