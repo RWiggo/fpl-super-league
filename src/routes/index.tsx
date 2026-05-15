@@ -1,11 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { StatCard, Skeleton } from "@/components/StatCard";
 import { Trophy, Flame, Target, Crown, TrendingUp, Zap, Skull } from "lucide-react";
 import logo from "@/assets/fpl-super-league-logo.png";
 import { getBranding } from "@/lib/managerBranding";
 import { MANAGER_KITS } from "@/lib/managerKits";
+import { getNickname } from "@/lib/managerNicknames";
+
+function rankColor(pos: number, total: number) {
+  if (pos === 1) return "text-emerald-500 font-bold";
+  if (pos === 2) return "text-emerald-400";
+  if (pos === 3) return "text-emerald-300";
+  if (pos === total) return "text-red-600 font-bold";
+  if (pos === total - 1) return "text-red-500";
+  if (pos === total - 2) return "text-red-400";
+  return "text-foreground/70";
+}
 
 export const Route = createFileRoute("/")({
   component: Home,
