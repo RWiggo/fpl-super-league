@@ -47,7 +47,7 @@ function Home() {
 
   const managerById = (id: string) => data.managers.find((m: any) => m.id === id);
   const seasonById = (id: string) => data.seasons.find((s: any) => s.id === id);
-  const completedSeasons = data.seasons.filter((s: any) => s.champion_manager_id);
+  const completedSeasons = data.seasons.filter((s: any) => s.season_complete && s.champion_manager_id);
   const currentSeason = data.seasons[data.seasons.length - 1];
 
   // Records
@@ -103,7 +103,7 @@ function Home() {
 
   // Wooden spoons (most last-place finishes)
   const spoonCounts: Record<string, number> = {};
-  data.seasons.forEach((s: any) => {
+  data.seasons.filter((s: any) => s.season_complete).forEach((s: any) => {
     const rows = data.standings.filter((r: any) => r.season_id === s.id);
     if (!rows.length) return;
     const maxPos = Math.max(...rows.map((r: any) => r.position ?? 0));
@@ -139,7 +139,8 @@ function Home() {
               <span className="block silver-gradient">FPL SUPER LEAGUE</span>
             </h1>
             <p className="text-base sm:text-lg md:text-2xl text-muted-foreground max-w-2xl mx-auto">
-              Three seasons. {data.managers.length} managers. One eternal archive.
+              {completedSeasons.length} completed season{completedSeasons.length === 1 ? "" : "s"}
+              {currentSeason && !currentSeason.season_complete ? " · 1 live campaign" : ""}. {data.managers.length} managers. One eternal archive.
             </p>
           </div>
 
