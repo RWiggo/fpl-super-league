@@ -314,8 +314,7 @@ function Home() {
               const b = getBranding(String(row.manager_id));
               const tint = b?.primary ?? "#508cff";
               const display = m?.team_name ?? m?.name ?? "—";
-              const isTop = row.position === 1;
-              const isBottom = row.position === currentStandings.length;
+              const rankCls = rankColor(row.position, currentStandings.length);
               return (
                 <Link
                   key={row.id}
