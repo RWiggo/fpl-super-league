@@ -42,6 +42,19 @@ function Home() {
         supabase.from("weekly_high_scores").select("*"),
         supabase.from("season_standings").select("*"),
       ]);
+
+      // Paginate the player_team_alltime view (>1000 rows)
+      const playerRows: any[] = [];
+      for (let from = 0; from < 5000; from += 1000) {
+        const { data } = await supabase
+          .from("player_team_alltime")
+          .select("manager_id,player_id,player_name,total_fantasy_points,total_minutes,seasons_played")
+          .range(from, from + 999);
+        if (!data || data.length === 0) break;
+        playerRows.push(...data);
+        if (data.length < 1000) break;
+      }
+
       setData({
         seasons: seasons.data ?? [],
         managers: managers.data ?? [],
@@ -50,6 +63,7 @@ function Home() {
         streaks: streaks.data ?? [],
         weeklyHigh: weeklyHigh.data ?? [],
         standings: currentStandings.data ?? [],
+        playerRows,
       });
     })();
   }, []);
@@ -131,7 +145,26 @@ function Home() {
     .filter((x: any) => x.manager)
     .sort((a, b) => b.count - a.count);
 
-  // Per-manager best single-gameweek score (for the team-card defining stat)
+  // Per-manager player aggregates from player_team_alltime
+  type PlayerRow = { manager_id: any; player_name: string; total_fantasy_points: number; total_minutes: number; seasons_played: number };
+  const mgrAgg: Record<string, {
+    playersUsed: number;
+    totalMinutes: number;
+    top: PlayerRow | null;        // top scorer
+    ironMan: PlayerRow | null;    // most minutes
+    loyalist: PlayerRow | null;   // most seasons under this manager
+  }> = {};
+  (data.playerRows as PlayerRow[] | undefined)?.forEach((r) => {
+    const id = String(r.manager_id);
+    const a = mgrAgg[id] ?? (mgrAgg[id] = { playersUsed: 0, totalMinutes: 0, top: null, ironMan: null, loyalist: null });
+    a.playersUsed++;
+    a.totalMinutes += Number(r.total_minutes ?? 0);
+    if (!a.top || (r.total_fantasy_points ?? 0) > (a.top.total_fantasy_points ?? 0)) a.top = r;
+    if (!a.ironMan || (r.total_minutes ?? 0) > (a.ironMan.total_minutes ?? 0)) a.ironMan = r;
+    if (!a.loyalist || (r.seasons_played ?? 0) > (a.loyalist.seasons_played ?? 0)) a.loyalist = r;
+  });
+
+  // Per-manager best single-gameweek score
   const bestGwByManager: Record<string, { score: number; season: string; gw: number | null }> = {};
   data.fixtures.forEach((f: any) => {
     if (f.home_score == null || f.away_score == null) return;
@@ -149,6 +182,52 @@ function Home() {
     tryAdd(String(f.home_manager_id), Number(f.home_score));
     tryAdd(String(f.away_manager_id), Number(f.away_score));
   });
+
+  // Build a unique defining stat per manager.
+  // Priority is by league-extreme metrics first, then fallback to that team's own talisman.
+  const allMgrIds = data.managers.map((m: any) => String(m.id));
+  const leaderOf = (fn: (id: string) => number, mode: "max" | "min" = "max") => {
+    let best: { id: string; v: number } | null = null;
+    for (const id of allMgrIds) {
+      const v = fn(id);
+      if (!isFinite(v)) continue;
+      if (!best) { best = { id, v }; continue; }
+      if (mode === "max" ? v > best.v : v < best.v) best = { id, v };
+    }
+    return best;
+  };
+  const mostPlayers = leaderOf((id) => mgrAgg[id]?.playersUsed ?? -Infinity, "max");
+  const fewestPlayers = leaderOf((id) => mgrAgg[id]?.playersUsed ?? Infinity, "min");
+  const ironManLeader = leaderOf((id) => mgrAgg[id]?.ironMan?.total_minutes ?? -Infinity, "max");
+  const talismanLeader = leaderOf((id) => mgrAgg[id]?.top?.total_fantasy_points ?? -Infinity, "max");
+  const loyaltyLeader = leaderOf((id) => mgrAgg[id]?.loyalist?.seasons_played ?? -Infinity, "max");
+  const bestGwLeader = leaderOf((id) => bestGwByManager[id]?.score ?? -Infinity, "max");
+  const marathonLeader = leaderOf((id) => mgrAgg[id]?.totalMinutes ?? -Infinity, "max");
+  const pfLeader = leaderOf((id) => {
+    const r = data.alltime.find((x: any) => String(x.manager_id) === id);
+    return r ? Number(r.total_points_for ?? 0) : -Infinity;
+  }, "max");
+
+  const definingStat = (id: string): { label: string; value: string } | null => {
+    const a = mgrAgg[id];
+    // Extreme metrics first — guaranteed unique per league leader
+    if (mostPlayers?.id === id && a) return { label: "Squad Rotator", value: `${a.playersUsed} players used` };
+    if (fewestPlayers?.id === id && a) return { label: "Lean Squad", value: `Only ${a.playersUsed} players used` };
+    if (talismanLeader?.id === id && a?.top) return { label: "Heaviest Talisman", value: `${a.top.player_name} · ${a.top.total_fantasy_points} pts` };
+    if (ironManLeader?.id === id && a?.ironMan) return { label: "Iron Man", value: `${a.ironMan.player_name} · ${Math.round(a.ironMan.total_minutes).toLocaleString()} mins` };
+    if (loyaltyLeader?.id === id && a?.loyalist && (a.loyalist.seasons_played ?? 0) >= 2) return { label: "Most Loyal", value: `${a.loyalist.player_name} · ${a.loyalist.seasons_played} seasons` };
+    if (bestGwLeader?.id === id && bestGwByManager[id]) return { label: "Biggest GW Haul", value: `${bestGwByManager[id].score} pts${bestGwByManager[id].gw ? ` · GW${bestGwByManager[id].gw}` : ""}` };
+    if (marathonLeader?.id === id && a) return { label: "Marathon Manager", value: `${Math.round(a.totalMinutes).toLocaleString()} player minutes` };
+    if (pfLeader?.id === id) {
+      const r = data.alltime.find((x: any) => String(x.manager_id) === id);
+      if (r) return { label: "Points Machine", value: `${Number(r.total_points_for).toLocaleString()} PF all-time` };
+    }
+    // Fallback — that team's own talisman
+    if (a?.top) return { label: "Talisman", value: `${a.top.player_name} · ${a.top.total_fantasy_points} pts` };
+    if (bestGwByManager[id]) return { label: "Career Best GW", value: `${bestGwByManager[id].score} pts` };
+    return null;
+  };
+
 
   return (
     <div>
@@ -269,8 +348,8 @@ function Home() {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <div className="font-display text-2xl capitalize text-white truncate">{s.manager.team_name ?? s.manager.name}</div>
-                      <div className="text-[11px] uppercase tracking-widest text-muted-foreground capitalize">{s.manager.name}</div>
+                      <div className="font-display text-xl sm:text-2xl capitalize text-white leading-tight break-words">{s.manager.team_name ?? s.manager.name}</div>
+                      <div className="text-[11px] uppercase tracking-widest text-muted-foreground capitalize mt-0.5">{s.manager.name}</div>
                     </div>
                     <div className="text-right">
                       <div className="font-display text-3xl text-red-300">{s.count}</div>
@@ -387,12 +466,7 @@ function Home() {
             const allTime = data.alltime.find((r: any) => r.manager_id === m.id);
             const display = m.team_name ?? m.name;
             const nickname = getNickname(m.id) ?? "The Originals";
-            const bestGw = bestGwByManager[String(m.id)];
-            let defining: { label: string; value: string } | null = null;
-            if (titles > 0) defining = { label: "Reigning Pedigree", value: `${titles}× League Champion` };
-            else if (spoons >= 2) defining = { label: "Cellar Specialist", value: `${spoons}× Wooden Spoon` };
-            else if (bestGw) defining = { label: "Career Best GW", value: `${bestGw.score} pts${bestGw.gw ? ` · GW${bestGw.gw}` : ""}` };
-            else if (allTime) defining = { label: "All-Time Tally", value: `${allTime.total_points} pts` };
+            const defining = definingStat(String(m.id));
             return (
               <Link
                 key={m.id}
@@ -499,20 +573,23 @@ function TeamConstellation({ managers, logoSrc }: { managers: any[]; logoSrc: st
         />
       </div>
 
-      {/* Ferris-wheel ring of badges. Outer wrapper rotates; each badge
-          counter-rotates so the crests stay upright while orbiting. */}
-      <div className="absolute inset-0 ferris-spin" style={{ containerType: "size" } as any}>
+      {/* Ferris-wheel ring of badges. Outer wrapper rotates as a rigid
+          circle around the centre; each badge counter-rotates to stay upright. */}
+      <div className="absolute inset-0 ferris-spin">
         {teams.map((m, i) => {
           const b = getBranding(String(m.id));
           const tint = b?.primary ?? "#508cff";
-          const angleDeg = (i / n) * 360 - 90;
+          const angle = (i / n) * 2 * Math.PI - Math.PI / 2;
+          const r = 44; // radius as % of container
+          const x = 50 + r * Math.cos(angle);
+          const y = 50 + r * Math.sin(angle);
           return (
             <Link
               key={m.id}
               to="/team/$managerId"
               params={{ managerId: String(m.id) }}
-              className="group absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-              style={{ transform: `translate(-50%, -50%) rotate(${angleDeg}deg) translate(44cqw) rotate(${-angleDeg}deg)` }}
+              className="group absolute"
+              style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)" }}
               title={m.team_name ?? m.name}
             >
               <div className="ferris-counter">

@@ -21,7 +21,7 @@ export const MANAGER_BRANDING: Record<string, Branding> = {
   "2":  { badge: b2,  primary: "#b5b6d4", primaryFg: "#0a0a0a" },        // Charleston Athletic
   "3":  { badge: b3,  primary: "#01f9c9", primaryFg: "#0a0a0a" },        // Wiggo Wanderers
   "4":  { badge: b4,  primary: "#169b62" },                              // ALS Ajax — Irish green
-  "5":  { badge: b5,  primary: "#0a1f44" },                              // Padleys Piranhas — Navy Blue
+  "5":  { badge: b5,  primary: "#8a0d10" },                              // Padleys Piranhas — Deep Red
   "6":  { badge: b6,  primary: "#964e27" },                              // Fill Her Wycombe
   "7":  { badge: b7,  primary: "#d4af37", primaryFg: "#0a0a0a" },        // Ryans Lions — Gold
   "8":  { badge: b8,  primary: "#f8cf2c", primaryFg: "#0a0a0a" },        // Adam All Stars — Yellow
