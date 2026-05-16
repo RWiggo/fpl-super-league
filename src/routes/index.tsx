@@ -466,12 +466,7 @@ function Home() {
             const allTime = data.alltime.find((r: any) => r.manager_id === m.id);
             const display = m.team_name ?? m.name;
             const nickname = getNickname(m.id) ?? "The Originals";
-            const bestGw = bestGwByManager[String(m.id)];
-            let defining: { label: string; value: string } | null = null;
-            if (titles > 0) defining = { label: "Reigning Pedigree", value: `${titles}× League Champion` };
-            else if (spoons >= 2) defining = { label: "Cellar Specialist", value: `${spoons}× Wooden Spoon` };
-            else if (bestGw) defining = { label: "Career Best GW", value: `${bestGw.score} pts${bestGw.gw ? ` · GW${bestGw.gw}` : ""}` };
-            else if (allTime) defining = { label: "All-Time Tally", value: `${allTime.total_points} pts` };
+            const defining = definingStat(String(m.id));
             return (
               <Link
                 key={m.id}
