@@ -348,8 +348,8 @@ function Home() {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <div className="font-display text-2xl capitalize text-white truncate">{s.manager.team_name ?? s.manager.name}</div>
-                      <div className="text-[11px] uppercase tracking-widest text-muted-foreground capitalize">{s.manager.name}</div>
+                      <div className="font-display text-xl sm:text-2xl capitalize text-white leading-tight break-words">{s.manager.team_name ?? s.manager.name}</div>
+                      <div className="text-[11px] uppercase tracking-widest text-muted-foreground capitalize mt-0.5">{s.manager.name}</div>
                     </div>
                     <div className="text-right">
                       <div className="font-display text-3xl text-red-300">{s.count}</div>
