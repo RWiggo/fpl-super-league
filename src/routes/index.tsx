@@ -573,20 +573,23 @@ function TeamConstellation({ managers, logoSrc }: { managers: any[]; logoSrc: st
         />
       </div>
 
-      {/* Ferris-wheel ring of badges. Outer wrapper rotates; each badge
-          counter-rotates so the crests stay upright while orbiting. */}
-      <div className="absolute inset-0 ferris-spin" style={{ containerType: "size" } as any}>
+      {/* Ferris-wheel ring of badges. Outer wrapper rotates as a rigid
+          circle around the centre; each badge counter-rotates to stay upright. */}
+      <div className="absolute inset-0 ferris-spin">
         {teams.map((m, i) => {
           const b = getBranding(String(m.id));
           const tint = b?.primary ?? "#508cff";
-          const angleDeg = (i / n) * 360 - 90;
+          const angle = (i / n) * 2 * Math.PI - Math.PI / 2;
+          const r = 44; // radius as % of container
+          const x = 50 + r * Math.cos(angle);
+          const y = 50 + r * Math.sin(angle);
           return (
             <Link
               key={m.id}
               to="/team/$managerId"
               params={{ managerId: String(m.id) }}
-              className="group absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-              style={{ transform: `translate(-50%, -50%) rotate(${angleDeg}deg) translate(44cqw) rotate(${-angleDeg}deg)` }}
+              className="group absolute"
+              style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)" }}
               title={m.team_name ?? m.name}
             >
               <div className="ferris-counter">
