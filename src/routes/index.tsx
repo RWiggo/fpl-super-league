@@ -145,7 +145,26 @@ function Home() {
     .filter((x: any) => x.manager)
     .sort((a, b) => b.count - a.count);
 
-  // Per-manager best single-gameweek score (for the team-card defining stat)
+  // Per-manager player aggregates from player_team_alltime
+  type PlayerRow = { manager_id: any; player_name: string; total_fantasy_points: number; total_minutes: number; seasons_played: number };
+  const mgrAgg: Record<string, {
+    playersUsed: number;
+    totalMinutes: number;
+    top: PlayerRow | null;        // top scorer
+    ironMan: PlayerRow | null;    // most minutes
+    loyalist: PlayerRow | null;   // most seasons under this manager
+  }> = {};
+  (data.playerRows as PlayerRow[] | undefined)?.forEach((r) => {
+    const id = String(r.manager_id);
+    const a = mgrAgg[id] ?? (mgrAgg[id] = { playersUsed: 0, totalMinutes: 0, top: null, ironMan: null, loyalist: null });
+    a.playersUsed++;
+    a.totalMinutes += Number(r.total_minutes ?? 0);
+    if (!a.top || (r.total_fantasy_points ?? 0) > (a.top.total_fantasy_points ?? 0)) a.top = r;
+    if (!a.ironMan || (r.total_minutes ?? 0) > (a.ironMan.total_minutes ?? 0)) a.ironMan = r;
+    if (!a.loyalist || (r.seasons_played ?? 0) > (a.loyalist.seasons_played ?? 0)) a.loyalist = r;
+  });
+
+  // Per-manager best single-gameweek score
   const bestGwByManager: Record<string, { score: number; season: string; gw: number | null }> = {};
   data.fixtures.forEach((f: any) => {
     if (f.home_score == null || f.away_score == null) return;
@@ -163,6 +182,52 @@ function Home() {
     tryAdd(String(f.home_manager_id), Number(f.home_score));
     tryAdd(String(f.away_manager_id), Number(f.away_score));
   });
+
+  // Build a unique defining stat per manager.
+  // Priority is by league-extreme metrics first, then fallback to that team's own talisman.
+  const allMgrIds = data.managers.map((m: any) => String(m.id));
+  const leaderOf = (fn: (id: string) => number, mode: "max" | "min" = "max") => {
+    let best: { id: string; v: number } | null = null;
+    for (const id of allMgrIds) {
+      const v = fn(id);
+      if (!isFinite(v)) continue;
+      if (!best) { best = { id, v }; continue; }
+      if (mode === "max" ? v > best.v : v < best.v) best = { id, v };
+    }
+    return best;
+  };
+  const mostPlayers = leaderOf((id) => mgrAgg[id]?.playersUsed ?? -Infinity, "max");
+  const fewestPlayers = leaderOf((id) => mgrAgg[id]?.playersUsed ?? Infinity, "min");
+  const ironManLeader = leaderOf((id) => mgrAgg[id]?.ironMan?.total_minutes ?? -Infinity, "max");
+  const talismanLeader = leaderOf((id) => mgrAgg[id]?.top?.total_fantasy_points ?? -Infinity, "max");
+  const loyaltyLeader = leaderOf((id) => mgrAgg[id]?.loyalist?.seasons_played ?? -Infinity, "max");
+  const bestGwLeader = leaderOf((id) => bestGwByManager[id]?.score ?? -Infinity, "max");
+  const marathonLeader = leaderOf((id) => mgrAgg[id]?.totalMinutes ?? -Infinity, "max");
+  const pfLeader = leaderOf((id) => {
+    const r = data.alltime.find((x: any) => String(x.manager_id) === id);
+    return r ? Number(r.total_points_for ?? 0) : -Infinity;
+  }, "max");
+
+  const definingStat = (id: string): { label: string; value: string } | null => {
+    const a = mgrAgg[id];
+    // Extreme metrics first — guaranteed unique per league leader
+    if (mostPlayers?.id === id && a) return { label: "Squad Rotator", value: `${a.playersUsed} players used` };
+    if (fewestPlayers?.id === id && a) return { label: "Lean Squad", value: `Only ${a.playersUsed} players used` };
+    if (talismanLeader?.id === id && a?.top) return { label: "Heaviest Talisman", value: `${a.top.player_name} · ${a.top.total_fantasy_points} pts` };
+    if (ironManLeader?.id === id && a?.ironMan) return { label: "Iron Man", value: `${a.ironMan.player_name} · ${Math.round(a.ironMan.total_minutes).toLocaleString()} mins` };
+    if (loyaltyLeader?.id === id && a?.loyalist && (a.loyalist.seasons_played ?? 0) >= 2) return { label: "Most Loyal", value: `${a.loyalist.player_name} · ${a.loyalist.seasons_played} seasons` };
+    if (bestGwLeader?.id === id && bestGwByManager[id]) return { label: "Biggest GW Haul", value: `${bestGwByManager[id].score} pts${bestGwByManager[id].gw ? ` · GW${bestGwByManager[id].gw}` : ""}` };
+    if (marathonLeader?.id === id && a) return { label: "Marathon Manager", value: `${Math.round(a.totalMinutes).toLocaleString()} player minutes` };
+    if (pfLeader?.id === id) {
+      const r = data.alltime.find((x: any) => String(x.manager_id) === id);
+      if (r) return { label: "Points Machine", value: `${Number(r.total_points_for).toLocaleString()} PF all-time` };
+    }
+    // Fallback — that team's own talisman
+    if (a?.top) return { label: "Talisman", value: `${a.top.player_name} · ${a.top.total_fantasy_points} pts` };
+    if (bestGwByManager[id]) return { label: "Career Best GW", value: `${bestGwByManager[id].score} pts` };
+    return null;
+  };
+
 
   return (
     <div>
