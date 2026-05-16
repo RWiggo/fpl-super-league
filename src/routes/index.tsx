@@ -42,6 +42,19 @@ function Home() {
         supabase.from("weekly_high_scores").select("*"),
         supabase.from("season_standings").select("*"),
       ]);
+
+      // Paginate the player_team_alltime view (>1000 rows)
+      const playerRows: any[] = [];
+      for (let from = 0; from < 5000; from += 1000) {
+        const { data } = await supabase
+          .from("player_team_alltime")
+          .select("manager_id,player_id,player_name,total_fantasy_points,total_minutes,seasons_played")
+          .range(from, from + 999);
+        if (!data || data.length === 0) break;
+        playerRows.push(...data);
+        if (data.length < 1000) break;
+      }
+
       setData({
         seasons: seasons.data ?? [],
         managers: managers.data ?? [],
@@ -50,6 +63,7 @@ function Home() {
         streaks: streaks.data ?? [],
         weeklyHigh: weeklyHigh.data ?? [],
         standings: currentStandings.data ?? [],
+        playerRows,
       });
     })();
   }, []);
