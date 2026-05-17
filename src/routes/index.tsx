@@ -33,7 +33,7 @@ function Home() {
 
   useEffect(() => {
     (async () => {
-      const [seasons, managers, alltime, fixtures, streaks, weeklyHigh, currentStandings, tots] = await Promise.all([
+      const [seasons, managers, alltime, fixtures, streaks, weeklyHigh, currentStandings] = await Promise.all([
         supabase.from("seasons").select("*").order("year_start"),
         supabase.from("managers").select("*"),
         supabase.from("alltime_table").select("*").order("total_points", { ascending: false }),
@@ -41,19 +41,9 @@ function Home() {
         supabase.from("win_streaks").select("*").order("streak_length", { ascending: false }),
         supabase.from("weekly_high_scores").select("*"),
         supabase.from("season_standings").select("*"),
-        (async () => {
-          const rows: any[] = [];
-          for (let from = 0; from < 5000; from += 1000) {
-            const { data } = await supabase.from("team_of_the_season").select("manager_name,player_name,club").range(from, from + 999);
-            if (!data || data.length === 0) break;
-            rows.push(...data);
-            if (data.length < 1000) break;
-          }
-          return { data: rows };
-        })(),
       ]);
 
-      // Paginate the player_team_alltime view (>1000 rows)
+      // Paginate player_team_alltime view (>1000 rows)
       const playerRows: any[] = [];
       for (let from = 0; from < 5000; from += 1000) {
         const { data } = await supabase
@@ -62,6 +52,18 @@ function Home() {
           .range(from, from + 999);
         if (!data || data.length === 0) break;
         playerRows.push(...data);
+        if (data.length < 1000) break;
+      }
+
+      // Paginate player_season_stats for goals/assists/cards/clean sheets
+      const playerSeasonRows: any[] = [];
+      for (let from = 0; from < 5000; from += 1000) {
+        const { data } = await supabase
+          .from("player_season_stats")
+          .select("manager_id,out_goals,gk_goals,out_assists_total,gk_assists_total,out_clean_sheets,gk_clean_sheets,out_yellow_cards,gk_yellow_cards,out_red_cards,gk_red_cards")
+          .range(from, from + 999);
+        if (!data || data.length === 0) break;
+        playerSeasonRows.push(...data);
         if (data.length < 1000) break;
       }
 
@@ -74,7 +76,7 @@ function Home() {
         weeklyHigh: weeklyHigh.data ?? [],
         standings: currentStandings.data ?? [],
         playerRows,
-        tots: tots.data ?? [],
+        playerSeasonRows,
       });
     })();
   }, []);
