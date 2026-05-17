@@ -1,6 +1,6 @@
 import type { GkPalette } from "@/lib/managerKits";
 
-// Stylised goalkeeper jersey silhouette — long-sleeve, V-neck with chest stripe.
+// Stylised goalkeeper jersey silhouette - long-sleeve, V-neck with chest stripe.
 // Colours are driven entirely by the supplied palette so each team gets a
 // unique, complementary GK kit.
 export function GoalkeeperKit({ palette, className }: { palette: GkPalette; className?: string }) {

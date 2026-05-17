@@ -305,7 +305,7 @@ function TeamPage() {
         facts={[
           { label: "Seasons", value: d.standings.length },
           { label: "Titles", value: titles },
-          { label: "All-Time Rank", value: allTimeRank > 0 ? ordinal(allTimeRank) : "—" },
+          { label: "All-Time Rank", value: allTimeRank > 0 ? ordinal(allTimeRank) : "-" },
           { label: "Win %", value: `${winPct}%` },
         ]}
         secondaryFacts={[
@@ -367,7 +367,7 @@ function TeamPage() {
                           <span className="text-muted-foreground ml-2 text-xs">{Number(star.fantasy_points ?? 0).toFixed(0)} pts</span>
                         </span>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
+                        <span className="text-muted-foreground">-</span>
                       )}
                     </td>
                     <td className="text-center p-3">{s.wins}</td>
@@ -417,7 +417,7 @@ function TeamPage() {
                   </Link>
                   <div className={`font-display text-xl ${posClass} flex items-center gap-1 shrink-0`}>
                     {pos === 1 && <Trophy className="w-4 h-4 text-gold" />}
-                    {pos}<span className="text-[10px] text-muted-foreground ml-0.5">/{seasonSize || "—"}</span>
+                    {pos}<span className="text-[10px] text-muted-foreground ml-0.5">/{seasonSize || "-"}</span>
                   </div>
                 </div>
                 <div className="text-xs text-muted-foreground truncate mt-0.5">{teamName}</div>
@@ -518,7 +518,7 @@ function TeamPage() {
                   <H2HCard
                     key={oppId}
                     opponentId={String(oppId)}
-                    opponentName={opp?.name ?? "—"}
+                    opponentName={opp?.name ?? "-"}
                     opponentBadge={getBranding(oppId)?.badge}
                     opponentTint={getBranding(oppId)?.primary}
                     wins={myWins ?? 0}
@@ -655,9 +655,9 @@ function TeamPage() {
                                       <span>{r.club}</span>
                                     </div>
                                   </td>
-                                  <td className="text-center p-2">{r.games_played ?? "—"}</td>
+                                  <td className="text-center p-2">{r.games_played ?? "-"}</td>
                                   <td className="text-right p-2 font-display text-gold">{Number(r.fantasy_points ?? 0).toFixed(0)}</td>
-                                  <td className="text-right p-2">{r.avg_points_per_game != null ? Number(r.avg_points_per_game).toFixed(1) : "—"}</td>
+                                  <td className="text-right p-2">{r.avg_points_per_game != null ? Number(r.avg_points_per_game).toFixed(1) : "-"}</td>
                                 </tr>
                               );
                             })}
@@ -695,9 +695,9 @@ function Skel() {
 }
 
 const RANK_STYLES = [
-  "text-amber-300",       // 1st — gold
-  "text-slate-300",       // 2nd — silver
-  "text-orange-400",      // 3rd — bronze
+  "text-amber-300",       // 1st - gold
+  "text-slate-300",       // 2nd - silver
+  "text-orange-400",      // 3rd - bronze
   "text-muted-foreground",
   "text-muted-foreground",
 ];

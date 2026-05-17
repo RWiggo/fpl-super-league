@@ -9,7 +9,7 @@ export const Route = createFileRoute("/h2h")({
   component: H2HPage,
   head: () => ({
     meta: [
-      { title: "All-Time H2H Records — FPL Super League" },
+      { title: "All-Time H2H Records - FPL Super League" },
       { name: "description", content: "Every head-to-head record between every manager across the league's history." },
     ],
   }),
@@ -102,7 +102,7 @@ function H2HPage() {
 
   return (
     <div>
-      {/* HERO — distinct: crossed swords on a shield */}
+      {/* HERO - distinct: crossed swords on a shield */}
       <section className="relative overflow-hidden border-b border-border/50">
         <div className="absolute inset-0 ucl-stars opacity-70" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />

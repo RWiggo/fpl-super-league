@@ -242,7 +242,7 @@ export function Layout() {
           </button>
         </div>
 
-        {/* Cyan accent strip — UCL signature */}
+        {/* Cyan accent strip - UCL signature */}
         <div className="relative h-[2px] bg-gradient-to-r from-transparent via-cyan-400/70 to-transparent" />
 
         {open && (

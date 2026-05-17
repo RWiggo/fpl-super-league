@@ -10,7 +10,7 @@ export const Route = createFileRoute("/records")({
   component: RecordsPage,
   head: () => ({
     meta: [
-      { title: "All-Time Records — FPL Super League" },
+      { title: "All-Time Records - FPL Super League" },
       { name: "description", content: "Every record, every milestone, every legendary feat across the entire history of the league." },
     ],
   }),
@@ -244,7 +244,7 @@ function buildRecords(d: any) {
   // Lowest GW score: exclude 0s as outliers (missed deadlines, etc.)
   const lowestGW = [...sideScores].filter((e) => e.value > 0).sort((a, b) => a.value - b.value);
 
-  // Margins (winner's margin — held by the winning manager)
+  // Margins (winner's margin - held by the winning manager)
   const margins: Entry[] = fx
     .filter((f: any) => f.margin > 0)
     .map((f: any) => ({
@@ -483,7 +483,7 @@ function RecordCard({ def, onOpen, mById }: { def: RecordDef; onOpen: () => void
           const b2 = e.secondaryManagerId != null ? getBranding(String(e.secondaryManagerId)) : null;
           const tint = b?.primary ?? def.tint;
           const pct = max > 0 ? Math.max(4, (e.value / max) * 100) : 0;
-          const name = m?.team_name ?? m?.name ?? e.managerName ?? "—";
+          const name = m?.team_name ?? m?.name ?? e.managerName ?? "-";
           const name2 = m2?.team_name ?? m2?.name ?? e.secondaryManagerName;
           return (
             <div key={i} className="flex items-center gap-2">
@@ -553,7 +553,7 @@ function RecordModal({ def, mById, onClose }: { def: RecordDef; mById: (id: any)
             const m = e.managerId != null ? mById(e.managerId) : null;
             const b = e.managerId != null ? getBranding(String(e.managerId)) : null;
             const tint = b?.primary ?? def.tint;
-            const name = m?.team_name ?? m?.name ?? e.managerName ?? "—";
+            const name = m?.team_name ?? m?.name ?? e.managerName ?? "-";
             const inner = (
               <div
                 className="flex items-center gap-3 p-3 rounded-lg border border-white/10 hover:border-white/40 transition"

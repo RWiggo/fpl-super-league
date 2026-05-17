@@ -119,10 +119,10 @@ function Home() {
     .slice(0, 10);
 
   const tickerItems = [
-    `🏆 Highest Score: ${highestVal} pts (${managerById(highestTeam)?.name ?? "—"})`,
+    `🏆 Highest Score: ${highestVal} pts (${managerById(highestTeam)?.name ?? "-"})`,
     `⚔️ Biggest Margin: ${biggestMargin?.margin ?? 0} pts`,
     `🔥 Longest Win Streak: ${longestWinStreak?.streak_length ?? 0}`,
-    `👑 Most Titles: ${mostTitles ? `${managerById(mostTitles[0])?.name} — ${mostTitles[1]}` : "—"}`,
+    `👑 Most Titles: ${mostTitles ? `${managerById(mostTitles[0])?.name} - ${mostTitles[1]}` : "-"}`,
     `📊 ${data.fixtures.length} Fixtures Played`,
   ];
 
@@ -210,7 +210,7 @@ function Home() {
 
   const definingStat = (id: string): { label: string; value: string } | null => {
     const a = mgrAgg[id];
-    // Extreme metrics first — guaranteed unique per league leader
+    // Extreme metrics first - guaranteed unique per league leader
     if (mostPlayers?.id === id && a) return { label: "Squad Rotator", value: `${a.playersUsed} players used` };
     if (fewestPlayers?.id === id && a) return { label: "Lean Squad", value: `Only ${a.playersUsed} players used` };
     if (talismanLeader?.id === id && a?.top) return { label: "Heaviest Talisman", value: `${a.top.player_name} · ${a.top.total_fantasy_points} pts` };
@@ -222,7 +222,7 @@ function Home() {
       const r = data.alltime.find((x: any) => String(x.manager_id) === id);
       if (r) return { label: "Points Machine", value: `${Number(r.total_points_for).toLocaleString()} PF all-time` };
     }
-    // Fallback — that team's own talisman
+    // Fallback - that team's own talisman
     if (a?.top) return { label: "Talisman", value: `${a.top.player_name} · ${a.top.total_fantasy_points} pts` };
     if (bestGwByManager[id]) return { label: "Career Best GW", value: `${bestGwByManager[id].score} pts` };
     return null;
@@ -231,7 +231,7 @@ function Home() {
 
   return (
     <div>
-      {/* HERO — league crest centred, every competing team orbiting */}
+      {/* HERO - league crest centred, every competing team orbiting */}
       <section className="relative overflow-hidden border-b border-silver/20 min-h-[92vh] flex items-center">
         <div className="absolute inset-0 ucl-stars opacity-70" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-background/20 to-background" />
@@ -301,7 +301,7 @@ function Home() {
                     <span className="text-[10px] uppercase tracking-[0.3em] text-gold/90 font-bold">{s.name} Champion</span>
                   </div>
                   {b?.badge && <img src={b.badge} alt="" className="w-16 h-16 object-contain mb-4 drop-shadow-[0_0_20px_rgba(212,175,55,0.4)]" />}
-                  <div className="font-display text-4xl mb-1 capitalize text-white">{champ?.team_name ?? champ?.name ?? "—"}</div>
+                  <div className="font-display text-4xl mb-1 capitalize text-white">{champ?.team_name ?? champ?.name ?? "-"}</div>
                   <div className="text-sm text-muted-foreground capitalize">Managed by {champ?.name}</div>
                 </div>
               </Link>
@@ -319,7 +319,7 @@ function Home() {
             </div>
             <h2 className="font-display text-4xl md:text-5xl">Hall of Stinkers</h2>
             <p className="text-sm text-muted-foreground mt-3 max-w-xl mx-auto">
-              Wooden-spoon winners. Last place isn't an accident — it's a legacy.
+              Wooden-spoon winners. Last place isn't an accident - it's a legacy.
             </p>
           </div>
 
@@ -364,7 +364,7 @@ function Home() {
       )}
 
 
-      {/* CURRENT SEASON — LIVE TABLE (mobile-first) */}
+      {/* CURRENT SEASON - LIVE TABLE (mobile-first) */}
       {currentSeason && currentStandings.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 border-t border-border/50">
           <div className="flex items-end justify-between flex-wrap gap-4 mb-8">
@@ -392,7 +392,7 @@ function Home() {
               const m = managerById(row.manager_id);
               const b = getBranding(String(row.manager_id));
               const tint = b?.primary ?? "#508cff";
-              const display = m?.team_name ?? m?.name ?? "—";
+              const display = m?.team_name ?? m?.name ?? "-";
               const rankCls = rankColor(row.position, currentStandings.length);
               return (
                 <Link
@@ -535,7 +535,7 @@ function Home() {
         </div>
       </section>
 
-      {/* EXPLORE — internal cross-links */}
+      {/* EXPLORE - internal cross-links */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-border/50">
         <div className="text-center mb-10">
           <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">Keep Digging</div>

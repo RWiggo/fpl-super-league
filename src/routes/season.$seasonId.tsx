@@ -341,7 +341,7 @@ function RecordsSection({
       });
   };
 
-  // Dominant H2H — top 5
+  // Dominant H2H - top 5
   const top5H2H = (() => {
     const records: Record<string, { winner: string; loser: string; w: number; total: number }> = {};
     completed.forEach((f: any) => {
@@ -386,7 +386,7 @@ function RecordsSection({
     });
     return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([id, n], i) => {
       const m = mById(id);
-      return { rank: i + 1, name: m?.team_name ?? "—", sub: m?.name, value: `${n} GW${n === 1 ? "" : "s"}`, badge: m ? getBranding(m.id)?.badge ?? null : null };
+      return { rank: i + 1, name: m?.team_name ?? "-", sub: m?.name, value: `${n} GW${n === 1 ? "" : "s"}`, badge: m ? getBranding(m.id)?.badge ?? null : null };
     });
   };
 
@@ -398,7 +398,7 @@ function RecordsSection({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <RecordCard
           label="Highest Single GW"
-          value={topWeekly?.score ?? top5HighGW[0]?.score ?? "—"}
+          value={topWeekly?.score ?? top5HighGW[0]?.score ?? "-"}
           sub={top5HighGW[0] ? `${top5HighGW[0].team} · GW${top5HighGW[0].gw}` : ""}
           icon={<Flame className="w-5 h-5" />}
           badge={badgeByManager(top5HighGW[0]?.manager)}
@@ -408,7 +408,7 @@ function RecordsSection({
         />
         <RecordCard
           label="Biggest Win"
-          value={biggestWin?.margin ?? "—"}
+          value={biggestWin?.margin ?? "-"}
           sub={biggestWin ? `${biggestWin.winner_team} bt ${biggestWin.loser_team}` : ""}
           icon={<Swords className="w-5 h-5" />}
           badge={badgeByTeam(biggestWin?.winner_team)}
@@ -418,7 +418,7 @@ function RecordsSection({
         />
         <RecordCard
           label="Lowest GW Score"
-          value={top5LowGW[0]?.score ?? "—"}
+          value={top5LowGW[0]?.score ?? "-"}
           sub={top5LowGW[0] ? `${top5LowGW[0].team} · GW${top5LowGW[0].gw}` : ""}
           icon={<TrendingDown className="w-5 h-5" />}
           badge={badgeByManager(top5LowGW[0]?.manager)}
@@ -428,7 +428,7 @@ function RecordsSection({
         />
         <RecordCard
           label="Longest Win Streak"
-          value={longestWin?.streak_length ?? "—"}
+          value={longestWin?.streak_length ?? "-"}
           sub={longestWin ? `${longestWin.team_name} · GW${longestWin.streak_start_gw}–${longestWin.streak_end_gw}` : ""}
           icon={<TrendingUp className="w-5 h-5" />}
           badge={badgeByTeam(longestWin?.team_name)}
@@ -438,7 +438,7 @@ function RecordsSection({
         />
         <RecordCard
           label="Longest Losing Streak"
-          value={longestLose?.streak_length ?? "—"}
+          value={longestLose?.streak_length ?? "-"}
           sub={longestLose ? `${longestLose.team_name} · GW${longestLose.streak_start_gw}–${longestLose.streak_end_gw}` : ""}
           icon={<Skull className="w-5 h-5" />}
           badge={badgeByTeam(longestLose?.team_name)}
@@ -448,7 +448,7 @@ function RecordsSection({
         />
         <RecordCard
           label="Most Dominant H2H"
-          value={dominantH2H ? `${dominantH2H.wins}-${dominantH2H.losses}` : "—"}
+          value={dominantH2H ? `${dominantH2H.wins}-${dominantH2H.losses}` : "-"}
           sub={dominantH2H ? `${dominantH2H.winner} over ${dominantH2H.loser}` : ""}
           icon={<Crown className="w-5 h-5" />}
           badge={badgeByManager(dominantH2H?.winner)}
@@ -462,7 +462,7 @@ function RecordsSection({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <RecordCard
           label="Most Goals"
-          value={mostGoals?.out_goals ?? "—"}
+          value={mostGoals?.out_goals ?? "-"}
           sub={mostGoals?.team_name}
           icon={<Goal className="w-5 h-5" />}
           badge={badgeByManager(mostGoals?.manager_name)}
@@ -472,7 +472,7 @@ function RecordsSection({
         />
         <RecordCard
           label="Most Assists"
-          value={mostAssists?.out_assists ?? "—"}
+          value={mostAssists?.out_assists ?? "-"}
           sub={mostAssists?.team_name}
           icon={<HandHelping className="w-5 h-5" />}
           badge={badgeByManager(mostAssists?.manager_name)}
@@ -482,7 +482,7 @@ function RecordsSection({
         />
         <RecordCard
           label="Most Clean Sheets"
-          value={mostCS?.combined_clean_sheets ?? "—"}
+          value={mostCS?.combined_clean_sheets ?? "-"}
           sub={mostCS?.team_name}
           icon={<Shield className="w-5 h-5" />}
           badge={badgeByManager(mostCS?.manager_name)}
@@ -492,7 +492,7 @@ function RecordsSection({
         />
         <RecordCard
           label="Most Yellow Cards"
-          value={mostYellows?.combined_yellow_cards ?? "—"}
+          value={mostYellows?.combined_yellow_cards ?? "-"}
           sub={mostYellows?.team_name}
           icon={<CardIcon color="yellow" />}
           badge={badgeByManager(mostYellows?.manager_name)}
@@ -502,7 +502,7 @@ function RecordsSection({
         />
         <RecordCard
           label="Most Red Cards"
-          value={rankByStat("out_red_cards", "Reds")[0]?.value ?? "—"}
+          value={rankByStat("out_red_cards", "Reds")[0]?.value ?? "-"}
           sub={rankByStat("out_red_cards", "Reds")[0]?.name}
           icon={<CardIcon color="red" />}
           badge={rankByStat("out_red_cards", "Reds")[0]?.badge}
@@ -512,7 +512,7 @@ function RecordsSection({
         />
         <RecordCard
           label="Most Own Goals"
-          value={rankByStat("out_own_goals", "OG")[0]?.value ?? "—"}
+          value={rankByStat("out_own_goals", "OG")[0]?.value ?? "-"}
           sub={rankByStat("out_own_goals", "OG")[0]?.name}
           icon={<AlertOctagon className="w-5 h-5" />}
           badge={rankByStat("out_own_goals", "OG")[0]?.badge}
@@ -522,7 +522,7 @@ function RecordsSection({
         />
         <RecordCard
           label="Most GWs at #1"
-          value={positionCounts.topId?.[1] ?? "—"}
+          value={positionCounts.topId?.[1] ?? "-"}
           sub={positionCounts.topId ? mById(positionCounts.topId[0])?.team_name : ""}
           icon={<Trophy className="w-5 h-5" />}
           badge={positionCounts.topId ? getBranding(positionCounts.topId[0])?.badge : null}
@@ -532,7 +532,7 @@ function RecordsSection({
         />
         <RecordCard
           label="Most GWs at the Bottom"
-          value={positionCounts.botId?.[1] ?? "—"}
+          value={positionCounts.botId?.[1] ?? "-"}
           sub={positionCounts.botId ? mById(positionCounts.botId[0])?.team_name : ""}
           icon={<ArrowDown className="w-5 h-5" />}
           badge={positionCounts.botId ? getBranding(positionCounts.botId[0])?.badge : null}
@@ -693,7 +693,7 @@ function SeasonHero({ season, champ, topScorer, topScorerPts, longestWin, longes
       />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
         <div className="grid lg:grid-cols-[auto_1fr] gap-10 lg:gap-16 items-center">
-          {/* Bespoke season crest — base league logo with a season-unique colourway */}
+          {/* Bespoke season crest - base league logo with a season-unique colourway */}
           <div className="relative mx-auto lg:mx-0">
             <div className="relative w-[240px] h-[240px] sm:w-[300px] sm:h-[300px] flex items-center justify-center">
               <div className="absolute inset-0 rounded-full" style={{ border: `2px solid ${accent}66` }} />
@@ -773,10 +773,10 @@ function SeasonHero({ season, champ, topScorer, topScorerPts, longestWin, longes
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <Mini label="Top Scorers" value={topScorerPts ? Number(topScorerPts).toFixed(0) : "—"} sub={topScorer?.team_name} />
-              <Mini label="Best Win Run" value={longestWin?.streak_length ?? "—"} sub={longestWin?.team_name} />
-              <Mini label="Worst Losing Run" value={longestLose?.streak_length ?? "—"} sub={longestLose?.team_name} />
-              <Mini label="Most Clean Sheets" value={mostCS?.value ?? "—"} sub={mostCS?.name} />
+              <Mini label="Top Scorers" value={topScorerPts ? Number(topScorerPts).toFixed(0) : "-"} sub={topScorer?.team_name} />
+              <Mini label="Best Win Run" value={longestWin?.streak_length ?? "-"} sub={longestWin?.team_name} />
+              <Mini label="Worst Losing Run" value={longestLose?.streak_length ?? "-"} sub={longestLose?.team_name} />
+              <Mini label="Most Clean Sheets" value={mostCS?.value ?? "-"} sub={mostCS?.name} />
             </div>
           </div>
         </div>

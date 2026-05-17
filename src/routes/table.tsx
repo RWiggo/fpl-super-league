@@ -10,7 +10,7 @@ export const Route = createFileRoute("/table")({
   component: TablePage,
   head: () => ({
     meta: [
-      { title: "All-Time League Table — FPL Super League" },
+      { title: "All-Time League Table - FPL Super League" },
       { name: "description", content: "The definitive all-time league standings across every season ever played." },
     ],
   }),
@@ -133,7 +133,7 @@ function TablePage() {
   const mById = (id: any) => d.managers.find((m: any) => String(m.id) === String(id));
   const tintFor = (id: any) => getBranding(String(id))?.primary ?? "#d4af37";
 
-  // Award definitions — each is a top-5 leaderboard
+  // Award definitions - each is a top-5 leaderboard
   type AwardDef = { key: AwardKey; label: string; sortBy: (r: any) => number; format: (r: any) => string; valueLabel: string; tone?: "positive" | "negative" };
   const POSITIVE_AWARDS: AwardDef[] = [
     { key: "titles", label: "Most Titles", sortBy: (r) => r._titles, format: (r) => String(r._titles), valueLabel: "Titles", tone: "positive" },
@@ -177,7 +177,7 @@ function TablePage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
           <div className="flex flex-col lg:flex-row items-center gap-10">
             <div className="relative w-[180px] h-[180px] sm:w-[220px] sm:h-[220px] flex-shrink-0">
-              {/* Stacked layered "table" plinth — distinct from season crests */}
+              {/* Stacked layered "table" plinth - distinct from season crests */}
               <div className="absolute inset-0 rounded-[2rem] border border-gold/30 bg-gradient-to-br from-gold/15 via-amber-900/10 to-background/60 backdrop-blur-sm" />
               <div className="absolute inset-3 rounded-[1.6rem] border border-gold/40 bg-gradient-to-tr from-amber-950/40 to-transparent" />
               <div className="absolute inset-0 flex items-center justify-center flex-col gap-1.5">
@@ -218,14 +218,14 @@ function TablePage() {
         </div>
       </section>
 
-      {/* FULL TABLE — first thing after hero */}
+      {/* FULL TABLE - first thing after hero */}
       <section className="max-w-7xl mx-auto px-1 sm:px-4 pt-12 md:pt-16">
         <div className="flex items-end justify-between mb-3 flex-wrap gap-3">
           <div>
             <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">The Full Standings</div>
             <h2 className="font-display text-3xl md:text-4xl">All-Time Rankings</h2>
             <p className="text-sm text-muted-foreground mt-2">
-              Sorted by <span className="text-gold font-bold">{COLS.find((c) => c.key === sortKey)?.label}</span> — tap any column to re-sort.
+              Sorted by <span className="text-gold font-bold">{COLS.find((c) => c.key === sortKey)?.label}</span> - tap any column to re-sort.
             </p>
           </div>
         </div>
@@ -280,7 +280,7 @@ function TablePage() {
                   <span className="ml-auto font-display text-gold text-base tabular-nums">{r._ppg.toFixed(1)}</span>
                 </div>
                 <div className="grid grid-cols-7 gap-px text-center text-[9px] leading-tight">
-                  <MobileStat label="S" value={r.seasons_played ?? "—"} />
+                  <MobileStat label="S" value={r.seasons_played ?? "-"} />
                   <MobileStat label="P" value={r._played} />
                   <MobileStat label="W" value={r._wins} valueClass="text-emerald-400" />
                   <MobileStat label="D" value={r._draws} />
@@ -290,8 +290,8 @@ function TablePage() {
                   <MobileStat label="PD" value={`${pdPositive ? "+" : ""}${compactNumber(r._pd)}`} valueClass={pdPositive ? "text-emerald-400" : pdZero ? "text-muted-foreground" : "text-red-400"} />
                   <MobileStat label="PPG" value={r._ppg.toFixed(1)} valueClass="text-gold" />
                   <MobileStat label="Win" value={`${r._winpct.toFixed(0)}%`} />
-                  <MobileStat label="Best" value={r._best ? ord(r._best) : "—"} />
-                  <MobileStat label="T" value={r._titles || "—"} valueClass={r._titles ? "text-gold" : ""} />
+                  <MobileStat label="Best" value={r._best ? ord(r._best) : "-"} />
+                  <MobileStat label="T" value={r._titles || "-"} valueClass={r._titles ? "text-gold" : ""} />
                   <MobileStat label="Pts" value={r._pts} valueClass="text-gold" />
                 </div>
               </Link>
@@ -339,7 +339,7 @@ function TablePage() {
                         {r._titles > 0 && <TitleStars count={r._titles} className="hidden sm:inline-flex" />}
                       </Link>
                     </td>
-                    <td className="text-center px-0.5 py-1 sm:p-3">{r.seasons_played ?? "—"}</td>
+                    <td className="text-center px-0.5 py-1 sm:p-3">{r.seasons_played ?? "-"}</td>
                     <td className="text-center px-0.5 py-1 sm:p-3">{r._played}</td>
                     <td className="text-center px-0.5 py-1 sm:p-3 text-emerald-400">{r._wins}</td>
                     <td className="text-center px-0.5 py-1 sm:p-3 text-muted-foreground">{r._draws}</td>
@@ -352,14 +352,14 @@ function TablePage() {
                     <td className="text-right px-0.5 py-1 sm:p-3 tabular-nums font-bold">{r._ppg.toFixed(1)}</td>
                     <td className="text-right px-0.5 py-1 sm:p-3 tabular-nums">{r._winpct.toFixed(0)}%</td>
                     <td className="text-center px-0.5 py-1 sm:p-3">
-                      {r._best ? <span className={r._best === 1 ? "text-gold font-display" : ""}>{ord(r._best)}</span> : "—"}
+                      {r._best ? <span className={r._best === 1 ? "text-gold font-display" : ""}>{ord(r._best)}</span> : "-"}
                     </td>
                     <td className="text-center px-0.5 py-1 sm:p-3">
                       {r._titles > 0 ? (
                         <span className="inline-flex items-center justify-center gap-0.5 sm:gap-1 text-gold font-display">
                           <Trophy className="hidden sm:block w-3.5 h-3.5" />{r._titles}
                         </span>
-                      ) : "—"}
+                      ) : "-"}
                     </td>
                     <td className="text-right px-0.5 py-1 sm:p-3 font-display text-gold text-[8px] min-[390px]:text-[9px] sm:text-base tabular-nums">{r._pts}</td>
                   </tr>
@@ -382,7 +382,7 @@ function TablePage() {
         </div>
       </section>
 
-      {/* AWARDS — clickable, team-coloured */}
+      {/* AWARDS - clickable, team-coloured */}
       <section className="max-w-7xl mx-auto px-4 pb-20 border-t border-border/50 pt-16">
         <div className="text-center mb-10">
           <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">Category Leaders</div>
