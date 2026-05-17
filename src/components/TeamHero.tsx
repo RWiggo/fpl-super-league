@@ -103,7 +103,7 @@ export function TeamHero({
           </div>
         </div>
 
-        {/* Quick facts strip — UCL "club info" row */}
+        {/* Quick facts strip - UCL "club info" row */}
         {facts.length > 0 && (
           <div className="relative mt-10 md:mt-14 -mx-4 sm:-mx-6 lg:-mx-8 border-t border-white/10 bg-black/30 backdrop-blur-sm">
             <div
