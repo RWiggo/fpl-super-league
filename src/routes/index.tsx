@@ -74,6 +74,7 @@ function Home() {
         weeklyHigh: weeklyHigh.data ?? [],
         standings: currentStandings.data ?? [],
         playerRows,
+        tots: tots.data ?? [],
       });
     })();
   }, []);
