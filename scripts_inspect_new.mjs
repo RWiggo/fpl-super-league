@@ -1,0 +1,12 @@
+import { createClient } from "@supabase/supabase-js";
+const s = createClient("https://ckqfiwcixkzkmdxqyxqq.supabase.co","sb_publishable_iPNkQlWTSlkyCeTC5NFqIg_AYJP_xBV");
+const { data: tbl } = await s.from("alltime_table").select("*").limit(2);
+console.log("alltime_table cols:", Object.keys(tbl?.[0]||{}));
+console.log(JSON.stringify(tbl?.[0],null,2));
+const { data: fx } = await s.from("fixture_records").select("*").limit(2);
+console.log("fixture cols:", Object.keys(fx?.[0]||{}));
+const { data: st } = await s.from("win_streaks").select("*").limit(5);
+console.log("streaks sample:", JSON.stringify(st,null,2));
+const { data: pa } = await s.from("player_team_alltime").select("*").limit(1);
+console.log("player_team_alltime cols:", Object.keys(pa?.[0]||{}));
+console.log(JSON.stringify(pa?.[0],null,2));

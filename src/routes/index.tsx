@@ -33,7 +33,7 @@ function Home() {
 
   useEffect(() => {
     (async () => {
-      const [seasons, managers, alltime, fixtures, streaks, weeklyHigh, currentStandings] = await Promise.all([
+      const [seasons, managers, alltime, fixtures, streaks, weeklyHigh, currentStandings, tots] = await Promise.all([
         supabase.from("seasons").select("*").order("year_start"),
         supabase.from("managers").select("*"),
         supabase.from("alltime_table").select("*").order("total_points", { ascending: false }),
@@ -41,6 +41,16 @@ function Home() {
         supabase.from("win_streaks").select("*").order("streak_length", { ascending: false }),
         supabase.from("weekly_high_scores").select("*"),
         supabase.from("season_standings").select("*"),
+        (async () => {
+          const rows: any[] = [];
+          for (let from = 0; from < 5000; from += 1000) {
+            const { data } = await supabase.from("team_of_the_season").select("manager_name,player_name,club").range(from, from + 999);
+            if (!data || data.length === 0) break;
+            rows.push(...data);
+            if (data.length < 1000) break;
+          }
+          return { data: rows };
+        })(),
       ]);
 
       // Paginate the player_team_alltime view (>1000 rows)
@@ -64,6 +74,7 @@ function Home() {
         weeklyHigh: weeklyHigh.data ?? [],
         standings: currentStandings.data ?? [],
         playerRows,
+        tots: tots.data ?? [],
       });
     })();
   }, []);
@@ -183,9 +194,13 @@ function Home() {
     tryAdd(String(f.away_manager_id), Number(f.away_score));
   });
 
-  // Build a unique defining stat per manager.
-  // Priority is by league-extreme metrics first, then fallback to that team's own talisman.
+  // Build a unique fun defining stat per manager.
+  // Each league-extreme is awarded to one team only; the rest fall back to their own personal quirk.
   const allMgrIds = data.managers.map((m: any) => String(m.id));
+  const nameToId: Record<string, string> = {};
+  data.managers.forEach((m: any) => { nameToId[String(m.name).trim().toLowerCase()] = String(m.id); });
+  const idForName = (name: string | undefined | null) => name ? nameToId[String(name).trim().toLowerCase()] ?? null : null;
+
   const leaderOf = (fn: (id: string) => number, mode: "max" | "min" = "max") => {
     let best: { id: string; v: number } | null = null;
     for (const id of allMgrIds) {
@@ -196,35 +211,80 @@ function Home() {
     }
     return best;
   };
-  const mostPlayers = leaderOf((id) => mgrAgg[id]?.playersUsed ?? -Infinity, "max");
-  const fewestPlayers = leaderOf((id) => mgrAgg[id]?.playersUsed ?? Infinity, "min");
-  const ironManLeader = leaderOf((id) => mgrAgg[id]?.ironMan?.total_minutes ?? -Infinity, "max");
-  const talismanLeader = leaderOf((id) => mgrAgg[id]?.top?.total_fantasy_points ?? -Infinity, "max");
-  const loyaltyLeader = leaderOf((id) => mgrAgg[id]?.loyalist?.seasons_played ?? -Infinity, "max");
+
+  // TOTS appearances + most-relied PL club per manager (from team_of_the_season)
+  const totsByMgr: Record<string, number> = {};
+  const totsClubByMgr: Record<string, Record<string, number>> = {};
+  (data.tots as any[]).forEach((r) => {
+    const id = idForName(r.manager_name);
+    if (!id) return;
+    totsByMgr[id] = (totsByMgr[id] ?? 0) + 1;
+    if (r.club) {
+      totsClubByMgr[id] = totsClubByMgr[id] ?? {};
+      totsClubByMgr[id][r.club] = (totsClubByMgr[id][r.club] ?? 0) + 1;
+    }
+  });
+  const topClubByMgr: Record<string, { club: string; count: number } | null> = {};
+  Object.entries(totsClubByMgr).forEach(([id, m]) => {
+    const entries = Object.entries(m).sort((a, b) => b[1] - a[1]);
+    topClubByMgr[id] = entries[0] ? { club: entries[0][0], count: entries[0][1] } : null;
+  });
+
+  // Best win streak + worst losing streak per manager
+  const bestWinStreak: Record<string, number> = {};
+  const worstLossStreak: Record<string, number> = {};
+  (data.streaks as any[]).forEach((s) => {
+    const id = idForName(s.manager_name);
+    if (!id) return;
+    const len = Number(s.streak_length ?? 0);
+    if (s.outcome === "W") bestWinStreak[id] = Math.max(bestWinStreak[id] ?? 0, len);
+    if (s.outcome === "L") worstLossStreak[id] = Math.max(worstLossStreak[id] ?? 0, len);
+  });
+
+  const atRow = (id: string) => data.alltime.find((x: any) => String(x.manager_id) === id);
+
+  const totsKing = leaderOf((id) => totsByMgr[id] ?? -Infinity, "max");
   const bestGwLeader = leaderOf((id) => bestGwByManager[id]?.score ?? -Infinity, "max");
-  const marathonLeader = leaderOf((id) => mgrAgg[id]?.totalMinutes ?? -Infinity, "max");
-  const pfLeader = leaderOf((id) => {
-    const r = data.alltime.find((x: any) => String(x.manager_id) === id);
-    return r ? Number(r.total_points_for ?? 0) : -Infinity;
-  }, "max");
+  const streakKing = leaderOf((id) => bestWinStreak[id] ?? -Infinity, "max");
+  const biggestLoser = leaderOf((id) => Number(atRow(id)?.total_losses ?? -Infinity), "max");
+  const drawMaster = leaderOf((id) => Number(atRow(id)?.total_draws ?? -Infinity), "max");
+  const hardestToBeat = leaderOf((id) => {
+    const r = atRow(id);
+    return r ? Number(r.total_losses ?? Infinity) : Infinity;
+  }, "min");
+  const heartbreaker = leaderOf((id) => worstLossStreak[id] ?? -Infinity, "max");
+  const sundayLeague = leaderOf((id) => Number(atRow(id)?.total_points_against ?? -Infinity), "max");
+  const pfLeader = leaderOf((id) => Number(atRow(id)?.total_points_for ?? -Infinity), "max");
 
   const definingStat = (id: string): { label: string; value: string } | null => {
-    const a = mgrAgg[id];
-    // Extreme metrics first - guaranteed unique per league leader
-    if (mostPlayers?.id === id && a) return { label: "Squad Rotator", value: `${a.playersUsed} players used` };
-    if (fewestPlayers?.id === id && a) return { label: "Lean Squad", value: `Only ${a.playersUsed} players used` };
-    if (talismanLeader?.id === id && a?.top) return { label: "Heaviest Talisman", value: `${a.top.player_name} · ${a.top.total_fantasy_points} pts` };
-    if (ironManLeader?.id === id && a?.ironMan) return { label: "Iron Man", value: `${a.ironMan.player_name} · ${Math.round(a.ironMan.total_minutes).toLocaleString()} mins` };
-    if (loyaltyLeader?.id === id && a?.loyalist && (a.loyalist.seasons_played ?? 0) >= 2) return { label: "Most Loyal", value: `${a.loyalist.player_name} · ${a.loyalist.seasons_played} seasons` };
-    if (bestGwLeader?.id === id && bestGwByManager[id]) return { label: "Biggest GW Haul", value: `${bestGwByManager[id].score} pts${bestGwByManager[id].gw ? ` · GW${bestGwByManager[id].gw}` : ""}` };
-    if (marathonLeader?.id === id && a) return { label: "Marathon Manager", value: `${Math.round(a.totalMinutes).toLocaleString()} player minutes` };
-    if (pfLeader?.id === id) {
-      const r = data.alltime.find((x: any) => String(x.manager_id) === id);
-      if (r) return { label: "Points Machine", value: `${Number(r.total_points_for).toLocaleString()} PF all-time` };
-    }
-    // Fallback - that team's own talisman
-    if (a?.top) return { label: "Talisman", value: `${a.top.player_name} · ${a.top.total_fantasy_points} pts` };
-    if (bestGwByManager[id]) return { label: "Career Best GW", value: `${bestGwByManager[id].score} pts` };
+    if (totsKing?.id === id && (totsByMgr[id] ?? 0) > 0)
+      return { label: "TOTS King", value: `${totsByMgr[id]} Team of the Season picks` };
+    if (bestGwLeader?.id === id && bestGwByManager[id])
+      return { label: "Biggest GW Haul", value: `${bestGwByManager[id].score} pts${bestGwByManager[id].gw ? ` · GW${bestGwByManager[id].gw}` : ""}` };
+    if (streakKing?.id === id && (bestWinStreak[id] ?? 0) > 0)
+      return { label: "Streak King", value: `${bestWinStreak[id]}-game win run` };
+    if (biggestLoser?.id === id && atRow(id))
+      return { label: "The Biggest Loser", value: `${atRow(id).total_losses} career defeats` };
+    if (drawMaster?.id === id && Number(atRow(id)?.total_draws ?? 0) > 0)
+      return { label: "Draw Master", value: `${atRow(id).total_draws} all-time draws` };
+    if (hardestToBeat?.id === id && atRow(id))
+      return { label: "Hard to Beat", value: `Only ${atRow(id).total_losses} losses ever` };
+    if (heartbreaker?.id === id && (worstLossStreak[id] ?? 0) > 0)
+      return { label: "Glass Jaw", value: `${worstLossStreak[id]}-game losing skid` };
+    if (sundayLeague?.id === id && atRow(id))
+      return { label: "Leakiest Defence", value: `${Number(atRow(id).total_points_against).toLocaleString()} PA all-time` };
+    if (pfLeader?.id === id && atRow(id))
+      return { label: "Points Machine", value: `${Number(atRow(id).total_points_for).toLocaleString()} PF all-time` };
+
+    // Personal fallbacks - never repeat across teams that already won an extreme
+    if (topClubByMgr[id] && (topClubByMgr[id]!.count ?? 0) >= 2)
+      return { label: "PL Loyalist", value: `${topClubByMgr[id]!.club} · ${topClubByMgr[id]!.count} TOTS picks` };
+    if ((bestWinStreak[id] ?? 0) >= 3)
+      return { label: "Best Win Run", value: `${bestWinStreak[id]} games unbeaten` };
+    if (bestGwByManager[id])
+      return { label: "Career Best GW", value: `${bestGwByManager[id].score} pts` };
+    if ((totsByMgr[id] ?? 0) > 0)
+      return { label: "TOTS Picks", value: `${totsByMgr[id]} Team of the Season nods` };
     return null;
   };
 
