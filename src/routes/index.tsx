@@ -383,7 +383,7 @@ function Home() {
                     <span className="text-[10px] uppercase tracking-[0.3em] text-gold/90 font-bold">{s.name} Champion</span>
                   </div>
                   {b?.badge && <img src={b.badge} alt="" className="w-16 h-16 object-contain mb-4 drop-shadow-[0_0_20px_rgba(212,175,55,0.4)]" />}
-                  <div className="font-display text-4xl mb-1 capitalize text-white">{champ?.team_name ?? champ?.name ?? "-"}</div>
+                  <div className="font-display text-4xl mb-1 capitalize text-white">{currentTeamName(champ?.id, champ?.team_name ?? champ?.name)}</div>
                   <div className="text-sm text-muted-foreground capitalize">Managed by {champ?.name}</div>
                 </div>
               </Link>
