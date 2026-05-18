@@ -546,7 +546,7 @@ function Home() {
             const titles = titleCounts[m.id] ?? 0;
             const spoons = spoonCounts[m.id] ?? 0;
             const allTime = data.alltime.find((r: any) => r.manager_id === m.id);
-            const display = m.team_name ?? m.name;
+            const display = currentTeamName(m.id, m.team_name ?? m.name);
             const nickname = getNickname(m.id) ?? "The Originals";
             const defining = definingStat(String(m.id));
             return (
