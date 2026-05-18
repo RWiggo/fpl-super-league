@@ -61,7 +61,7 @@ function Home() {
       for (let from = 0; from < 5000; from += 1000) {
         const { data } = await supabase
           .from("player_season_stats")
-          .select("manager_id,out_goals,gk_goals,out_assists_total,gk_assists_total,out_clean_sheets,gk_clean_sheets,out_yellow_cards,gk_yellow_cards,out_red_cards,gk_red_cards")
+          .select("manager_id,position,gk_saves,out_goals,gk_goals,out_assists_total,gk_assists_total,out_clean_sheets,gk_clean_sheets,out_yellow_cards,gk_yellow_cards,out_red_cards,gk_red_cards")
           .range(from, from + 999);
         if (!data || data.length === 0) break;
         playerSeasonRows.push(...data);
