@@ -61,7 +61,7 @@ function Home() {
       for (let from = 0; from < 5000; from += 1000) {
         const { data } = await supabase
           .from("player_season_stats")
-          .select("manager_id,out_goals,gk_goals,out_assists_total,gk_assists_total,out_clean_sheets,gk_clean_sheets,out_yellow_cards,gk_yellow_cards,out_red_cards,gk_red_cards")
+          .select("manager_id,position,gk_saves,out_goals,gk_goals,out_assists_total,gk_assists_total,out_clean_sheets,gk_clean_sheets,out_yellow_cards,gk_yellow_cards,out_red_cards,gk_red_cards")
           .range(from, from + 999);
         if (!data || data.length === 0) break;
         playerSeasonRows.push(...data);
@@ -226,87 +226,93 @@ function Home() {
     if (s.outcome === "L") worstLossStreak[id] = Math.max(worstLossStreak[id] ?? 0, len);
   });
 
-  // Career totals from player_season_stats (goals, assists, clean sheets, cards)
-  type CareerTot = { goals: number; assists: number; cleans: number; yellows: number; reds: number };
+  // Career totals from player_season_stats
+  type CareerTot = { goals: number; assists: number; cleans: number; gkCleans: number; gkSaves: number; yellows: number; reds: number };
   const careerTotals: Record<string, CareerTot> = {};
   (data.playerSeasonRows as any[] | undefined)?.forEach((r) => {
     const id = String(r.manager_id);
-    const c = careerTotals[id] ?? (careerTotals[id] = { goals: 0, assists: 0, cleans: 0, yellows: 0, reds: 0 });
+    const c = careerTotals[id] ?? (careerTotals[id] = { goals: 0, assists: 0, cleans: 0, gkCleans: 0, gkSaves: 0, yellows: 0, reds: 0 });
     c.goals += Number(r.out_goals ?? 0) + Number(r.gk_goals ?? 0);
     c.assists += Number(r.out_assists_total ?? 0) + Number(r.gk_assists_total ?? 0);
     c.cleans += Number(r.out_clean_sheets ?? 0) + Number(r.gk_clean_sheets ?? 0);
+    c.gkCleans += Number(r.gk_clean_sheets ?? 0);
+    c.gkSaves += Number(r.gk_saves ?? 0);
     c.yellows += Number(r.out_yellow_cards ?? 0) + Number(r.gk_yellow_cards ?? 0);
     c.reds += Number(r.out_red_cards ?? 0) + Number(r.gk_red_cards ?? 0);
   });
 
   const atRow = (id: string) => data.alltime.find((x: any) => String(x.manager_id) === id);
 
-  // League-wide leaders (each unique to one team)
-  const mostWins = leaderOf((id) => Number(atRow(id)?.total_wins ?? -Infinity), "max");
-  const mostPlayers = leaderOf((id) => mgrAgg[id]?.playersUsed ?? -Infinity, "max");
-  const fewestPlayers = leaderOf((id) => mgrAgg[id]?.playersUsed ?? Infinity, "min");
-  const goalKing = leaderOf((id) => careerTotals[id]?.goals ?? -Infinity, "max");
-  const assistKing = leaderOf((id) => careerTotals[id]?.assists ?? -Infinity, "max");
-  const brickWall = leaderOf((id) => careerTotals[id]?.cleans ?? -Infinity, "max");
-  const dirtiest = leaderOf((id) => careerTotals[id]?.reds ?? -Infinity, "max");
-  const cardMagnet = leaderOf((id) => careerTotals[id]?.yellows ?? -Infinity, "max");
-  const bestGwLeader = leaderOf((id) => bestGwByManager[id]?.score ?? -Infinity, "max");
-  const streakKing = leaderOf((id) => bestWinStreak[id] ?? -Infinity, "max");
-  const heartbreaker = leaderOf((id) => worstLossStreak[id] ?? -Infinity, "max");
-  const biggestLoser = leaderOf((id) => Number(atRow(id)?.total_losses ?? -Infinity), "max");
-  const drawMaster = leaderOf((id) => Number(atRow(id)?.total_draws ?? -Infinity), "max");
-  const hardestToBeat = leaderOf((id) => {
-    const r = atRow(id);
-    return r ? Number(r.total_losses ?? Infinity) : Infinity;
-  }, "min");
-  const sundayLeague = leaderOf((id) => Number(atRow(id)?.total_points_against ?? -Infinity), "max");
-  const pfLeader = leaderOf((id) => Number(atRow(id)?.total_points_for ?? -Infinity), "max");
+  // Define league-wide leader stats in priority order.
+  // Each stat is assigned to whoever currently leads it.
+  type LeaderDef = {
+    key: string;
+    label: string;
+    value: (id: string) => string;
+    score: (id: string) => number;
+    valid: (id: string) => boolean;
+    mode?: "max" | "min";
+  };
+  const fmt = (n: number) => Number(n).toLocaleString();
+  const leaderDefs: LeaderDef[] = [
+    { key: "wins", label: "Win Machine", score: (id) => Number(atRow(id)?.total_wins ?? -Infinity),
+      valid: (id) => !!atRow(id), value: (id) => `${atRow(id)!.total_wins} career wins - the most ever` },
+    { key: "pf", label: "Points Machine", score: (id) => Number(atRow(id)?.total_points_for ?? -Infinity),
+      valid: (id) => !!atRow(id), value: (id) => `${fmt(atRow(id)!.total_points_for)} points scored all-time` },
+    { key: "gw", label: "Biggest GW Haul", score: (id) => bestGwByManager[id]?.score ?? -Infinity,
+      valid: (id) => !!bestGwByManager[id], value: (id) => `${bestGwByManager[id].score} pts${bestGwByManager[id].gw ? ` - GW${bestGwByManager[id].gw}` : ""}` },
+    { key: "streak", label: "Streak King", score: (id) => bestWinStreak[id] ?? -Infinity,
+      valid: (id) => (bestWinStreak[id] ?? 0) > 0, value: (id) => `${bestWinStreak[id]}-game winning run` },
+    { key: "goals", label: "Goal Machine", score: (id) => careerTotals[id]?.goals ?? -Infinity,
+      valid: (id) => (careerTotals[id]?.goals ?? 0) > 0, value: (id) => `${careerTotals[id].goals} goals scored all-time` },
+    { key: "assists", label: "Playmaker", score: (id) => careerTotals[id]?.assists ?? -Infinity,
+      valid: (id) => (careerTotals[id]?.assists ?? 0) > 0, value: (id) => `${careerTotals[id].assists} assists all-time` },
+    { key: "cleans", label: "Brick Wall", score: (id) => careerTotals[id]?.cleans ?? -Infinity,
+      valid: (id) => (careerTotals[id]?.cleans ?? 0) > 0, value: (id) => `${careerTotals[id].cleans} clean sheets all-time` },
+    { key: "gkSaves", label: "Safe Hands", score: (id) => careerTotals[id]?.gkSaves ?? -Infinity,
+      valid: (id) => (careerTotals[id]?.gkSaves ?? 0) > 0, value: (id) => `${fmt(careerTotals[id].gkSaves)} goalkeeper saves` },
+    { key: "draws", label: "Draw Master", score: (id) => Number(atRow(id)?.total_draws ?? -Infinity),
+      valid: (id) => Number(atRow(id)?.total_draws ?? 0) > 0, value: (id) => `${atRow(id)!.total_draws} draws in the draft - the most` },
+    { key: "yellows", label: "Card Magnet", score: (id) => careerTotals[id]?.yellows ?? -Infinity,
+      valid: (id) => (careerTotals[id]?.yellows ?? 0) > 0, value: (id) => `${careerTotals[id].yellows} yellow cards collected` },
+    { key: "reds", label: "Hot Heads", score: (id) => careerTotals[id]?.reds ?? -Infinity,
+      valid: (id) => (careerTotals[id]?.reds ?? 0) > 0, value: (id) => `${careerTotals[id].reds} red cards collected` },
+    { key: "players", label: "Squad Rotator", score: (id) => mgrAgg[id]?.playersUsed ?? -Infinity,
+      valid: (id) => !!mgrAgg[id], value: (id) => `${mgrAgg[id].playersUsed} different players used` },
+    { key: "fewPlayers", label: "Lean Squad", score: (id) => mgrAgg[id]?.playersUsed ?? Infinity,
+      valid: (id) => !!mgrAgg[id], value: (id) => `Only ${mgrAgg[id].playersUsed} players ever used`, mode: "min" },
+    { key: "losses", label: "The Biggest Loser", score: (id) => Number(atRow(id)?.total_losses ?? -Infinity),
+      valid: (id) => !!atRow(id), value: (id) => `${atRow(id)!.total_losses} career defeats` },
+    { key: "pa", label: "Leakiest Defence", score: (id) => Number(atRow(id)?.total_points_against ?? -Infinity),
+      valid: (id) => !!atRow(id), value: (id) => `${fmt(atRow(id)!.total_points_against)} points conceded all-time` },
+    { key: "lossStreak", label: "Glass Jaw", score: (id) => worstLossStreak[id] ?? -Infinity,
+      valid: (id) => (worstLossStreak[id] ?? 0) > 0, value: (id) => `${worstLossStreak[id]}-game losing skid` },
+  ];
+
+  // Compute leader of each stat among eligible managers.
+  // Ties broken by lower manager id for stability.
+  const leaderByKey: Record<string, string | null> = {};
+  for (const def of leaderDefs) {
+    const mode = def.mode ?? "max";
+    let best: { id: string; v: number } | null = null;
+    for (const id of allMgrIds) {
+      if (!def.valid(id)) continue;
+      const v = def.score(id);
+      if (!isFinite(v)) continue;
+      if (!best) { best = { id, v }; continue; }
+      if (mode === "max" ? v > best.v : v < best.v) best = { id, v };
+    }
+    leaderByKey[def.key] = best?.id ?? null;
+  }
 
   const definingStat = (id: string): { label: string; value: string } | null => {
-    // Special case - Average Team
     if (id === "12") return { label: "Mission Statement", value: "Just here to fill the numbers" };
-
-    // League-wide fun extremes - unique winner each
-    if (mostWins?.id === id && atRow(id))
-      return { label: "Win Machine", value: `${atRow(id).total_wins} career wins - the most ever` };
-    if (mostPlayers?.id === id && mgrAgg[id])
-      return { label: "Squad Rotator", value: `${mgrAgg[id].playersUsed} different players used` };
-    if (fewestPlayers?.id === id && mgrAgg[id])
-      return { label: "Lean Squad", value: `Only ${mgrAgg[id].playersUsed} players ever used` };
-    if (goalKing?.id === id && careerTotals[id])
-      return { label: "Goal Machine", value: `${careerTotals[id].goals} goals scored all-time` };
-    if (assistKing?.id === id && careerTotals[id])
-      return { label: "Playmaker", value: `${careerTotals[id].assists} assists all-time` };
-    if (brickWall?.id === id && careerTotals[id])
-      return { label: "Brick Wall", value: `${careerTotals[id].cleans} clean sheets all-time` };
-    if (dirtiest?.id === id && (careerTotals[id]?.reds ?? 0) > 0)
-      return { label: "Hot Heads", value: `${careerTotals[id].reds} red cards collected` };
-    if (cardMagnet?.id === id && careerTotals[id])
-      return { label: "Card Magnet", value: `${careerTotals[id].yellows} yellow cards racked up` };
-    if (streakKing?.id === id && (bestWinStreak[id] ?? 0) > 0)
-      return { label: "Streak King", value: `${bestWinStreak[id]}-game win run` };
-    if (heartbreaker?.id === id && (worstLossStreak[id] ?? 0) > 0)
-      return { label: "Glass Jaw", value: `${worstLossStreak[id]}-game losing skid` };
-    if (bestGwLeader?.id === id && bestGwByManager[id])
-      return { label: "Biggest GW Haul", value: `${bestGwByManager[id].score} pts${bestGwByManager[id].gw ? ` · GW${bestGwByManager[id].gw}` : ""}` };
-    if (biggestLoser?.id === id && atRow(id))
-      return { label: "The Biggest Loser", value: `${atRow(id).total_losses} career defeats` };
-    if (drawMaster?.id === id && Number(atRow(id)?.total_draws ?? 0) > 0)
-      return { label: "Draw Master", value: `${atRow(id).total_draws} all-time draws` };
-    if (hardestToBeat?.id === id && atRow(id))
-      return { label: "Hard to Beat", value: `Only ${atRow(id).total_losses} losses ever` };
-    if (sundayLeague?.id === id && atRow(id))
-      return { label: "Leakiest Defence", value: `${Number(atRow(id).total_points_against).toLocaleString()} PA all-time` };
-    if (pfLeader?.id === id && atRow(id))
-      return { label: "Points Machine", value: `${Number(atRow(id).total_points_for).toLocaleString()} PF all-time` };
-
-    // Personal fallbacks
-    if ((bestWinStreak[id] ?? 0) >= 3)
-      return { label: "Best Win Run", value: `${bestWinStreak[id]} games on the bounce` };
-    if (bestGwByManager[id])
-      return { label: "Career Best GW", value: `${bestGwByManager[id].score} pts` };
-    if (careerTotals[id]?.goals)
-      return { label: "Goals Tally", value: `${careerTotals[id].goals} goals scored` };
+    // Take the first (highest-priority) leader stat this team holds.
+    for (const def of leaderDefs) {
+      if (leaderByKey[def.key] === id) {
+        return { label: def.label, value: def.value(id) };
+      }
+    }
     return null;
   };
 
