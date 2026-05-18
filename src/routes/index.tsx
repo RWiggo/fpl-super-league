@@ -686,7 +686,7 @@ function TeamConstellation({ managers, logoSrc }: { managers: any[]; logoSrc: st
                     <img src={b.badge} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain" />
                   ) : (
                     <span className="font-display text-base sm:text-lg text-white">
-                      {(m.team_name ?? m.name)?.charAt(0).toUpperCase()}
+                      {currentTeamName(m.id, m.team_name ?? m.name).charAt(0).toUpperCase()}
                     </span>
                   )}
                 </div>
