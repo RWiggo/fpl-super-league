@@ -7,6 +7,7 @@ import logo from "@/assets/fpl-super-league-logo.png";
 import { getBranding } from "@/lib/managerBranding";
 import { MANAGER_KITS } from "@/lib/managerKits";
 import { getNickname } from "@/lib/managerNicknames";
+import { currentTeamName } from "@/lib/currentTeamNames";
 
 function rankColor(pos: number, total: number) {
   if (pos === 1) return "text-emerald-500 font-bold";
