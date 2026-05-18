@@ -426,11 +426,11 @@ function Home() {
                       <img src={b.badge} alt="" className="w-14 h-14 object-contain grayscale-[0.4] flex-shrink-0" />
                     ) : (
                       <div className="w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold text-white flex-shrink-0" style={{ background: tint }}>
-                        {(s.manager.team_name ?? s.manager.name)?.charAt(0).toUpperCase()}
+                        {currentTeamName(s.manager.id, s.manager.team_name ?? s.manager.name).charAt(0).toUpperCase()}
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <div className="font-display text-xl sm:text-2xl capitalize text-white leading-tight break-words">{s.manager.team_name ?? s.manager.name}</div>
+                      <div className="font-display text-xl sm:text-2xl capitalize text-white leading-tight break-words">{currentTeamName(s.manager.id, s.manager.team_name ?? s.manager.name)}</div>
                       <div className="text-[11px] uppercase tracking-widest text-muted-foreground capitalize mt-0.5">{s.manager.name}</div>
                     </div>
                     <div className="text-right">
