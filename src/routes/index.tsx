@@ -672,7 +672,7 @@ function TeamConstellation({ managers, logoSrc }: { managers: any[]; logoSrc: st
               params={{ managerId: String(m.id) }}
               className="group absolute"
               style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)" }}
-              title={m.team_name ?? m.name}
+              title={currentTeamName(m.id, m.team_name ?? m.name)}
             >
               <div className="ferris-counter">
                 <div
