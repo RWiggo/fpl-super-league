@@ -23,7 +23,7 @@ export const MANAGER_BRANDING: Record<string, Branding> = {
   "4":  { badge: b4,  primary: "#169b62" },                              // ALS Ajax - Irish green
   "5":  { badge: b5,  primary: "#8a0d10" },                              // Padleys Piranhas - Deep Red
   "6":  { badge: b6,  primary: "#964e27" },                              // Fill Her Wycombe
-  "7":  { badge: b7,  primary: "#d4af37", primaryFg: "#0a0a0a" },        // Ryans Lions - Gold
+  "7":  { badge: b7,  primary: "#7a1f3d" },                              // Raybould Eagles - Claret
   "8":  { badge: b8,  primary: "#f8cf2c", primaryFg: "#0a0a0a" },        // Adam All Stars - Yellow
   "9":  { badge: b9,  primary: "#ff7a00" },                              // Jake Toyer - Orange
   "10": { badge: b10, primary: "#e4181c" },                              // Send Me Location
