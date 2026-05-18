@@ -474,7 +474,7 @@ function Home() {
               const m = managerById(row.manager_id);
               const b = getBranding(String(row.manager_id));
               const tint = b?.primary ?? "#508cff";
-              const display = m?.team_name ?? m?.name ?? "-";
+              const display = currentTeamName(row.manager_id, m?.team_name ?? m?.name ?? "-");
               const rankCls = rankColor(row.position, currentStandings.length);
               return (
                 <Link
