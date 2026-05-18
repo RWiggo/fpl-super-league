@@ -7,6 +7,7 @@ import logo from "@/assets/fpl-super-league-logo.png";
 import { getBranding } from "@/lib/managerBranding";
 import { MANAGER_KITS } from "@/lib/managerKits";
 import { getNickname } from "@/lib/managerNicknames";
+import { currentTeamName } from "@/lib/currentTeamNames";
 
 function rankColor(pos: number, total: number) {
   if (pos === 1) return "text-emerald-500 font-bold";
@@ -382,7 +383,7 @@ function Home() {
                     <span className="text-[10px] uppercase tracking-[0.3em] text-gold/90 font-bold">{s.name} Champion</span>
                   </div>
                   {b?.badge && <img src={b.badge} alt="" className="w-16 h-16 object-contain mb-4 drop-shadow-[0_0_20px_rgba(212,175,55,0.4)]" />}
-                  <div className="font-display text-4xl mb-1 capitalize text-white">{champ?.team_name ?? champ?.name ?? "-"}</div>
+                  <div className="font-display text-4xl mb-1 capitalize text-white">{currentTeamName(champ?.id, champ?.team_name ?? champ?.name)}</div>
                   <div className="text-sm text-muted-foreground capitalize">Managed by {champ?.name}</div>
                 </div>
               </Link>
@@ -425,11 +426,11 @@ function Home() {
                       <img src={b.badge} alt="" className="w-14 h-14 object-contain grayscale-[0.4] flex-shrink-0" />
                     ) : (
                       <div className="w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold text-white flex-shrink-0" style={{ background: tint }}>
-                        {(s.manager.team_name ?? s.manager.name)?.charAt(0).toUpperCase()}
+                        {currentTeamName(s.manager.id, s.manager.team_name ?? s.manager.name).charAt(0).toUpperCase()}
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <div className="font-display text-xl sm:text-2xl capitalize text-white leading-tight break-words">{s.manager.team_name ?? s.manager.name}</div>
+                      <div className="font-display text-xl sm:text-2xl capitalize text-white leading-tight break-words">{currentTeamName(s.manager.id, s.manager.team_name ?? s.manager.name)}</div>
                       <div className="text-[11px] uppercase tracking-widest text-muted-foreground capitalize mt-0.5">{s.manager.name}</div>
                     </div>
                     <div className="text-right">
@@ -473,7 +474,7 @@ function Home() {
               const m = managerById(row.manager_id);
               const b = getBranding(String(row.manager_id));
               const tint = b?.primary ?? "#508cff";
-              const display = m?.team_name ?? m?.name ?? "-";
+              const display = currentTeamName(row.manager_id, m?.team_name ?? m?.name ?? "-");
               const rankCls = rankColor(row.position, currentStandings.length);
               return (
                 <Link
@@ -545,7 +546,7 @@ function Home() {
             const titles = titleCounts[m.id] ?? 0;
             const spoons = spoonCounts[m.id] ?? 0;
             const allTime = data.alltime.find((r: any) => r.manager_id === m.id);
-            const display = m.team_name ?? m.name;
+            const display = currentTeamName(m.id, m.team_name ?? m.name);
             const nickname = getNickname(m.id) ?? "The Originals";
             const defining = definingStat(String(m.id));
             return (
@@ -671,7 +672,7 @@ function TeamConstellation({ managers, logoSrc }: { managers: any[]; logoSrc: st
               params={{ managerId: String(m.id) }}
               className="group absolute"
               style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)" }}
-              title={m.team_name ?? m.name}
+              title={currentTeamName(m.id, m.team_name ?? m.name)}
             >
               <div className="ferris-counter">
                 <div
@@ -685,7 +686,7 @@ function TeamConstellation({ managers, logoSrc }: { managers: any[]; logoSrc: st
                     <img src={b.badge} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain" />
                   ) : (
                     <span className="font-display text-base sm:text-lg text-white">
-                      {(m.team_name ?? m.name)?.charAt(0).toUpperCase()}
+                      {currentTeamName(m.id, m.team_name ?? m.name).charAt(0).toUpperCase()}
                     </span>
                   )}
                 </div>
