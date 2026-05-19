@@ -61,7 +61,7 @@ function Home() {
       for (let from = 0; from < 5000; from += 1000) {
         const { data } = await supabase
           .from("player_season_stats")
-          .select("manager_id,position,gk_saves,out_goals,gk_goals,out_assists_total,gk_assists_total,out_clean_sheets,gk_clean_sheets,out_yellow_cards,gk_yellow_cards,out_red_cards,gk_red_cards")
+          .select("manager_id,position,gk_saves,out_goals,gk_goals,out_assists_total,gk_assists_total,out_clean_sheets,gk_clean_sheets,out_yellow_cards,gk_yellow_cards,out_red_cards,gk_red_cards,out_hat_tricks,out_big_chances_created,out_big_chances_missed,out_ball_recoveries,out_tackles_won,out_interceptions,out_offsides,out_fouls_suffered,out_penalties_missed,out_penalties_drawn,out_own_goals,gk_own_goals,out_key_passes,gk_key_passes,out_aerial_duels_won,gk_aerial_duels_won,out_successful_dribbles,out_accurate_crosses,out_goals_outside_box,out_free_kick_goals,out_error_goals,gk_error_goals,gk_penalty_saves,gk_one_on_ones_won,gk_penalties_given_away,out_penalties_given_away,minutes")
           .range(from, from + 999);
         if (!data || data.length === 0) break;
         playerSeasonRows.push(...data);
