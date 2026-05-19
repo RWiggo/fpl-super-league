@@ -390,13 +390,14 @@ function Home() {
   }
 
   const definingStat = (id: string): { label: string; value: string } | null => {
-    if (id === "12") return { label: "Mission Statement", value: "Just here to fill the numbers" };
-    // Take the first (highest-priority) leader stat this team holds.
+    // Only show a stat if this manager actually leads the league in it.
     for (const def of leaderDefs) {
       if (leaderByKey[def.key] === id) {
         return { label: def.label, value: def.value(id) };
       }
     }
+    // Fallback only for Average Team — never invents records.
+    if (id === "12") return { label: "Mission Statement", value: "Just here to fill the numbers" };
     return null;
   };
 
