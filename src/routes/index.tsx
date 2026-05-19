@@ -61,7 +61,7 @@ function Home() {
       for (let from = 0; from < 5000; from += 1000) {
         const { data } = await supabase
           .from("player_season_stats")
-          .select("manager_id,position,gk_saves,out_goals,gk_goals,out_assists_total,gk_assists_total,out_clean_sheets,gk_clean_sheets,out_yellow_cards,gk_yellow_cards,out_red_cards,gk_red_cards")
+          .select("manager_id,position,gk_saves,out_goals,gk_goals,out_assists_total,gk_assists_total,out_clean_sheets,gk_clean_sheets,out_yellow_cards,gk_yellow_cards,out_red_cards,gk_red_cards,out_hat_tricks,out_big_chances_created,out_big_chances_missed,out_ball_recoveries,out_tackles_won,out_interceptions,out_offsides,out_fouls_suffered,out_penalties_missed,out_penalties_drawn,out_own_goals,gk_own_goals,out_key_passes,gk_key_passes,out_aerial_duels_won,gk_aerial_duels_won,out_successful_dribbles,out_accurate_crosses,out_goals_outside_box,out_free_kick_goals,out_error_goals,gk_error_goals,gk_penalty_saves,gk_one_on_ones_won,gk_penalties_given_away,out_penalties_given_away,minutes")
           .range(from, from + 999);
         if (!data || data.length === 0) break;
         playerSeasonRows.push(...data);
@@ -227,24 +227,62 @@ function Home() {
   });
 
   // Career totals from player_season_stats
-  type CareerTot = { goals: number; assists: number; cleans: number; gkCleans: number; gkSaves: number; yellows: number; reds: number };
+  type CareerTot = {
+    goals: number; assists: number; cleans: number; gkCleans: number; gkSaves: number;
+    yellows: number; reds: number; hatTricks: number; bigChancesCreated: number;
+    bigChancesMissed: number; ballRecoveries: number; tackles: number; interceptions: number;
+    offsides: number; foulsSuffered: number; pensMissed: number; pensWon: number;
+    ownGoals: number; keyPasses: number; aerials: number; dribbles: number; crosses: number;
+    goalsOutsideBox: number; freeKickGoals: number; errorGoals: number; pensConceded: number;
+    pensSaved: number; oneOnOnesWon: number; minutes: number;
+  };
+  const newTot = (): CareerTot => ({
+    goals: 0, assists: 0, cleans: 0, gkCleans: 0, gkSaves: 0, yellows: 0, reds: 0,
+    hatTricks: 0, bigChancesCreated: 0, bigChancesMissed: 0, ballRecoveries: 0, tackles: 0,
+    interceptions: 0, offsides: 0, foulsSuffered: 0, pensMissed: 0, pensWon: 0, ownGoals: 0,
+    keyPasses: 0, aerials: 0, dribbles: 0, crosses: 0, goalsOutsideBox: 0, freeKickGoals: 0,
+    errorGoals: 0, pensConceded: 0, pensSaved: 0, oneOnOnesWon: 0, minutes: 0,
+  });
   const careerTotals: Record<string, CareerTot> = {};
   (data.playerSeasonRows as any[] | undefined)?.forEach((r) => {
     const id = String(r.manager_id);
-    const c = careerTotals[id] ?? (careerTotals[id] = { goals: 0, assists: 0, cleans: 0, gkCleans: 0, gkSaves: 0, yellows: 0, reds: 0 });
-    c.goals += Number(r.out_goals ?? 0) + Number(r.gk_goals ?? 0);
-    c.assists += Number(r.out_assists_total ?? 0) + Number(r.gk_assists_total ?? 0);
-    c.cleans += Number(r.out_clean_sheets ?? 0) + Number(r.gk_clean_sheets ?? 0);
-    c.gkCleans += Number(r.gk_clean_sheets ?? 0);
-    c.gkSaves += Number(r.gk_saves ?? 0);
-    c.yellows += Number(r.out_yellow_cards ?? 0) + Number(r.gk_yellow_cards ?? 0);
-    c.reds += Number(r.out_red_cards ?? 0) + Number(r.gk_red_cards ?? 0);
+    const c = careerTotals[id] ?? (careerTotals[id] = newTot());
+    const n = (v: any) => Number(v ?? 0);
+    c.goals += n(r.out_goals) + n(r.gk_goals);
+    c.assists += n(r.out_assists_total) + n(r.gk_assists_total);
+    c.cleans += n(r.out_clean_sheets) + n(r.gk_clean_sheets);
+    c.gkCleans += n(r.gk_clean_sheets);
+    c.gkSaves += n(r.gk_saves);
+    c.yellows += n(r.out_yellow_cards) + n(r.gk_yellow_cards);
+    c.reds += n(r.out_red_cards) + n(r.gk_red_cards);
+    c.hatTricks += n(r.out_hat_tricks);
+    c.bigChancesCreated += n(r.out_big_chances_created);
+    c.bigChancesMissed += n(r.out_big_chances_missed);
+    c.ballRecoveries += n(r.out_ball_recoveries);
+    c.tackles += n(r.out_tackles_won);
+    c.interceptions += n(r.out_interceptions);
+    c.offsides += n(r.out_offsides);
+    c.foulsSuffered += n(r.out_fouls_suffered);
+    c.pensMissed += n(r.out_penalties_missed);
+    c.pensWon += n(r.out_penalties_drawn);
+    c.ownGoals += n(r.out_own_goals) + n(r.gk_own_goals);
+    c.keyPasses += n(r.out_key_passes) + n(r.gk_key_passes);
+    c.aerials += n(r.out_aerial_duels_won) + n(r.gk_aerial_duels_won);
+    c.dribbles += n(r.out_successful_dribbles);
+    c.crosses += n(r.out_accurate_crosses);
+    c.goalsOutsideBox += n(r.out_goals_outside_box);
+    c.freeKickGoals += n(r.out_free_kick_goals);
+    c.errorGoals += n(r.out_error_goals) + n(r.gk_error_goals);
+    c.pensConceded += n(r.out_penalties_given_away) + n(r.gk_penalties_given_away);
+    c.pensSaved += n(r.gk_penalty_saves);
+    c.oneOnOnesWon += n(r.gk_one_on_ones_won);
+    c.minutes += n(r.minutes);
   });
 
   const atRow = (id: string) => data.alltime.find((x: any) => String(x.manager_id) === id);
 
   // Define league-wide leader stats in priority order.
-  // Each stat is assigned to whoever currently leads it.
+  // Each card only shows a stat the manager actually leads the league in.
   type LeaderDef = {
     key: string;
     label: string;
@@ -254,6 +292,8 @@ function Home() {
     mode?: "max" | "min";
   };
   const fmt = (n: number) => Number(n).toLocaleString();
+  const ct = (id: string) => careerTotals[id];
+  const has = (id: string, k: keyof CareerTot) => (ct(id)?.[k] ?? 0) > 0;
   const leaderDefs: LeaderDef[] = [
     { key: "wins", label: "Win Machine", score: (id) => Number(atRow(id)?.total_wins ?? -Infinity),
       valid: (id) => !!atRow(id), value: (id) => `${atRow(id)!.total_wins} career wins - the most ever` },
@@ -263,20 +303,64 @@ function Home() {
       valid: (id) => !!bestGwByManager[id], value: (id) => `${bestGwByManager[id].score} pts${bestGwByManager[id].gw ? ` - GW${bestGwByManager[id].gw}` : ""}` },
     { key: "streak", label: "Streak King", score: (id) => bestWinStreak[id] ?? -Infinity,
       valid: (id) => (bestWinStreak[id] ?? 0) > 0, value: (id) => `${bestWinStreak[id]}-game winning run` },
-    { key: "goals", label: "Goal Machine", score: (id) => careerTotals[id]?.goals ?? -Infinity,
-      valid: (id) => (careerTotals[id]?.goals ?? 0) > 0, value: (id) => `${careerTotals[id].goals} goals scored all-time` },
-    { key: "assists", label: "Playmaker", score: (id) => careerTotals[id]?.assists ?? -Infinity,
-      valid: (id) => (careerTotals[id]?.assists ?? 0) > 0, value: (id) => `${careerTotals[id].assists} assists all-time` },
-    { key: "cleans", label: "Brick Wall", score: (id) => careerTotals[id]?.cleans ?? -Infinity,
-      valid: (id) => (careerTotals[id]?.cleans ?? 0) > 0, value: (id) => `${careerTotals[id].cleans} clean sheets all-time` },
-    { key: "gkSaves", label: "Safe Hands", score: (id) => careerTotals[id]?.gkSaves ?? -Infinity,
-      valid: (id) => (careerTotals[id]?.gkSaves ?? 0) > 0, value: (id) => `${fmt(careerTotals[id].gkSaves)} goalkeeper saves` },
+    { key: "goals", label: "Goal Machine", score: (id) => ct(id)?.goals ?? -Infinity,
+      valid: (id) => has(id, "goals"), value: (id) => `${ct(id).goals} goals scored all-time` },
+    { key: "assists", label: "Playmaker", score: (id) => ct(id)?.assists ?? -Infinity,
+      valid: (id) => has(id, "assists"), value: (id) => `${ct(id).assists} assists all-time` },
+    { key: "cleans", label: "Brick Wall", score: (id) => ct(id)?.cleans ?? -Infinity,
+      valid: (id) => has(id, "cleans"), value: (id) => `${ct(id).cleans} clean sheets all-time` },
+    { key: "gkSaves", label: "Safe Hands", score: (id) => ct(id)?.gkSaves ?? -Infinity,
+      valid: (id) => has(id, "gkSaves"), value: (id) => `${fmt(ct(id).gkSaves)} goalkeeper saves` },
+    { key: "hatTricks", label: "Hat-Trick Hero", score: (id) => ct(id)?.hatTricks ?? -Infinity,
+      valid: (id) => has(id, "hatTricks"), value: (id) => `${ct(id).hatTricks} hat-tricks delivered` },
+    { key: "bigChancesCreated", label: "Chance Creator", score: (id) => ct(id)?.bigChancesCreated ?? -Infinity,
+      valid: (id) => has(id, "bigChancesCreated"), value: (id) => `${fmt(ct(id).bigChancesCreated)} big chances created` },
+    { key: "bigChancesMissed", label: "Sitter Specialist", score: (id) => ct(id)?.bigChancesMissed ?? -Infinity,
+      valid: (id) => has(id, "bigChancesMissed"), value: (id) => `${fmt(ct(id).bigChancesMissed)} big chances skied` },
+    { key: "ballRecoveries", label: "Ball Hoover", score: (id) => ct(id)?.ballRecoveries ?? -Infinity,
+      valid: (id) => has(id, "ballRecoveries"), value: (id) => `${fmt(ct(id).ballRecoveries)} ball recoveries` },
+    { key: "tackles", label: "Tackle Tyrant", score: (id) => ct(id)?.tackles ?? -Infinity,
+      valid: (id) => has(id, "tackles"), value: (id) => `${fmt(ct(id).tackles)} tackles won` },
+    { key: "interceptions", label: "Mind Reader", score: (id) => ct(id)?.interceptions ?? -Infinity,
+      valid: (id) => has(id, "interceptions"), value: (id) => `${fmt(ct(id).interceptions)} interceptions made` },
+    { key: "offsides", label: "Offside Magnet", score: (id) => ct(id)?.offsides ?? -Infinity,
+      valid: (id) => has(id, "offsides"), value: (id) => `${fmt(ct(id).offsides)} offside flags raised` },
+    { key: "keyPasses", label: "Pass Master", score: (id) => ct(id)?.keyPasses ?? -Infinity,
+      valid: (id) => has(id, "keyPasses"), value: (id) => `${fmt(ct(id).keyPasses)} key passes played` },
+    { key: "aerials", label: "Aerial King", score: (id) => ct(id)?.aerials ?? -Infinity,
+      valid: (id) => has(id, "aerials"), value: (id) => `${fmt(ct(id).aerials)} aerial duels won` },
+    { key: "dribbles", label: "Silky Dribbler", score: (id) => ct(id)?.dribbles ?? -Infinity,
+      valid: (id) => has(id, "dribbles"), value: (id) => `${fmt(ct(id).dribbles)} successful dribbles` },
+    { key: "crosses", label: "Crossing Connoisseur", score: (id) => ct(id)?.crosses ?? -Infinity,
+      valid: (id) => has(id, "crosses"), value: (id) => `${fmt(ct(id).crosses)} accurate crosses` },
+    { key: "goalsOutsideBox", label: "Worldie Merchant", score: (id) => ct(id)?.goalsOutsideBox ?? -Infinity,
+      valid: (id) => has(id, "goalsOutsideBox"), value: (id) => `${ct(id).goalsOutsideBox} goals from outside the box` },
+    { key: "freeKickGoals", label: "Dead Ball Specialist", score: (id) => ct(id)?.freeKickGoals ?? -Infinity,
+      valid: (id) => has(id, "freeKickGoals"), value: (id) => `${ct(id).freeKickGoals} free-kick goals` },
+    { key: "pensWon", label: "Penalty Magnet", score: (id) => ct(id)?.pensWon ?? -Infinity,
+      valid: (id) => has(id, "pensWon"), value: (id) => `${ct(id).pensWon} penalties won` },
+    { key: "pensMissed", label: "Spot Kick Choker", score: (id) => ct(id)?.pensMissed ?? -Infinity,
+      valid: (id) => has(id, "pensMissed"), value: (id) => `${ct(id).pensMissed} penalties missed` },
+    { key: "pensSaved", label: "Penalty Stopper", score: (id) => ct(id)?.pensSaved ?? -Infinity,
+      valid: (id) => has(id, "pensSaved"), value: (id) => `${ct(id).pensSaved} penalties saved` },
+    { key: "pensConceded", label: "Clumsy Defender", score: (id) => ct(id)?.pensConceded ?? -Infinity,
+      valid: (id) => has(id, "pensConceded"), value: (id) => `${ct(id).pensConceded} penalties given away` },
+    { key: "foulsSuffered", label: "Most Fouled", score: (id) => ct(id)?.foulsSuffered ?? -Infinity,
+      valid: (id) => has(id, "foulsSuffered"), value: (id) => `${fmt(ct(id).foulsSuffered)} fouls suffered` },
+    { key: "ownGoals", label: "Wrong Net Specialist", score: (id) => ct(id)?.ownGoals ?? -Infinity,
+      valid: (id) => has(id, "ownGoals"), value: (id) => `${ct(id).ownGoals} own goals scored` },
+    { key: "errorGoals", label: "Howler Merchant", score: (id) => ct(id)?.errorGoals ?? -Infinity,
+      valid: (id) => has(id, "errorGoals"), value: (id) => `${ct(id).errorGoals} errors leading to goals` },
+    { key: "oneOnOnesWon", label: "1-v-1 Specialist", score: (id) => ct(id)?.oneOnOnesWon ?? -Infinity,
+      valid: (id) => has(id, "oneOnOnesWon"), value: (id) => `${ct(id).oneOnOnesWon} 1-on-1s won` },
     { key: "draws", label: "Draw Master", score: (id) => Number(atRow(id)?.total_draws ?? -Infinity),
       valid: (id) => Number(atRow(id)?.total_draws ?? 0) > 0, value: (id) => `${atRow(id)!.total_draws} draws in the draft - the most` },
-    { key: "yellows", label: "Card Magnet", score: (id) => careerTotals[id]?.yellows ?? -Infinity,
-      valid: (id) => (careerTotals[id]?.yellows ?? 0) > 0, value: (id) => `${careerTotals[id].yellows} yellow cards collected` },
-    { key: "reds", label: "Hot Heads", score: (id) => careerTotals[id]?.reds ?? -Infinity,
-      valid: (id) => (careerTotals[id]?.reds ?? 0) > 0, value: (id) => `${careerTotals[id].reds} red cards collected` },
+    { key: "yellows", label: "Card Magnet", score: (id) => ct(id)?.yellows ?? -Infinity,
+      valid: (id) => has(id, "yellows"), value: (id) => `${ct(id).yellows} yellow cards collected` },
+    { key: "reds", label: "Hot Heads", score: (id) => ct(id)?.reds ?? -Infinity,
+      valid: (id) => has(id, "reds"), value: (id) => `${ct(id).reds} red cards collected` },
+    { key: "minutes", label: "Iron Man Manager", score: (id) => ct(id)?.minutes ?? -Infinity,
+      valid: (id) => has(id, "minutes"), value: (id) => `${fmt(ct(id).minutes)} player minutes fielded` },
     { key: "players", label: "Squad Rotator", score: (id) => mgrAgg[id]?.playersUsed ?? -Infinity,
       valid: (id) => !!mgrAgg[id], value: (id) => `${mgrAgg[id].playersUsed} different players used` },
     { key: "fewPlayers", label: "Lean Squad", score: (id) => mgrAgg[id]?.playersUsed ?? Infinity,
@@ -306,13 +390,14 @@ function Home() {
   }
 
   const definingStat = (id: string): { label: string; value: string } | null => {
-    if (id === "12") return { label: "Mission Statement", value: "Just here to fill the numbers" };
-    // Take the first (highest-priority) leader stat this team holds.
+    // Only show a stat if this manager actually leads the league in it.
     for (const def of leaderDefs) {
       if (leaderByKey[def.key] === id) {
         return { label: def.label, value: def.value(id) };
       }
     }
+    // Fallback only for Average Team — never invents records.
+    if (id === "12") return { label: "Mission Statement", value: "Just here to fill the numbers" };
     return null;
   };
 
