@@ -547,28 +547,30 @@ function TeamPage() {
       })()}
 
       {/* Highs and Lows */}
+      <RecordsSection
+        topPlayers={top5Players}
+        bottomPlayers={bottom5Players}
+        allPlayersSorted={sortedPlayers}
+        seasonsForPlayer={seasonsForPlayer}
+        topClubs={top5Clubs}
+        bottomClubs={bottom5Clubs}
+        allClubsRanked={clubsRanked.map((c) => ({ ...c, playerCount: playersFromClub(c.club) }))}
+        allStreaks={{
+          win: (d.streaks as any[]).filter((r) => r.outcome === "W"),
+          unbeaten: d.unbeaten as any[],
+          winless: d.winless as any[],
+          losing: d.losing as any[],
+        }}
+        bestWinRun={bestWinRun}
+        bestUnbeatenRun={bestUnbeatenRun}
+        worstWinlessRun={worstWinlessRun}
+        worstLosingRun={worstLosingRun}
+      />
+
+      {/* Best XI */}
       <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-        <SectionTitle kicker="The Highs and Lows" title="Records and Statistics" />
-
-        <div className="grid lg:grid-cols-2 gap-6 mt-8">
-          <PlayerLeaderboard title="Top 5 Players" subtitle="By all-time fantasy points" players={top5Players} icon={<Crown className="w-4 h-4" />} accent />
-          <PlayerLeaderboard title="Worst 5 Players" subtitle="By all-time fantasy points" players={bottom5Players} icon={<Skull className="w-4 h-4" />} />
-        </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-8">
-          <StatCard align="center" label="Greatest Winning Run" value={bestWinRun?.streak_length ?? 0} sub={bestWinRun ? `${bestWinRun.season_name} · GW${bestWinRun.streak_start_gw}–${bestWinRun.streak_end_gw}` : undefined} icon={<Zap className="w-5 h-5" />} />
-          <StatCard align="center" label="Greatest Unbeaten Run" value={bestUnbeatenRun?.streak_length ?? 0} sub={bestUnbeatenRun ? `${bestUnbeatenRun.season_name} · GW${bestUnbeatenRun.streak_start_gw}–${bestUnbeatenRun.streak_end_gw}` : undefined} icon={<Award className="w-5 h-5" />} />
-          <StatCard align="center" label="Worst Winless Run" value={worstWinlessRun?.streak_length ?? 0} sub={worstWinlessRun ? `${worstWinlessRun.season_name} · GW${worstWinlessRun.streak_start_gw}–${worstWinlessRun.streak_end_gw}` : undefined} icon={<ShieldOff className="w-5 h-5" />} />
-          <StatCard align="center" label="Worst Losing Run" value={worstLosingRun?.streak_length ?? 0} sub={worstLosingRun ? `${worstLosingRun.season_name} · GW${worstLosingRun.streak_start_gw}–${worstLosingRun.streak_end_gw}` : undefined} icon={<TrendingDown className="w-5 h-5" />} />
-        </div>
-
-        <div className="grid lg:grid-cols-2 gap-6 mt-8">
-          <ClubLeaderboard title="Top 5 PL Clubs Relied On" subtitle="By total fantasy points contributed" rows={top5Clubs} accent />
-          <ClubLeaderboard title="Bottom 5 PL Clubs Trusted" subtitle="Includes never-used clubs (2022/23–2025/26)" rows={bottom5Clubs} />
-        </div>
-
         {bestXI.length === 11 && (
-          <div className="mt-12">
+          <div>
             <div className="flex items-baseline justify-between flex-wrap gap-2 mb-4">
               <div>
                 <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">All-Time XI</div>
@@ -579,6 +581,35 @@ function TeamPage() {
               </div>
             </div>
             <FormationPitch players={bestXIForPitch} managerId={managerId} />
+
+            {/* Subs bench - next-highest scorer per position */}
+            {subsByPos && (
+              <div className="mt-6">
+                <div className="text-[10px] uppercase tracking-[0.3em] text-silver/70 mb-3">On the bench</div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {(["GK", "DEF", "MID", "FWD"] as const).map((pos) => {
+                    const sub = subsByPos[pos];
+                    return (
+                      <div key={pos} className="premium-card rounded-lg p-3 flex items-center gap-3">
+                        <span className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${POSITION_STYLES[pos]}`}>
+                          {pos}
+                        </span>
+                        {sub ? (
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-medium truncate">{sub.player_name ?? sub.name}</div>
+                            <div className="text-[10px] text-muted-foreground truncate">
+                              {sub.club ?? "-"} · <span className="text-gold font-display">{Number(sub.total_fantasy_points ?? 0).toFixed(0)}</span> pts
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-xs text-muted-foreground italic">No reserve</div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {clubsInSquad.length > 0 && (
               <div className="mt-10">
