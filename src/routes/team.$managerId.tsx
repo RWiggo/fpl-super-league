@@ -865,7 +865,7 @@ function H2HCard({
     r === "W" ? "bg-emerald-600/80 text-white" : r === "L" ? "bg-red-600/80 text-white" : "bg-yellow-500/80 text-black";
 
   return (
-    <div className={`relative shrink-0 snap-start premium-card rounded-lg overflow-hidden transition-all ${open ? "w-[520px]" : "w-[300px]"}`}>
+    <div className={`relative shrink-0 snap-start premium-card rounded-lg overflow-hidden transition-all w-full ${open ? "sm:w-[520px]" : "sm:w-[300px]"}`}>
       {/* Top tint accent */}
       <div className="h-1 w-full" style={{ background: tint }} />
       <button onClick={() => setOpen((o) => !o)} className="w-full text-left">
