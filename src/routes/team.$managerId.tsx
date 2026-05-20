@@ -292,6 +292,33 @@ function TeamPage() {
   })[0];
   const currentTeamName = latestMst?.team_name ?? d.manager.team_name ?? d.manager.name;
 
+  // Distinct former team names (case-insensitive, excluding current)
+  const formerlyKnownAs = (() => {
+    const seen = new Set<string>([currentTeamName.toLowerCase()]);
+    const out: string[] = [];
+    for (const t of d.mst as any[]) {
+      const name = t.team_name?.trim();
+      if (!name) continue;
+      const k = name.toLowerCase();
+      if (seen.has(k)) continue;
+      seen.add(k);
+      out.push(name);
+    }
+    return out;
+  })();
+
+  // Best XI subs: next-highest scorer per position not already in the XI
+  const subsByPos = bestXI.length === 11
+    ? {
+        GK: byPos.GK[1],
+        DEF: byPos.DEF[bestFormation[0]],
+        MID: byPos.MID[bestFormation[1]],
+        FWD: byPos.FWD[bestFormation[2]],
+      }
+    : null;
+
+  const kit = getKit(managerId);
+
   return (
     <div style={brandStyle}>
       <TeamHero
@@ -300,10 +327,7 @@ function TeamPage() {
         badge={branding?.badge}
         primary={branding?.primary}
         nickname={getNickname(managerId)}
-        seasonsBadges={d.mst.map((t: any) => ({
-          season: sById(t.season_id)?.name ?? "",
-          team: t.team_name,
-        }))}
+        formerlyKnownAs={formerlyKnownAs}
         facts={[
           { label: "Seasons", value: d.standings.length },
           { label: "Titles", value: titles },
