@@ -344,78 +344,10 @@ function TeamPage() {
       />
 
 
-      {/* Season Hist */}
+      {/* Season Hist - eye-catching kit-driven cards */}
       <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
         <SectionTitle kicker="Season History" title="The Journey so far" />
-        <div className="premium-card rounded-lg overflow-x-auto mt-6 hidden sm:block">
-          <table className="w-full text-sm">
-            <thead className="bg-card/60 text-xs uppercase tracking-wider text-muted-foreground">
-              <tr>
-                <th className="p-3 text-left">Season</th>
-                <th className="p-3 text-left">Team</th>
-                <th className="p-3 text-left">Star Player</th>
-                <th className="p-3 text-center">W</th>
-                <th className="p-3 text-center">D</th>
-                <th className="p-3 text-center">L</th>
-                <th className="p-3 text-right">FPL Diff</th>
-                <th className="p-3 text-right">Pts</th>
-                <th className="p-3 text-center">Pos</th>
-              </tr>
-            </thead>
-            <tbody>
-              {d.standings.map((s: any) => {
-                const teamName = d.mst.find((t: any) => t.season_id === s.season_id)?.team_name;
-                const seasonName = sById(s.season_id)?.name;
-                const seasonHistory = (d.history as any[]).filter(
-                  (h) => h.season_id === s.season_id || h.season_name === seasonName
-                );
-                const star = [...seasonHistory].sort(
-                  (a, b) => Number(b.fantasy_points ?? 0) - Number(a.fantasy_points ?? 0)
-                )[0];
-                const seasonSize = new Set(
-                  (d.allStandings as any[]).filter((x) => x.season_id === s.season_id).map((x) => x.manager_id)
-                ).size;
-                const pos = s.position;
-                let posClass = "text-yellow-400";
-                if (pos === 1) posClass = "text-emerald-300";
-                else if (pos === 2 || pos === 3) posClass = "text-emerald-600";
-                else if (seasonSize > 0 && pos === seasonSize) posClass = "text-red-700";
-                else if (seasonSize > 0 && pos > seasonSize - 3) posClass = "text-red-500";
-                const diff = Number(s.points_for ?? 0) - Number(s.points_against ?? 0);
-                return (
-                  <tr key={s.id} className="border-t border-border/40">
-                    <td className="p-3"><Link to="/season/$seasonId" params={{ seasonId: s.season_id }} className="hover:text-gold">{sById(s.season_id)?.name}</Link></td>
-                    <td className="p-3 text-muted-foreground">{teamName}</td>
-                    <td className="p-3">
-                      {star ? (
-                        <span>
-                          <span className="font-medium">{star.player_name}</span>
-                          <span className="text-muted-foreground ml-2 text-xs">{Number(star.fantasy_points ?? 0).toFixed(0)} pts</span>
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </td>
-                    <td className="text-center p-3">{s.wins}</td>
-                    <td className="text-center p-3">{s.draws}</td>
-                    <td className="text-center p-3">{s.losses}</td>
-                    <td className={`text-right p-3 ${diff >= 0 ? "text-emerald-400/90" : "text-red-400/90"}`}>
-                      {diff >= 0 ? "+" : ""}{diff.toFixed(0)}
-                    </td>
-                    <td className="text-right p-3 font-display text-foreground">{s.total_points}</td>
-                    <td className={`p-3 text-center font-display text-lg ${posClass}`}>
-                      {pos === 1 && <Trophy className="inline w-4 h-4 mr-1 text-gold" />}
-                      {pos}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile cards */}
-        <div className="sm:hidden mt-6 space-y-3">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
           {d.standings.map((s: any) => {
             const teamName = d.mst.find((t: any) => t.season_id === s.season_id)?.team_name;
             const seasonName = sById(s.season_id)?.name;
@@ -430,38 +362,77 @@ function TeamPage() {
             ).size;
             const pos = s.position;
             let posClass = "text-yellow-400";
-            if (pos === 1) posClass = "text-emerald-300";
-            else if (pos === 2 || pos === 3) posClass = "text-emerald-600";
-            else if (seasonSize > 0 && pos === seasonSize) posClass = "text-red-700";
-            else if (seasonSize > 0 && pos > seasonSize - 3) posClass = "text-red-500";
+            let posBg = "bg-yellow-400/10 border-yellow-400/30";
+            if (pos === 1) { posClass = "text-emerald-300"; posBg = "bg-emerald-400/15 border-emerald-400/40"; }
+            else if (pos === 2 || pos === 3) { posClass = "text-emerald-500"; posBg = "bg-emerald-500/10 border-emerald-500/30"; }
+            else if (seasonSize > 0 && pos === seasonSize) { posClass = "text-red-500"; posBg = "bg-red-500/15 border-red-500/40"; }
+            else if (seasonSize > 0 && pos > seasonSize - 3) { posClass = "text-red-400"; posBg = "bg-red-400/10 border-red-400/30"; }
             const diff = Number(s.points_for ?? 0) - Number(s.points_against ?? 0);
+            const tint = branding?.primary ?? "var(--color-primary)";
             return (
-              <div key={s.id} className="premium-card rounded-lg p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <Link to="/season/$seasonId" params={{ seasonId: s.season_id }} className="font-display text-base hover:text-gold truncate">
-                    {sById(s.season_id)?.name}
-                  </Link>
-                  <div className={`font-display text-xl ${posClass} flex items-center gap-1 shrink-0`}>
-                    {pos === 1 && <Trophy className="w-4 h-4 text-gold" />}
-                    {pos}<span className="text-[10px] text-muted-foreground ml-0.5">/{seasonSize || "-"}</span>
+              <Link
+                key={s.id}
+                to="/season/$seasonId"
+                params={{ seasonId: s.season_id }}
+                className="group relative premium-card rounded-xl overflow-hidden block hover:-translate-y-1 hover:border-gold/60 transition-all"
+              >
+                {/* tint wash */}
+                <div
+                  className="absolute inset-0 opacity-60 pointer-events-none"
+                  style={{ background: `linear-gradient(120deg, color-mix(in oklab, ${tint} 18%, transparent) 0%, transparent 55%)` }}
+                />
+                {/* top stripe */}
+                <div className="h-1 w-full" style={{ background: tint }} />
+
+                <div className="relative p-4 flex items-start gap-3">
+                  {/* Kit */}
+                  {kit && (
+                    <img
+                      src={kit.home}
+                      alt=""
+                      loading="lazy"
+                      className="w-16 h-16 sm:w-20 sm:h-20 object-contain shrink-0 drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] group-hover:scale-110 transition-transform"
+                    />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="text-[10px] uppercase tracking-[0.25em] text-silver/70">{seasonName}</div>
+                        <div className="font-display text-base sm:text-lg uppercase truncate group-hover:text-gold transition-colors">
+                          {teamName}
+                        </div>
+                      </div>
+                      <div className={`shrink-0 rounded-md border px-2 py-1 text-center ${posBg}`}>
+                        <div className="text-[8px] uppercase tracking-widest text-muted-foreground leading-none">Pos</div>
+                        <div className={`font-display text-lg leading-tight flex items-center gap-1 ${posClass}`}>
+                          {pos === 1 && <Trophy className="w-3.5 h-3.5 text-gold" />}
+                          {pos}
+                          <span className="text-[9px] text-muted-foreground">/{seasonSize || "-"}</span>
+                        </div>
+                      </div>
+                    </div>
+                    {star && (
+                      <div className="mt-2 text-[11px] truncate">
+                        <span className="text-gold mr-1">★</span>
+                        <span className="font-medium">{star.player_name}</span>
+                        <span className="text-muted-foreground ml-1">({Number(star.fantasy_points ?? 0).toFixed(0)})</span>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="text-xs text-muted-foreground truncate mt-0.5">{teamName}</div>
-                {star && (
-                  <div className="text-xs mt-1 truncate">
-                    <span className="text-muted-foreground">★ </span>
-                    <span className="font-medium">{star.player_name}</span>
-                    <span className="text-muted-foreground ml-1">({Number(star.fantasy_points ?? 0).toFixed(0)})</span>
-                  </div>
-                )}
-                <div className="grid grid-cols-5 gap-1 mt-3 text-center">
-                  <Stat label="W" value={s.wins} />
-                  <Stat label="D" value={s.draws} />
-                  <Stat label="L" value={s.losses} />
-                  <Stat label="Pts" value={s.total_points} />
-                  <Stat label="Diff" value={`${diff >= 0 ? "+" : ""}${diff.toFixed(0)}`} valueClass={diff >= 0 ? "text-emerald-400/90" : "text-red-400/90"} />
+
+                <div className="relative grid grid-cols-5 divide-x divide-border/40 border-t border-border/40 bg-black/20">
+                  <CardStat label="W" value={s.wins} valueClass="text-emerald-400" />
+                  <CardStat label="D" value={s.draws} valueClass="text-yellow-400" />
+                  <CardStat label="L" value={s.losses} valueClass="text-red-400" />
+                  <CardStat label="Pts" value={s.total_points} />
+                  <CardStat
+                    label="Diff"
+                    value={`${diff >= 0 ? "+" : ""}${diff.toFixed(0)}`}
+                    valueClass={diff >= 0 ? "text-emerald-400" : "text-red-400"}
+                  />
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>
