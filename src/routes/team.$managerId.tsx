@@ -9,6 +9,8 @@ import { getBranding } from "@/lib/managerBranding";
 import { getNickname } from "@/lib/managerNicknames";
 import { getPlClubBadge } from "@/lib/plClubBadges";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getKit } from "@/lib/managerKits";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/team/$managerId")({
   component: TeamPage,
@@ -290,6 +292,33 @@ function TeamPage() {
   })[0];
   const currentTeamName = latestMst?.team_name ?? d.manager.team_name ?? d.manager.name;
 
+  // Distinct former team names (case-insensitive, excluding current)
+  const formerlyKnownAs = (() => {
+    const seen = new Set<string>([currentTeamName.toLowerCase()]);
+    const out: string[] = [];
+    for (const t of d.mst as any[]) {
+      const name = t.team_name?.trim();
+      if (!name) continue;
+      const k = name.toLowerCase();
+      if (seen.has(k)) continue;
+      seen.add(k);
+      out.push(name);
+    }
+    return out;
+  })();
+
+  // Best XI subs: next-highest scorer per position not already in the XI
+  const subsByPos = bestXI.length === 11
+    ? {
+        GK: byPos.GK[1],
+        DEF: byPos.DEF[bestFormation[0]],
+        MID: byPos.MID[bestFormation[1]],
+        FWD: byPos.FWD[bestFormation[2]],
+      }
+    : null;
+
+  const kit = getKit(managerId);
+
   return (
     <div style={brandStyle}>
       <TeamHero
@@ -298,10 +327,7 @@ function TeamPage() {
         badge={branding?.badge}
         primary={branding?.primary}
         nickname={getNickname(managerId)}
-        seasonsBadges={d.mst.map((t: any) => ({
-          season: sById(t.season_id)?.name ?? "",
-          team: t.team_name,
-        }))}
+        formerlyKnownAs={formerlyKnownAs}
         facts={[
           { label: "Seasons", value: d.standings.length },
           { label: "Titles", value: titles },
@@ -318,78 +344,10 @@ function TeamPage() {
       />
 
 
-      {/* Season Hist */}
+      {/* Season Hist - eye-catching kit-driven cards */}
       <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
         <SectionTitle kicker="Season History" title="The Journey so far" />
-        <div className="premium-card rounded-lg overflow-x-auto mt-6 hidden sm:block">
-          <table className="w-full text-sm">
-            <thead className="bg-card/60 text-xs uppercase tracking-wider text-muted-foreground">
-              <tr>
-                <th className="p-3 text-left">Season</th>
-                <th className="p-3 text-left">Team</th>
-                <th className="p-3 text-left">Star Player</th>
-                <th className="p-3 text-center">W</th>
-                <th className="p-3 text-center">D</th>
-                <th className="p-3 text-center">L</th>
-                <th className="p-3 text-right">FPL Diff</th>
-                <th className="p-3 text-right">Pts</th>
-                <th className="p-3 text-center">Pos</th>
-              </tr>
-            </thead>
-            <tbody>
-              {d.standings.map((s: any) => {
-                const teamName = d.mst.find((t: any) => t.season_id === s.season_id)?.team_name;
-                const seasonName = sById(s.season_id)?.name;
-                const seasonHistory = (d.history as any[]).filter(
-                  (h) => h.season_id === s.season_id || h.season_name === seasonName
-                );
-                const star = [...seasonHistory].sort(
-                  (a, b) => Number(b.fantasy_points ?? 0) - Number(a.fantasy_points ?? 0)
-                )[0];
-                const seasonSize = new Set(
-                  (d.allStandings as any[]).filter((x) => x.season_id === s.season_id).map((x) => x.manager_id)
-                ).size;
-                const pos = s.position;
-                let posClass = "text-yellow-400";
-                if (pos === 1) posClass = "text-emerald-300";
-                else if (pos === 2 || pos === 3) posClass = "text-emerald-600";
-                else if (seasonSize > 0 && pos === seasonSize) posClass = "text-red-700";
-                else if (seasonSize > 0 && pos > seasonSize - 3) posClass = "text-red-500";
-                const diff = Number(s.points_for ?? 0) - Number(s.points_against ?? 0);
-                return (
-                  <tr key={s.id} className="border-t border-border/40">
-                    <td className="p-3"><Link to="/season/$seasonId" params={{ seasonId: s.season_id }} className="hover:text-gold">{sById(s.season_id)?.name}</Link></td>
-                    <td className="p-3 text-muted-foreground">{teamName}</td>
-                    <td className="p-3">
-                      {star ? (
-                        <span>
-                          <span className="font-medium">{star.player_name}</span>
-                          <span className="text-muted-foreground ml-2 text-xs">{Number(star.fantasy_points ?? 0).toFixed(0)} pts</span>
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </td>
-                    <td className="text-center p-3">{s.wins}</td>
-                    <td className="text-center p-3">{s.draws}</td>
-                    <td className="text-center p-3">{s.losses}</td>
-                    <td className={`text-right p-3 ${diff >= 0 ? "text-emerald-400/90" : "text-red-400/90"}`}>
-                      {diff >= 0 ? "+" : ""}{diff.toFixed(0)}
-                    </td>
-                    <td className="text-right p-3 font-display text-foreground">{s.total_points}</td>
-                    <td className={`p-3 text-center font-display text-lg ${posClass}`}>
-                      {pos === 1 && <Trophy className="inline w-4 h-4 mr-1 text-gold" />}
-                      {pos}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile cards */}
-        <div className="sm:hidden mt-6 space-y-3">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
           {d.standings.map((s: any) => {
             const teamName = d.mst.find((t: any) => t.season_id === s.season_id)?.team_name;
             const seasonName = sById(s.season_id)?.name;
@@ -404,38 +362,77 @@ function TeamPage() {
             ).size;
             const pos = s.position;
             let posClass = "text-yellow-400";
-            if (pos === 1) posClass = "text-emerald-300";
-            else if (pos === 2 || pos === 3) posClass = "text-emerald-600";
-            else if (seasonSize > 0 && pos === seasonSize) posClass = "text-red-700";
-            else if (seasonSize > 0 && pos > seasonSize - 3) posClass = "text-red-500";
+            let posBg = "bg-yellow-400/10 border-yellow-400/30";
+            if (pos === 1) { posClass = "text-emerald-300"; posBg = "bg-emerald-400/15 border-emerald-400/40"; }
+            else if (pos === 2 || pos === 3) { posClass = "text-emerald-500"; posBg = "bg-emerald-500/10 border-emerald-500/30"; }
+            else if (seasonSize > 0 && pos === seasonSize) { posClass = "text-red-500"; posBg = "bg-red-500/15 border-red-500/40"; }
+            else if (seasonSize > 0 && pos > seasonSize - 3) { posClass = "text-red-400"; posBg = "bg-red-400/10 border-red-400/30"; }
             const diff = Number(s.points_for ?? 0) - Number(s.points_against ?? 0);
+            const tint = branding?.primary ?? "var(--color-primary)";
             return (
-              <div key={s.id} className="premium-card rounded-lg p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <Link to="/season/$seasonId" params={{ seasonId: s.season_id }} className="font-display text-base hover:text-gold truncate">
-                    {sById(s.season_id)?.name}
-                  </Link>
-                  <div className={`font-display text-xl ${posClass} flex items-center gap-1 shrink-0`}>
-                    {pos === 1 && <Trophy className="w-4 h-4 text-gold" />}
-                    {pos}<span className="text-[10px] text-muted-foreground ml-0.5">/{seasonSize || "-"}</span>
+              <Link
+                key={s.id}
+                to="/season/$seasonId"
+                params={{ seasonId: s.season_id }}
+                className="group relative premium-card rounded-xl overflow-hidden block hover:-translate-y-1 hover:border-gold/60 transition-all"
+              >
+                {/* tint wash */}
+                <div
+                  className="absolute inset-0 opacity-60 pointer-events-none"
+                  style={{ background: `linear-gradient(120deg, color-mix(in oklab, ${tint} 18%, transparent) 0%, transparent 55%)` }}
+                />
+                {/* top stripe */}
+                <div className="h-1 w-full" style={{ background: tint }} />
+
+                <div className="relative p-4 flex items-start gap-3">
+                  {/* Kit */}
+                  {kit && (
+                    <img
+                      src={kit.home}
+                      alt=""
+                      loading="lazy"
+                      className="w-16 h-16 sm:w-20 sm:h-20 object-contain shrink-0 drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] group-hover:scale-110 transition-transform"
+                    />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="text-[10px] uppercase tracking-[0.25em] text-silver/70">{seasonName}</div>
+                        <div className="font-display text-base sm:text-lg uppercase truncate group-hover:text-gold transition-colors">
+                          {teamName}
+                        </div>
+                      </div>
+                      <div className={`shrink-0 rounded-md border px-2 py-1 text-center ${posBg}`}>
+                        <div className="text-[8px] uppercase tracking-widest text-muted-foreground leading-none">Pos</div>
+                        <div className={`font-display text-lg leading-tight flex items-center gap-1 ${posClass}`}>
+                          {pos === 1 && <Trophy className="w-3.5 h-3.5 text-gold" />}
+                          {pos}
+                          <span className="text-[9px] text-muted-foreground">/{seasonSize || "-"}</span>
+                        </div>
+                      </div>
+                    </div>
+                    {star && (
+                      <div className="mt-2 text-[11px] truncate">
+                        <span className="text-gold mr-1">★</span>
+                        <span className="font-medium">{star.player_name}</span>
+                        <span className="text-muted-foreground ml-1">({Number(star.fantasy_points ?? 0).toFixed(0)})</span>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="text-xs text-muted-foreground truncate mt-0.5">{teamName}</div>
-                {star && (
-                  <div className="text-xs mt-1 truncate">
-                    <span className="text-muted-foreground">★ </span>
-                    <span className="font-medium">{star.player_name}</span>
-                    <span className="text-muted-foreground ml-1">({Number(star.fantasy_points ?? 0).toFixed(0)})</span>
-                  </div>
-                )}
-                <div className="grid grid-cols-5 gap-1 mt-3 text-center">
-                  <Stat label="W" value={s.wins} />
-                  <Stat label="D" value={s.draws} />
-                  <Stat label="L" value={s.losses} />
-                  <Stat label="Pts" value={s.total_points} />
-                  <Stat label="Diff" value={`${diff >= 0 ? "+" : ""}${diff.toFixed(0)}`} valueClass={diff >= 0 ? "text-emerald-400/90" : "text-red-400/90"} />
+
+                <div className="relative grid grid-cols-5 divide-x divide-border/40 border-t border-border/40 bg-black/20">
+                  <CardStat label="W" value={s.wins} valueClass="text-emerald-400" />
+                  <CardStat label="D" value={s.draws} valueClass="text-yellow-400" />
+                  <CardStat label="L" value={s.losses} valueClass="text-red-400" />
+                  <CardStat label="Pts" value={s.total_points} />
+                  <CardStat
+                    label="Diff"
+                    value={`${diff >= 0 ? "+" : ""}${diff.toFixed(0)}`}
+                    valueClass={diff >= 0 ? "text-emerald-400" : "text-red-400"}
+                  />
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>
@@ -550,28 +547,30 @@ function TeamPage() {
       })()}
 
       {/* Highs and Lows */}
+      <RecordsSection
+        topPlayers={top5Players}
+        bottomPlayers={bottom5Players}
+        allPlayersSorted={sortedPlayers}
+        seasonsForPlayer={seasonsForPlayer}
+        topClubs={top5Clubs}
+        bottomClubs={bottom5Clubs}
+        allClubsRanked={clubsRanked.map((c) => ({ ...c, playerCount: playersFromClub(c.club) }))}
+        allStreaks={{
+          win: (d.streaks as any[]).filter((r) => r.outcome === "W"),
+          unbeaten: d.unbeaten as any[],
+          winless: d.winless as any[],
+          losing: d.losing as any[],
+        }}
+        bestWinRun={bestWinRun}
+        bestUnbeatenRun={bestUnbeatenRun}
+        worstWinlessRun={worstWinlessRun}
+        worstLosingRun={worstLosingRun}
+      />
+
+      {/* Best XI */}
       <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-        <SectionTitle kicker="The Highs and Lows" title="Records and Statistics" />
-
-        <div className="grid lg:grid-cols-2 gap-6 mt-8">
-          <PlayerLeaderboard title="Top 5 Players" subtitle="By all-time fantasy points" players={top5Players} icon={<Crown className="w-4 h-4" />} accent />
-          <PlayerLeaderboard title="Worst 5 Players" subtitle="By all-time fantasy points" players={bottom5Players} icon={<Skull className="w-4 h-4" />} />
-        </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-8">
-          <StatCard align="center" label="Greatest Winning Run" value={bestWinRun?.streak_length ?? 0} sub={bestWinRun ? `${bestWinRun.season_name} · GW${bestWinRun.streak_start_gw}–${bestWinRun.streak_end_gw}` : undefined} icon={<Zap className="w-5 h-5" />} />
-          <StatCard align="center" label="Greatest Unbeaten Run" value={bestUnbeatenRun?.streak_length ?? 0} sub={bestUnbeatenRun ? `${bestUnbeatenRun.season_name} · GW${bestUnbeatenRun.streak_start_gw}–${bestUnbeatenRun.streak_end_gw}` : undefined} icon={<Award className="w-5 h-5" />} />
-          <StatCard align="center" label="Worst Winless Run" value={worstWinlessRun?.streak_length ?? 0} sub={worstWinlessRun ? `${worstWinlessRun.season_name} · GW${worstWinlessRun.streak_start_gw}–${worstWinlessRun.streak_end_gw}` : undefined} icon={<ShieldOff className="w-5 h-5" />} />
-          <StatCard align="center" label="Worst Losing Run" value={worstLosingRun?.streak_length ?? 0} sub={worstLosingRun ? `${worstLosingRun.season_name} · GW${worstLosingRun.streak_start_gw}–${worstLosingRun.streak_end_gw}` : undefined} icon={<TrendingDown className="w-5 h-5" />} />
-        </div>
-
-        <div className="grid lg:grid-cols-2 gap-6 mt-8">
-          <ClubLeaderboard title="Top 5 PL Clubs Relied On" subtitle="By total fantasy points contributed" rows={top5Clubs} accent />
-          <ClubLeaderboard title="Bottom 5 PL Clubs Trusted" subtitle="Includes never-used clubs (2022/23–2025/26)" rows={bottom5Clubs} />
-        </div>
-
         {bestXI.length === 11 && (
-          <div className="mt-12">
+          <div>
             <div className="flex items-baseline justify-between flex-wrap gap-2 mb-4">
               <div>
                 <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">All-Time XI</div>
@@ -582,6 +581,35 @@ function TeamPage() {
               </div>
             </div>
             <FormationPitch players={bestXIForPitch} managerId={managerId} />
+
+            {/* Subs bench - next-highest scorer per position */}
+            {subsByPos && (
+              <div className="mt-6">
+                <div className="text-[10px] uppercase tracking-[0.3em] text-silver/70 mb-3">On the bench</div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {(["GK", "DEF", "MID", "FWD"] as const).map((pos) => {
+                    const sub = subsByPos[pos];
+                    return (
+                      <div key={pos} className="premium-card rounded-lg p-3 flex items-center gap-3">
+                        <span className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${POSITION_STYLES[pos]}`}>
+                          {pos}
+                        </span>
+                        {sub ? (
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-medium truncate">{sub.player_name ?? sub.name}</div>
+                            <div className="text-[10px] text-muted-foreground truncate">
+                              {sub.club ?? "-"} · <span className="text-gold font-display">{Number(sub.total_fantasy_points ?? 0).toFixed(0)}</span> pts
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-xs text-muted-foreground italic">No reserve</div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {clubsInSquad.length > 0 && (
               <div className="mt-10">
@@ -837,7 +865,7 @@ function H2HCard({
     r === "W" ? "bg-emerald-600/80 text-white" : r === "L" ? "bg-red-600/80 text-white" : "bg-yellow-500/80 text-black";
 
   return (
-    <div className={`relative shrink-0 snap-start premium-card rounded-lg overflow-hidden transition-all ${open ? "w-[520px]" : "w-[300px]"}`}>
+    <div className={`relative shrink-0 snap-start premium-card rounded-lg overflow-hidden transition-all w-full ${open ? "sm:w-[520px]" : "sm:w-[300px]"}`}>
       {/* Top tint accent */}
       <div className="h-1 w-full" style={{ background: tint }} />
       <button onClick={() => setOpen((o) => !o)} className="w-full text-left">
@@ -938,3 +966,205 @@ function Stat({ label, value, valueClass }: { label: string; value: any; valueCl
     </div>
   );
 }
+
+function CardStat({ label, value, valueClass }: { label: string; value: any; valueClass?: string }) {
+  return (
+    <div className="py-2.5 text-center">
+      <div className="text-[9px] uppercase tracking-wider text-muted-foreground leading-none">{label}</div>
+      <div className={`font-display text-base mt-1 leading-none ${valueClass ?? "text-foreground"}`}>{value}</div>
+    </div>
+  );
+}
+
+type StreakRow = {
+  streak_length?: number;
+  season_name?: string;
+  streak_start_gw?: number;
+  streak_end_gw?: number;
+};
+
+function StreakList({ rows, accent }: { rows: StreakRow[]; accent: "good" | "bad" }) {
+  const sorted = [...rows].sort((a, b) => (b.streak_length ?? 0) - (a.streak_length ?? 0)).slice(0, 15);
+  const valueClass = accent === "good" ? "text-emerald-300" : "text-red-400";
+  if (!sorted.length) return <div className="text-sm text-muted-foreground p-4">No streaks recorded.</div>;
+  return (
+    <ol className="divide-y divide-border/40">
+      {sorted.map((s, i) => (
+        <li key={i} className="flex items-center gap-3 py-2.5">
+          <span className="font-display text-base w-6 text-muted-foreground text-right">{i + 1}</span>
+          <span className={`font-display text-2xl w-10 text-center ${valueClass}`}>{s.streak_length ?? 0}</span>
+          <span className="text-xs uppercase tracking-wider text-muted-foreground">games</span>
+          <span className="ml-auto text-xs text-silver/80 truncate">
+            {s.season_name} · GW{s.streak_start_gw}–{s.streak_end_gw}
+          </span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function PlayersList({ players, accent }: { players: any[]; accent: "good" | "bad" }) {
+  const valueClass = accent === "good" ? "text-emerald-300" : "text-rose-300";
+  const list = accent === "good" ? players.slice(0, 20) : [...players].reverse().slice(0, 20);
+  return (
+    <ol className="divide-y divide-border/40">
+      {list.map((p, i) => {
+        const crest = getPlClubBadge(p.club);
+        return (
+          <li key={`${p.player_id ?? p.player_name}-${i}`} className="flex items-center gap-3 py-2">
+            <span className="font-display text-sm w-6 text-muted-foreground text-right">{i + 1}</span>
+            {crest ? <img src={crest} alt="" loading="lazy" className="w-7 h-7 object-contain shrink-0" /> : <span className="w-7 h-7 shrink-0" />}
+            <div className="min-w-0 flex-1">
+              <div className="text-sm truncate">{p.player_name ?? p.name}</div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground/80">{p.club ?? "-"} · {p.position}</div>
+            </div>
+            <span className={`font-display ${valueClass}`}>{Number(p.total_fantasy_points ?? 0).toFixed(0)}</span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+function ClubsList({ rows, accent }: { rows: { club: string; pts: number; playerCount?: number }[]; accent: "good" | "bad" }) {
+  const valueClass = accent === "good" ? "text-emerald-300" : "text-rose-300";
+  const list = accent === "good" ? rows.slice(0, 20) : [...rows].reverse().slice(0, 20);
+  return (
+    <ol className="divide-y divide-border/40">
+      {list.map((r, i) => {
+        const crest = getPlClubBadge(r.club);
+        const muted = !(r.pts > 0);
+        return (
+          <li key={r.club} className="flex items-center gap-3 py-2">
+            <span className="font-display text-sm w-6 text-muted-foreground text-right">{i + 1}</span>
+            {crest ? (
+              <img src={crest} alt="" loading="lazy" className={`w-7 h-7 object-contain shrink-0 ${muted ? "opacity-40 grayscale" : ""}`} />
+            ) : (
+              <span className="w-7 h-7 shrink-0" />
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="text-sm truncate">{r.club}</div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground/80">
+                {r.playerCount ?? 0} {r.playerCount === 1 ? "player used" : "players used"}
+              </div>
+            </div>
+            <span className={`font-display ${valueClass}`}>
+              {r.pts > 0 ? r.pts.toFixed(0) : <span className="text-muted-foreground/60 text-xs italic">Never used</span>}
+            </span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+type RecordsSectionProps = {
+  topPlayers: any[];
+  bottomPlayers: any[];
+  allPlayersSorted: any[];
+  seasonsForPlayer: (name: string) => number;
+  topClubs: { club: string; pts: number; playerCount?: number }[];
+  bottomClubs: { club: string; pts: number; playerCount?: number }[];
+  allClubsRanked: { club: string; pts: number; playerCount?: number }[];
+  allStreaks: { win: any[]; unbeaten: any[]; winless: any[]; losing: any[] };
+  bestWinRun?: StreakRow;
+  bestUnbeatenRun?: StreakRow;
+  worstWinlessRun?: StreakRow;
+  worstLosingRun?: StreakRow;
+};
+
+function RecordsSection({
+  topPlayers, bottomPlayers, allPlayersSorted, seasonsForPlayer,
+  topClubs, bottomClubs, allClubsRanked,
+  allStreaks, bestWinRun, bestUnbeatenRun, worstWinlessRun, worstLosingRun,
+}: RecordsSectionProps) {
+  type DialogKey =
+    | { kind: "players"; accent: "good" | "bad"; title: string }
+    | { kind: "clubs"; accent: "good" | "bad"; title: string }
+    | { kind: "streaks"; accent: "good" | "bad"; rows: any[]; title: string };
+  const [dialog, setDialog] = useState<DialogKey | null>(null);
+
+  const allPlayersWithSeasons = allPlayersSorted.map((p) => ({ ...p, seasonCount: seasonsForPlayer(p.player_name) }));
+
+  return (
+    <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
+      <SectionTitle kicker="The Highs and Lows" title="Records and Statistics" />
+
+      <div className="grid lg:grid-cols-2 gap-6 mt-8">
+        <div onClick={() => setDialog({ kind: "players", accent: "good", title: "All Players · Best to Worst" })} className="cursor-pointer">
+          <PlayerLeaderboard title="Top 5 Players" subtitle="By all-time fantasy points · tap for full list" players={topPlayers} icon={<Crown className="w-4 h-4" />} accent />
+        </div>
+        <div onClick={() => setDialog({ kind: "players", accent: "bad", title: "All Players · Worst to Best" })} className="cursor-pointer">
+          <PlayerLeaderboard title="Worst 5 Players" subtitle="By all-time fantasy points · tap for full list" players={bottomPlayers} icon={<Skull className="w-4 h-4" />} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-8">
+        <StatCard
+          align="center"
+          label="Greatest Winning Run"
+          value={bestWinRun?.streak_length ?? 0}
+          sub={bestWinRun ? `${bestWinRun.season_name} · GW${bestWinRun.streak_start_gw}–${bestWinRun.streak_end_gw}` : undefined}
+          icon={<Zap className="w-5 h-5" />}
+          onClick={() => setDialog({ kind: "streaks", accent: "good", rows: allStreaks.win, title: "All Winning Runs" })}
+          hint="Tap for full list"
+        />
+        <StatCard
+          align="center"
+          label="Greatest Unbeaten Run"
+          value={bestUnbeatenRun?.streak_length ?? 0}
+          sub={bestUnbeatenRun ? `${bestUnbeatenRun.season_name} · GW${bestUnbeatenRun.streak_start_gw}–${bestUnbeatenRun.streak_end_gw}` : undefined}
+          icon={<Award className="w-5 h-5" />}
+          onClick={() => setDialog({ kind: "streaks", accent: "good", rows: allStreaks.unbeaten, title: "All Unbeaten Runs" })}
+          hint="Tap for full list"
+        />
+        <StatCard
+          align="center"
+          label="Worst Winless Run"
+          value={worstWinlessRun?.streak_length ?? 0}
+          sub={worstWinlessRun ? `${worstWinlessRun.season_name} · GW${worstWinlessRun.streak_start_gw}–${worstWinlessRun.streak_end_gw}` : undefined}
+          icon={<ShieldOff className="w-5 h-5" />}
+          onClick={() => setDialog({ kind: "streaks", accent: "bad", rows: allStreaks.winless, title: "All Winless Runs" })}
+          hint="Tap for full list"
+        />
+        <StatCard
+          align="center"
+          label="Worst Losing Run"
+          value={worstLosingRun?.streak_length ?? 0}
+          sub={worstLosingRun ? `${worstLosingRun.season_name} · GW${worstLosingRun.streak_start_gw}–${worstLosingRun.streak_end_gw}` : undefined}
+          icon={<TrendingDown className="w-5 h-5" />}
+          onClick={() => setDialog({ kind: "streaks", accent: "bad", rows: allStreaks.losing, title: "All Losing Runs" })}
+          hint="Tap for full list"
+        />
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6 mt-8">
+        <div onClick={() => setDialog({ kind: "clubs", accent: "good", title: "All PL Clubs · Most to Least Used" })} className="cursor-pointer">
+          <ClubLeaderboard title="Top 5 PL Clubs Relied On" subtitle="By total fantasy points · tap for full list" rows={topClubs} accent />
+        </div>
+        <div onClick={() => setDialog({ kind: "clubs", accent: "bad", title: "All PL Clubs · Least to Most Used" })} className="cursor-pointer">
+          <ClubLeaderboard title="Bottom 5 PL Clubs Trusted" subtitle="Includes never-used clubs · tap for full list" rows={bottomClubs} />
+        </div>
+      </div>
+
+      <Dialog open={!!dialog} onOpenChange={(o) => { if (!o) setDialog(null); }}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl uppercase">{dialog?.title}</DialogTitle>
+            <DialogDescription>Extended records — top performers across every season.</DialogDescription>
+          </DialogHeader>
+          {dialog?.kind === "players" && (
+            <PlayersList players={allPlayersWithSeasons} accent={dialog.accent} />
+          )}
+          {dialog?.kind === "clubs" && (
+            <ClubsList rows={allClubsRanked} accent={dialog.accent} />
+          )}
+          {dialog?.kind === "streaks" && (
+            <StreakList rows={dialog.rows} accent={dialog.accent} />
+          )}
+        </DialogContent>
+      </Dialog>
+    </section>
+  );
+}
+
