@@ -9,6 +9,8 @@ import { getBranding } from "@/lib/managerBranding";
 import { getNickname } from "@/lib/managerNicknames";
 import { getPlClubBadge } from "@/lib/plClubBadges";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getKit } from "@/lib/managerKits";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/team/$managerId")({
   component: TeamPage,
