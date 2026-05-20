@@ -966,3 +966,205 @@ function Stat({ label, value, valueClass }: { label: string; value: any; valueCl
     </div>
   );
 }
+
+function CardStat({ label, value, valueClass }: { label: string; value: any; valueClass?: string }) {
+  return (
+    <div className="py-2.5 text-center">
+      <div className="text-[9px] uppercase tracking-wider text-muted-foreground leading-none">{label}</div>
+      <div className={`font-display text-base mt-1 leading-none ${valueClass ?? "text-foreground"}`}>{value}</div>
+    </div>
+  );
+}
+
+type StreakRow = {
+  streak_length?: number;
+  season_name?: string;
+  streak_start_gw?: number;
+  streak_end_gw?: number;
+};
+
+function StreakList({ rows, accent }: { rows: StreakRow[]; accent: "good" | "bad" }) {
+  const sorted = [...rows].sort((a, b) => (b.streak_length ?? 0) - (a.streak_length ?? 0)).slice(0, 15);
+  const valueClass = accent === "good" ? "text-emerald-300" : "text-red-400";
+  if (!sorted.length) return <div className="text-sm text-muted-foreground p-4">No streaks recorded.</div>;
+  return (
+    <ol className="divide-y divide-border/40">
+      {sorted.map((s, i) => (
+        <li key={i} className="flex items-center gap-3 py-2.5">
+          <span className="font-display text-base w-6 text-muted-foreground text-right">{i + 1}</span>
+          <span className={`font-display text-2xl w-10 text-center ${valueClass}`}>{s.streak_length ?? 0}</span>
+          <span className="text-xs uppercase tracking-wider text-muted-foreground">games</span>
+          <span className="ml-auto text-xs text-silver/80 truncate">
+            {s.season_name} · GW{s.streak_start_gw}–{s.streak_end_gw}
+          </span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function PlayersList({ players, accent }: { players: any[]; accent: "good" | "bad" }) {
+  const valueClass = accent === "good" ? "text-emerald-300" : "text-rose-300";
+  const list = accent === "good" ? players.slice(0, 20) : [...players].reverse().slice(0, 20);
+  return (
+    <ol className="divide-y divide-border/40">
+      {list.map((p, i) => {
+        const crest = getPlClubBadge(p.club);
+        return (
+          <li key={`${p.player_id ?? p.player_name}-${i}`} className="flex items-center gap-3 py-2">
+            <span className="font-display text-sm w-6 text-muted-foreground text-right">{i + 1}</span>
+            {crest ? <img src={crest} alt="" loading="lazy" className="w-7 h-7 object-contain shrink-0" /> : <span className="w-7 h-7 shrink-0" />}
+            <div className="min-w-0 flex-1">
+              <div className="text-sm truncate">{p.player_name ?? p.name}</div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground/80">{p.club ?? "-"} · {p.position}</div>
+            </div>
+            <span className={`font-display ${valueClass}`}>{Number(p.total_fantasy_points ?? 0).toFixed(0)}</span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+function ClubsList({ rows, accent }: { rows: { club: string; pts: number; playerCount?: number }[]; accent: "good" | "bad" }) {
+  const valueClass = accent === "good" ? "text-emerald-300" : "text-rose-300";
+  const list = accent === "good" ? rows.slice(0, 20) : [...rows].reverse().slice(0, 20);
+  return (
+    <ol className="divide-y divide-border/40">
+      {list.map((r, i) => {
+        const crest = getPlClubBadge(r.club);
+        const muted = !(r.pts > 0);
+        return (
+          <li key={r.club} className="flex items-center gap-3 py-2">
+            <span className="font-display text-sm w-6 text-muted-foreground text-right">{i + 1}</span>
+            {crest ? (
+              <img src={crest} alt="" loading="lazy" className={`w-7 h-7 object-contain shrink-0 ${muted ? "opacity-40 grayscale" : ""}`} />
+            ) : (
+              <span className="w-7 h-7 shrink-0" />
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="text-sm truncate">{r.club}</div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground/80">
+                {r.playerCount ?? 0} {r.playerCount === 1 ? "player used" : "players used"}
+              </div>
+            </div>
+            <span className={`font-display ${valueClass}`}>
+              {r.pts > 0 ? r.pts.toFixed(0) : <span className="text-muted-foreground/60 text-xs italic">Never used</span>}
+            </span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+type RecordsSectionProps = {
+  topPlayers: any[];
+  bottomPlayers: any[];
+  allPlayersSorted: any[];
+  seasonsForPlayer: (name: string) => number;
+  topClubs: { club: string; pts: number; playerCount?: number }[];
+  bottomClubs: { club: string; pts: number; playerCount?: number }[];
+  allClubsRanked: { club: string; pts: number; playerCount?: number }[];
+  allStreaks: { win: any[]; unbeaten: any[]; winless: any[]; losing: any[] };
+  bestWinRun?: StreakRow;
+  bestUnbeatenRun?: StreakRow;
+  worstWinlessRun?: StreakRow;
+  worstLosingRun?: StreakRow;
+};
+
+function RecordsSection({
+  topPlayers, bottomPlayers, allPlayersSorted, seasonsForPlayer,
+  topClubs, bottomClubs, allClubsRanked,
+  allStreaks, bestWinRun, bestUnbeatenRun, worstWinlessRun, worstLosingRun,
+}: RecordsSectionProps) {
+  type DialogKey =
+    | { kind: "players"; accent: "good" | "bad"; title: string }
+    | { kind: "clubs"; accent: "good" | "bad"; title: string }
+    | { kind: "streaks"; accent: "good" | "bad"; rows: any[]; title: string };
+  const [dialog, setDialog] = useState<DialogKey | null>(null);
+
+  const allPlayersWithSeasons = allPlayersSorted.map((p) => ({ ...p, seasonCount: seasonsForPlayer(p.player_name) }));
+
+  return (
+    <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
+      <SectionTitle kicker="The Highs and Lows" title="Records and Statistics" />
+
+      <div className="grid lg:grid-cols-2 gap-6 mt-8">
+        <div onClick={() => setDialog({ kind: "players", accent: "good", title: "All Players · Best to Worst" })} className="cursor-pointer">
+          <PlayerLeaderboard title="Top 5 Players" subtitle="By all-time fantasy points · tap for full list" players={topPlayers} icon={<Crown className="w-4 h-4" />} accent />
+        </div>
+        <div onClick={() => setDialog({ kind: "players", accent: "bad", title: "All Players · Worst to Best" })} className="cursor-pointer">
+          <PlayerLeaderboard title="Worst 5 Players" subtitle="By all-time fantasy points · tap for full list" players={bottomPlayers} icon={<Skull className="w-4 h-4" />} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-8">
+        <StatCard
+          align="center"
+          label="Greatest Winning Run"
+          value={bestWinRun?.streak_length ?? 0}
+          sub={bestWinRun ? `${bestWinRun.season_name} · GW${bestWinRun.streak_start_gw}–${bestWinRun.streak_end_gw}` : undefined}
+          icon={<Zap className="w-5 h-5" />}
+          onClick={() => setDialog({ kind: "streaks", accent: "good", rows: allStreaks.win, title: "All Winning Runs" })}
+          hint="Tap for full list"
+        />
+        <StatCard
+          align="center"
+          label="Greatest Unbeaten Run"
+          value={bestUnbeatenRun?.streak_length ?? 0}
+          sub={bestUnbeatenRun ? `${bestUnbeatenRun.season_name} · GW${bestUnbeatenRun.streak_start_gw}–${bestUnbeatenRun.streak_end_gw}` : undefined}
+          icon={<Award className="w-5 h-5" />}
+          onClick={() => setDialog({ kind: "streaks", accent: "good", rows: allStreaks.unbeaten, title: "All Unbeaten Runs" })}
+          hint="Tap for full list"
+        />
+        <StatCard
+          align="center"
+          label="Worst Winless Run"
+          value={worstWinlessRun?.streak_length ?? 0}
+          sub={worstWinlessRun ? `${worstWinlessRun.season_name} · GW${worstWinlessRun.streak_start_gw}–${worstWinlessRun.streak_end_gw}` : undefined}
+          icon={<ShieldOff className="w-5 h-5" />}
+          onClick={() => setDialog({ kind: "streaks", accent: "bad", rows: allStreaks.winless, title: "All Winless Runs" })}
+          hint="Tap for full list"
+        />
+        <StatCard
+          align="center"
+          label="Worst Losing Run"
+          value={worstLosingRun?.streak_length ?? 0}
+          sub={worstLosingRun ? `${worstLosingRun.season_name} · GW${worstLosingRun.streak_start_gw}–${worstLosingRun.streak_end_gw}` : undefined}
+          icon={<TrendingDown className="w-5 h-5" />}
+          onClick={() => setDialog({ kind: "streaks", accent: "bad", rows: allStreaks.losing, title: "All Losing Runs" })}
+          hint="Tap for full list"
+        />
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6 mt-8">
+        <div onClick={() => setDialog({ kind: "clubs", accent: "good", title: "All PL Clubs · Most to Least Used" })} className="cursor-pointer">
+          <ClubLeaderboard title="Top 5 PL Clubs Relied On" subtitle="By total fantasy points · tap for full list" rows={topClubs} accent />
+        </div>
+        <div onClick={() => setDialog({ kind: "clubs", accent: "bad", title: "All PL Clubs · Least to Most Used" })} className="cursor-pointer">
+          <ClubLeaderboard title="Bottom 5 PL Clubs Trusted" subtitle="Includes never-used clubs · tap for full list" rows={bottomClubs} />
+        </div>
+      </div>
+
+      <Dialog open={!!dialog} onOpenChange={(o) => { if (!o) setDialog(null); }}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl uppercase">{dialog?.title}</DialogTitle>
+            <DialogDescription>Extended records — top performers across every season.</DialogDescription>
+          </DialogHeader>
+          {dialog?.kind === "players" && (
+            <PlayersList players={allPlayersWithSeasons} accent={dialog.accent} />
+          )}
+          {dialog?.kind === "clubs" && (
+            <ClubsList rows={allClubsRanked} accent={dialog.accent} />
+          )}
+          {dialog?.kind === "streaks" && (
+            <StreakList rows={dialog.rows} accent={dialog.accent} />
+          )}
+        </DialogContent>
+      </Dialog>
+    </section>
+  );
+}
+
