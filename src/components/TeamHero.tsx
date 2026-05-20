@@ -87,17 +87,19 @@ export function TeamHero({
                 <span style={{ color: tint }}>{nickname}</span>
               </div>
             )}
-            {seasonsBadges && seasonsBadges.length > 0 && (
-              <div className="mt-5 flex flex-wrap gap-2">
-                {seasonsBadges.map((b, i) => (
-                  <span
-                    key={i}
-                    className="px-2.5 py-1 rounded-sm bg-black/30 border border-white/10 text-[10px] uppercase tracking-[0.18em] text-silver/90 backdrop-blur-sm"
-                  >
-                    <span style={{ color: tint }} className="mr-1.5 font-semibold">{b.season}</span>
-                    {b.team}
-                  </span>
-                ))}
+            {formerlyKnownAs && formerlyKnownAs.length > 0 && (
+              <div className="mt-5 max-w-2xl">
+                <div className="text-[9px] uppercase tracking-[0.3em] text-silver/60 mb-1.5">Formerly Known As</div>
+                <div className="flex flex-wrap gap-2">
+                  {formerlyKnownAs.map((name, i) => (
+                    <span
+                      key={i}
+                      className="px-2.5 py-1 rounded-sm bg-black/30 border border-white/10 text-[11px] tracking-wide text-silver/90 backdrop-blur-sm"
+                    >
+                      {name}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
           </div>
