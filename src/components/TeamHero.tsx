@@ -8,7 +8,7 @@ export function TeamHero({
   badge,
   primary,
   nickname,
-  seasonsBadges,
+  formerlyKnownAs,
   facts,
   secondaryFacts,
 }: {
@@ -17,7 +17,7 @@ export function TeamHero({
   badge?: string;
   primary?: string;
   nickname?: string | null;
-  seasonsBadges?: { season: string; team: string }[];
+  formerlyKnownAs?: string[];
   facts: QuickFact[];
   secondaryFacts?: QuickFact[];
 }) {
