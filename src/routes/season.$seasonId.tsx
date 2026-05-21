@@ -388,7 +388,9 @@ function RecordsSection({
   }, [completed]);
 
   const top5HighGW = [...teamScores].sort((a, b) => b.score - a.score).slice(0, 5);
-  const top5LowGW = [...teamScores].sort((a, b) => a.score - b.score).slice(0, 5);
+  // Exclude 0-score weeks (outlier circumstances per league convention)
+  const top5LowGW = [...teamScores].filter((r) => r.score > 0).sort((a, b) => a.score - b.score).slice(0, 5);
+  const top5HighFixtures = [...completed].sort((a: any, b: any) => ((b.home_score ?? 0) + (b.away_score ?? 0)) - ((a.home_score ?? 0) + (a.away_score ?? 0))).slice(0, 5);
   const top5Margin = [...completed].sort((a: any, b: any) => (b.margin ?? 0) - (a.margin ?? 0)).slice(0, 5);
 
   const top5WinStreaks = [...d.winS].filter((s: any) => s.outcome === "W").sort((a: any, b: any) => b.streak_length - a.streak_length).slice(0, 5);
