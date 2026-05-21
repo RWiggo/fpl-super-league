@@ -139,8 +139,7 @@ function SeasonPage() {
       <SeasonHero
         season={d.season}
         champ={champ}
-        topScorer={topScorer ? mByName(topScorer.manager_name) : null}
-        topScorerPts={topScorer?.total_fpts ?? 0}
+        topGoals={mostGoals ? { name: mByName(mostGoals.manager_name)?.team_name ?? mostGoals.team_name, value: mostGoals.out_goals } : null}
         longestWin={longestWin}
         longestLose={longestLose}
         mostCS={mostCS ? { name: mostCS.manager_name, value: mostCS.combined_clean_sheets } : null}
@@ -165,7 +164,25 @@ function SeasonPage() {
         <FixturesPanel fixtures={d.fixtures} managers={d.managers} maxGW={maxGW} />
       </section>
 
-      {/* Team of the Season */}
+      {/* Records */}
+      <RecordsSection
+        d={d}
+        mById={mById}
+        completed={completed}
+        positionCounts={positionCounts}
+        topWeekly={topWeekly}
+        biggestWin={biggestWin}
+        highestFixture={highestFixture}
+        longestWin={longestWin}
+        longestLose={longestLose}
+        dominantH2H={dominantH2H}
+        mostCS={mostCS}
+        mostGoals={mostGoals}
+        mostAssists={mostAssists}
+        mostYellows={mostYellows}
+      />
+
+      {/* Team of the Season - moved to bottom */}
       {d.overallTOTS.length > 0 && (() => {
         const posMap: Record<string, "GK" | "DEF" | "MID" | "FWD"> = { G: "GK", GK: "GK", GKP: "GK", D: "DEF", DEF: "DEF", M: "MID", MID: "MID", F: "FWD", FWD: "FWD" };
         const totsForPitch = d.overallTOTS.map((p: any) => ({
@@ -176,6 +193,21 @@ function SeasonPage() {
         const counts = totsForPitch.reduce((acc: any, p: any) => { acc[p.position] = (acc[p.position] ?? 0) + 1; return acc; }, {});
         const formation = [counts.DEF ?? 0, counts.MID ?? 0, counts.FWD ?? 0].join("-");
         const totalPts = totsForPitch.reduce((s: number, p: any) => s + (Number(p.total_fantasy_points ?? p.fantasy_points ?? 0)), 0);
+
+        // Compute subs: next-highest scoring player per position not in starting XI
+        const starterNames = new Set(totsForPitch.map((p: any) => p.player_name));
+        const byPos: Record<string, any[]> = { GK: [], DEF: [], MID: [], FWD: [] };
+        d.seasonPlayers.forEach((p: any) => {
+          const pos = posMap[p.position] ?? p.position;
+          if (!byPos[pos]) return;
+          if (starterNames.has(p.player_name)) return;
+          byPos[pos].push({ ...p, position: pos, manager_id: mByName(p.manager_name)?.id });
+        });
+        Object.keys(byPos).forEach((k) => byPos[k].sort((a, b) => (b.fantasy_points ?? 0) - (a.fantasy_points ?? 0)));
+        const subs = (["GK", "DEF", "MID", "FWD"] as const)
+          .map((pos) => byPos[pos][0])
+          .filter(Boolean);
+
         return (
           <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
             <div className="flex items-baseline justify-between flex-wrap gap-2 mb-4">
@@ -189,26 +221,30 @@ function SeasonPage() {
               </div>
             </div>
             <FormationPitch players={totsForPitch} getManagerName={(id) => mById(id)?.name ?? ""} />
+
+            {subs.length > 0 && (
+              <div className="mt-8">
+                <div className="text-[10px] uppercase tracking-[0.3em] text-gold/80 mb-3">On the bench</div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {subs.map((s, i) => {
+                    const branding = s.manager_id ? getBranding(s.manager_id) : null;
+                    return (
+                      <div key={i} className="premium-card rounded-lg p-3 flex items-center gap-3">
+                        {branding?.badge && <img src={branding.badge} alt="" className="w-10 h-10 object-contain shrink-0" />}
+                        <div className="min-w-0">
+                          <div className="text-[9px] uppercase tracking-widest text-muted-foreground">{s.position}</div>
+                          <div className="font-medium text-sm truncate">{s.player_name}</div>
+                          <div className="text-[10px] text-muted-foreground truncate">{s.club} · <span className="text-gold tabular-nums">{Number(s.fantasy_points ?? 0).toFixed(0)} pts</span></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </section>
         );
       })()}
-
-      {/* Records */}
-      <RecordsSection
-        d={d}
-        mById={mById}
-        completed={completed}
-        positionCounts={positionCounts}
-        topWeekly={topWeekly}
-        biggestWin={biggestWin}
-        longestWin={longestWin}
-        longestLose={longestLose}
-        dominantH2H={dominantH2H}
-        mostCS={mostCS}
-        mostGoals={mostGoals}
-        mostAssists={mostAssists}
-        mostYellows={mostYellows}
-      />
     </div>
   );
 }
