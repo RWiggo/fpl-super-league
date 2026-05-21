@@ -27,7 +27,7 @@ export const MANAGER_BRANDING: Record<string, Branding> = {
   "8":  { badge: b8,  primary: "#f8cf2c", primaryFg: "#0a0a0a" },        // Adam All Stars - Yellow
   "9":  { badge: b9,  primary: "#ff7a00" },                              // Jake Toyer - Orange
   "10": { badge: b10, primary: "#e4181c" },                              // Send Me Location
-  "11": { badge: b11, primary: "#0b1530" },                              // Not Too Xabi FC - almost black blue
+  "11": { badge: b11, primary: "#3a6fff" },                              // Not Too Xabi FC - vivid royal blue (distinct from site bg)
   "12": { badge: b12, primary: "#f5f5f5", primaryFg: "#0a0a0a" },        // Average Team - White
 };
 

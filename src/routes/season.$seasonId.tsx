@@ -19,7 +19,7 @@ function SeasonPage() {
     (async () => {
       const seasonRes = await supabase.from("seasons").select("*").eq("id", seasonId).single();
       const sname = seasonRes.data?.name;
-      const [managers, mst, standings, fixtures, gwTable, winS, loseS, unbeatenS, winlessS, teamStats, overallTOTS, weeklyHi] = await Promise.all([
+      const [managers, mst, standings, fixtures, gwTable, winS, loseS, unbeatenS, winlessS, teamStats, overallTOTS, weeklyHi, seasonPlayers] = await Promise.all([
         supabase.from("managers").select("*"),
         supabase.from("manager_season_teams").select("*").eq("season_id", seasonId),
         supabase.from("season_standings").select("*").eq("season_id", seasonId),
@@ -32,6 +32,7 @@ function SeasonPage() {
         supabase.from("team_season_stats_full").select("*").eq("season_name", sname),
         supabase.from("overall_team_of_the_season").select("*").eq("season_name", sname),
         supabase.from("weekly_high_scores").select("*").eq("season_id", seasonId),
+        supabase.from("player_team_history").select("*").eq("season_name", sname),
       ]);
       setD({
         season: seasonRes.data,
@@ -47,6 +48,7 @@ function SeasonPage() {
         teamStats: teamStats.data ?? [],
         overallTOTS: overallTOTS.data ?? [],
         weeklyHi: weeklyHi.data ?? [],
+        seasonPlayers: seasonPlayers.data ?? [],
       });
     })();
   }, [seasonId]);
@@ -68,6 +70,10 @@ function SeasonPage() {
   const completed = d.fixtures.filter((f: any) => f.home_score != null);
   const highest = [...completed].sort((a: any, b: any) =>
     Math.max(b.home_score, b.away_score) - Math.max(a.home_score, a.away_score)
+  )[0];
+  // Highest scoring fixture = max(home + away combined)
+  const highestFixture = [...completed].sort((a: any, b: any) =>
+    ((b.home_score ?? 0) + (b.away_score ?? 0)) - ((a.home_score ?? 0) + (a.away_score ?? 0))
   )[0];
   const lowest = [...completed].sort((a: any, b: any) =>
     Math.min(a.home_score, a.away_score) - Math.min(b.home_score, b.away_score)
@@ -133,8 +139,7 @@ function SeasonPage() {
       <SeasonHero
         season={d.season}
         champ={champ}
-        topScorer={topScorer ? mByName(topScorer.manager_name) : null}
-        topScorerPts={topScorer?.total_fpts ?? 0}
+        topGoals={mostGoals ? { name: mByName(mostGoals.manager_name)?.team_name ?? mostGoals.team_name, value: mostGoals.out_goals } : null}
         longestWin={longestWin}
         longestLose={longestLose}
         mostCS={mostCS ? { name: mostCS.manager_name, value: mostCS.combined_clean_sheets } : null}
@@ -159,7 +164,25 @@ function SeasonPage() {
         <FixturesPanel fixtures={d.fixtures} managers={d.managers} maxGW={maxGW} />
       </section>
 
-      {/* Team of the Season */}
+      {/* Records */}
+      <RecordsSection
+        d={d}
+        mById={mById}
+        completed={completed}
+        positionCounts={positionCounts}
+        topWeekly={topWeekly}
+        biggestWin={biggestWin}
+        highestFixture={highestFixture}
+        longestWin={longestWin}
+        longestLose={longestLose}
+        dominantH2H={dominantH2H}
+        mostCS={mostCS}
+        mostGoals={mostGoals}
+        mostAssists={mostAssists}
+        mostYellows={mostYellows}
+      />
+
+      {/* Team of the Season - moved to bottom */}
       {d.overallTOTS.length > 0 && (() => {
         const posMap: Record<string, "GK" | "DEF" | "MID" | "FWD"> = { G: "GK", GK: "GK", GKP: "GK", D: "DEF", DEF: "DEF", M: "MID", MID: "MID", F: "FWD", FWD: "FWD" };
         const totsForPitch = d.overallTOTS.map((p: any) => ({
@@ -170,6 +193,21 @@ function SeasonPage() {
         const counts = totsForPitch.reduce((acc: any, p: any) => { acc[p.position] = (acc[p.position] ?? 0) + 1; return acc; }, {});
         const formation = [counts.DEF ?? 0, counts.MID ?? 0, counts.FWD ?? 0].join("-");
         const totalPts = totsForPitch.reduce((s: number, p: any) => s + (Number(p.total_fantasy_points ?? p.fantasy_points ?? 0)), 0);
+
+        // Compute subs: next-highest scoring player per position not in starting XI
+        const starterNames = new Set(totsForPitch.map((p: any) => p.player_name));
+        const byPos: Record<string, any[]> = { GK: [], DEF: [], MID: [], FWD: [] };
+        d.seasonPlayers.forEach((p: any) => {
+          const pos = posMap[p.position] ?? p.position;
+          if (!byPos[pos]) return;
+          if (starterNames.has(p.player_name)) return;
+          byPos[pos].push({ ...p, position: pos, manager_id: mByName(p.manager_name)?.id });
+        });
+        Object.keys(byPos).forEach((k) => byPos[k].sort((a, b) => (b.fantasy_points ?? 0) - (a.fantasy_points ?? 0)));
+        const subs = (["GK", "DEF", "MID", "FWD"] as const)
+          .map((pos) => byPos[pos][0])
+          .filter(Boolean);
+
         return (
           <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
             <div className="flex items-baseline justify-between flex-wrap gap-2 mb-4">
@@ -183,26 +221,30 @@ function SeasonPage() {
               </div>
             </div>
             <FormationPitch players={totsForPitch} getManagerName={(id) => mById(id)?.name ?? ""} />
+
+            {subs.length > 0 && (
+              <div className="mt-8">
+                <div className="text-[10px] uppercase tracking-[0.3em] text-gold/80 mb-3">On the bench</div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {subs.map((s, i) => {
+                    const branding = s.manager_id ? getBranding(s.manager_id) : null;
+                    return (
+                      <div key={i} className="premium-card rounded-lg p-3 flex items-center gap-3">
+                        {branding?.badge && <img src={branding.badge} alt="" className="w-10 h-10 object-contain shrink-0" />}
+                        <div className="min-w-0">
+                          <div className="text-[9px] uppercase tracking-widest text-muted-foreground">{s.position}</div>
+                          <div className="font-medium text-sm truncate">{s.player_name}</div>
+                          <div className="text-[10px] text-muted-foreground truncate">{s.club} · <span className="text-gold tabular-nums">{Number(s.fantasy_points ?? 0).toFixed(0)} pts</span></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </section>
         );
       })()}
-
-      {/* Records */}
-      <RecordsSection
-        d={d}
-        mById={mById}
-        completed={completed}
-        positionCounts={positionCounts}
-        topWeekly={topWeekly}
-        biggestWin={biggestWin}
-        longestWin={longestWin}
-        longestLose={longestLose}
-        dominantH2H={dominantH2H}
-        mostCS={mostCS}
-        mostGoals={mostGoals}
-        mostAssists={mostAssists}
-        mostYellows={mostYellows}
-      />
     </div>
   );
 }
@@ -219,6 +261,8 @@ function RecordCard({
   sub,
   icon,
   badge,
+  badges,
+  tint,
   dialogTitle,
   rows,
   valueHeader = "Value",
@@ -228,27 +272,48 @@ function RecordCard({
   sub?: React.ReactNode;
   icon?: React.ReactNode;
   badge?: string | null;
+  /** Optional pair of badges shown side-by-side (for fixtures involving two teams). */
+  badges?: (string | null | undefined)[];
+  /** Team primary colour applied as a soft gradient backdrop to the card. */
+  tint?: string | null;
   dialogTitle: string;
   rows: RankRow[];
   valueHeader?: string;
 }) {
+  const tintStyle = tint
+    ? {
+        backgroundImage: `linear-gradient(135deg, color-mix(in oklab, ${tint} 28%, transparent) 0%, color-mix(in oklab, ${tint} 10%, transparent) 55%, transparent 100%)`,
+        borderColor: `color-mix(in oklab, ${tint} 55%, transparent)`,
+      }
+    : undefined;
   return (
     <Dialog>
       <DialogTrigger asChild>
         <button className="text-left w-full focus:outline-none focus:ring-2 focus:ring-gold/50 rounded-lg">
-          <div className="premium-card rounded-lg p-4 sm:p-6 group hover:border-gold/50 transition-all hover:-translate-y-1 text-center sm:text-left relative">
-            <div className="flex items-center justify-between mb-3">
+          <div
+            className="premium-card rounded-lg p-4 sm:p-6 group hover:border-gold/50 transition-all hover:-translate-y-1 text-center sm:text-left relative overflow-hidden"
+            style={tintStyle}
+          >
+            <div className="flex items-center justify-between mb-3 relative">
               <span className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground">{label}</span>
               {icon && <span className="text-gold opacity-60 group-hover:opacity-100 transition shrink-0">{icon}</span>}
             </div>
-            <div className="flex items-center justify-center sm:justify-start gap-3">
-              {badge && <img src={badge} alt="" className="w-10 h-10 sm:w-12 sm:h-12 object-contain shrink-0" />}
+            <div className="flex items-center justify-center sm:justify-start gap-3 relative">
+              {badges && badges.filter(Boolean).length > 0 ? (
+                <div className="flex -space-x-2 shrink-0">
+                  {badges.filter(Boolean).map((b, i) => (
+                    <img key={i} src={b as string} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain rounded-full bg-background/30 ring-2 ring-background" />
+                  ))}
+                </div>
+              ) : badge ? (
+                <img src={badge} alt="" className="w-10 h-10 sm:w-12 sm:h-12 object-contain shrink-0" />
+              ) : null}
               <div className="min-w-0">
                 <div className="font-display text-3xl sm:text-4xl gold-gradient leading-none">{value}</div>
                 {sub && <div className="text-[11px] sm:text-xs text-muted-foreground mt-1.5 truncate">{sub}</div>}
               </div>
             </div>
-            <div className="mt-3 pt-3 border-t border-border/40 flex items-center justify-center sm:justify-start gap-1.5 text-[10px] uppercase tracking-[0.2em] text-gold/70 group-hover:text-gold transition">
+            <div className="mt-3 pt-3 border-t border-border/40 flex items-center justify-center sm:justify-start gap-1.5 text-[10px] uppercase tracking-[0.2em] text-gold/70 group-hover:text-gold transition relative">
               <Info className="w-3 h-3" />
               <span>Tap for details</span>
               <ChevronRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
@@ -293,6 +358,7 @@ function RecordsSection({
   positionCounts,
   topWeekly,
   biggestWin,
+  highestFixture,
   longestWin,
   longestLose,
   dominantH2H,
@@ -307,6 +373,9 @@ function RecordsSection({
     ?? (() => { const r = d.mst.find((x: any) => x.team_name === team); return r ? mById(r.manager_id) : null; })() : null;
   const badgeByManager = (name?: string) => { const m = mByName(name); return m ? getBranding(m.id)?.badge ?? null : null; };
   const badgeByTeam = (team?: string) => { const m = mByTeam(team); return m ? getBranding(m.id)?.badge ?? null : null; };
+  const tintByManager = (name?: string) => { const m = mByName(name); return m ? getBranding(m.id)?.primary ?? null : null; };
+  const tintByTeam = (team?: string) => { const m = mByTeam(team); return m ? getBranding(m.id)?.primary ?? null : null; };
+  const tintById = (id?: string) => id ? getBranding(id)?.primary ?? null : null;
 
   // Per-team weekly score entries from fixtures
   const teamScores = useMemo(() => {
@@ -319,7 +388,9 @@ function RecordsSection({
   }, [completed]);
 
   const top5HighGW = [...teamScores].sort((a, b) => b.score - a.score).slice(0, 5);
-  const top5LowGW = [...teamScores].sort((a, b) => a.score - b.score).slice(0, 5);
+  // Exclude 0-score weeks (outlier circumstances per league convention)
+  const top5LowGW = [...teamScores].filter((r) => r.score > 0).sort((a, b) => a.score - b.score).slice(0, 5);
+  const top5HighFixtures = [...completed].sort((a: any, b: any) => ((b.home_score ?? 0) + (b.away_score ?? 0)) - ((a.home_score ?? 0) + (a.away_score ?? 0))).slice(0, 5);
   const top5Margin = [...completed].sort((a: any, b: any) => (b.margin ?? 0) - (a.margin ?? 0)).slice(0, 5);
 
   const top5WinStreaks = [...d.winS].filter((s: any) => s.outcome === "W").sort((a: any, b: any) => b.streak_length - a.streak_length).slice(0, 5);
@@ -394,37 +465,18 @@ function RecordsSection({
     <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
       <SectionTitle kicker="Highlights" title="Season Records" />
 
-      <h3 className="font-display text-2xl text-gold mt-8 mb-4">Points & Performance</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <h3 className="font-display text-2xl text-gold mt-8 mb-4">Performance Records</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <RecordCard
-          label="Highest Single GW"
-          value={topWeekly?.score ?? top5HighGW[0]?.score ?? "-"}
-          sub={top5HighGW[0] ? `${top5HighGW[0].team} · GW${top5HighGW[0].gw}` : ""}
-          icon={<Flame className="w-5 h-5" />}
-          badge={badgeByManager(top5HighGW[0]?.manager)}
-          dialogTitle="Top 5 Single Gameweek Scores"
-          valueHeader="Score"
-          rows={top5HighGW.map((r, i) => ({ rank: i + 1, name: r.team, sub: `GW${r.gw} vs ${r.opp_team}`, value: r.score, badge: badgeByManager(r.manager) }))}
-        />
-        <RecordCard
-          label="Biggest Win"
+          label="Biggest Winning Margin"
           value={biggestWin?.margin ?? "-"}
           sub={biggestWin ? `${biggestWin.winner_team} bt ${biggestWin.loser_team}` : ""}
           icon={<Swords className="w-5 h-5" />}
           badge={badgeByTeam(biggestWin?.winner_team)}
-          dialogTitle="Top 5 Biggest Wins"
+          tint={tintByTeam(biggestWin?.winner_team)}
+          dialogTitle="Top 5 Biggest Winning Margins"
           valueHeader="Margin"
           rows={top5Margin.map((f: any, i: number) => ({ rank: i + 1, name: f.winner_team, sub: `bt ${f.loser_team} · GW${f.gameweek}`, value: f.margin, badge: badgeByTeam(f.winner_team) }))}
-        />
-        <RecordCard
-          label="Lowest GW Score"
-          value={top5LowGW[0]?.score ?? "-"}
-          sub={top5LowGW[0] ? `${top5LowGW[0].team} · GW${top5LowGW[0].gw}` : ""}
-          icon={<TrendingDown className="w-5 h-5" />}
-          badge={badgeByManager(top5LowGW[0]?.manager)}
-          dialogTitle="5 Lowest Gameweek Scores"
-          valueHeader="Score"
-          rows={top5LowGW.map((r, i) => ({ rank: i + 1, name: r.team, sub: `GW${r.gw} vs ${r.opp_team}`, value: r.score, badge: badgeByManager(r.manager) }))}
         />
         <RecordCard
           label="Longest Win Streak"
@@ -432,19 +484,10 @@ function RecordsSection({
           sub={longestWin ? `${longestWin.team_name} · GW${longestWin.streak_start_gw}–${longestWin.streak_end_gw}` : ""}
           icon={<TrendingUp className="w-5 h-5" />}
           badge={badgeByTeam(longestWin?.team_name)}
+          tint={tintByTeam(longestWin?.team_name)}
           dialogTitle={longestWin ? `${longestWin.team_name}'s Win Streak (${longestWin.streak_length})` : "Longest Win Streak"}
           valueHeader="Result"
           rows={streakFixtures(longestWin)}
-        />
-        <RecordCard
-          label="Longest Losing Streak"
-          value={longestLose?.streak_length ?? "-"}
-          sub={longestLose ? `${longestLose.team_name} · GW${longestLose.streak_start_gw}–${longestLose.streak_end_gw}` : ""}
-          icon={<Skull className="w-5 h-5" />}
-          badge={badgeByTeam(longestLose?.team_name)}
-          dialogTitle={longestLose ? `${longestLose.team_name}'s Losing Streak (${longestLose.streak_length})` : "Longest Losing Streak"}
-          valueHeader="Result"
-          rows={streakFixtures(longestLose)}
         />
         <RecordCard
           label="Most Dominant H2H"
@@ -452,20 +495,63 @@ function RecordsSection({
           sub={dominantH2H ? `${dominantH2H.winner} over ${dominantH2H.loser}` : ""}
           icon={<Crown className="w-5 h-5" />}
           badge={badgeByManager(dominantH2H?.winner)}
+          tint={tintByManager(dominantH2H?.winner)}
           dialogTitle="Top 5 Most Dominant Head-to-Heads"
           valueHeader="Record"
           rows={top5H2H.map((h, i) => ({ rank: i + 1, name: h.winner, sub: `over ${h.loser}`, value: `${h.wins}-${h.losses}`, badge: badgeByManager(h.winner) }))}
         />
+        <RecordCard
+          label="Lowest GW Score"
+          value={top5LowGW[0]?.score ?? "-"}
+          sub={top5LowGW[0] ? `${top5LowGW[0].team} · GW${top5LowGW[0].gw}` : ""}
+          icon={<TrendingDown className="w-5 h-5" />}
+          badge={badgeByManager(top5LowGW[0]?.manager)}
+          tint={tintByManager(top5LowGW[0]?.manager)}
+          dialogTitle="5 Lowest Gameweek Scores"
+          valueHeader="Score"
+          rows={top5LowGW.map((r, i) => ({ rank: i + 1, name: r.team, sub: `GW${r.gw} vs ${r.opp_team}`, value: r.score, badge: badgeByManager(r.manager) }))}
+        />
+        <RecordCard
+          label="Biggest Losing Run"
+          value={longestLose?.streak_length ?? "-"}
+          sub={longestLose ? `${longestLose.team_name} · GW${longestLose.streak_start_gw}–${longestLose.streak_end_gw}` : ""}
+          icon={<Skull className="w-5 h-5" />}
+          badge={badgeByTeam(longestLose?.team_name)}
+          tint={tintByTeam(longestLose?.team_name)}
+          dialogTitle={longestLose ? `${longestLose.team_name}'s Losing Streak (${longestLose.streak_length})` : "Biggest Losing Run"}
+          valueHeader="Result"
+          rows={streakFixtures(longestLose)}
+        />
+        <RecordCard
+          label="Highest Scoring Fixture"
+          value={highestFixture ? `${highestFixture.home_score}-${highestFixture.away_score}` : "-"}
+          sub={highestFixture ? `${highestFixture.home_team} vs ${highestFixture.away_team} · GW${highestFixture.gameweek}` : ""}
+          icon={<Flame className="w-5 h-5" />}
+          badges={highestFixture ? [badgeByTeam(highestFixture.home_team), badgeByTeam(highestFixture.away_team)] : undefined}
+          tint={highestFixture ? (((highestFixture.home_score ?? 0) >= (highestFixture.away_score ?? 0))
+            ? tintByTeam(highestFixture.home_team)
+            : tintByTeam(highestFixture.away_team)) : null}
+          dialogTitle="Top 5 Highest Scoring Fixtures"
+          valueHeader="Total"
+          rows={top5HighFixtures.map((f: any, i: number) => ({
+            rank: i + 1,
+            name: `${f.home_team} ${f.home_score}-${f.away_score} ${f.away_team}`,
+            sub: `GW${f.gameweek}`,
+            value: (f.home_score ?? 0) + (f.away_score ?? 0),
+            badge: badgeByTeam((f.home_score ?? 0) >= (f.away_score ?? 0) ? f.home_team : f.away_team),
+          }))}
+        />
       </div>
 
-      <h3 className="font-display text-2xl text-gold mt-12 mb-4">Players & Possession</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <h3 className="font-display text-2xl text-gold mt-12 mb-4">Statistic Leaders</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <RecordCard
           label="Most Goals"
           value={mostGoals?.out_goals ?? "-"}
           sub={mostGoals?.team_name}
           icon={<Goal className="w-5 h-5" />}
           badge={badgeByManager(mostGoals?.manager_name)}
+          tint={tintByManager(mostGoals?.manager_name)}
           dialogTitle="Top 5 · Most Goals"
           valueHeader="Goals"
           rows={rankByStat("out_goals", "Goals")}
@@ -476,6 +562,7 @@ function RecordsSection({
           sub={mostAssists?.team_name}
           icon={<HandHelping className="w-5 h-5" />}
           badge={badgeByManager(mostAssists?.manager_name)}
+          tint={tintByManager(mostAssists?.manager_name)}
           dialogTitle="Top 5 · Most Assists"
           valueHeader="Assists"
           rows={rankByStat("out_assists", "Assists")}
@@ -486,6 +573,7 @@ function RecordsSection({
           sub={mostCS?.team_name}
           icon={<Shield className="w-5 h-5" />}
           badge={badgeByManager(mostCS?.manager_name)}
+          tint={tintByManager(mostCS?.manager_name)}
           dialogTitle="Top 5 · Most Clean Sheets"
           valueHeader="CS"
           rows={rankByStat("combined_clean_sheets", "CS")}
@@ -496,6 +584,7 @@ function RecordsSection({
           sub={mostYellows?.team_name}
           icon={<CardIcon color="yellow" />}
           badge={badgeByManager(mostYellows?.manager_name)}
+          tint={tintByManager(mostYellows?.manager_name)}
           dialogTitle="Top 5 · Most Yellow Cards"
           valueHeader="Yellows"
           rows={rankByStat("combined_yellow_cards", "Yellows")}
@@ -506,6 +595,7 @@ function RecordsSection({
           sub={rankByStat("out_red_cards", "Reds")[0]?.name}
           icon={<CardIcon color="red" />}
           badge={rankByStat("out_red_cards", "Reds")[0]?.badge}
+          tint={tintByManager(rankByStat("out_red_cards", "Reds")[0]?.sub as string | undefined)}
           dialogTitle="Top 5 · Most Red Cards"
           valueHeader="Reds"
           rows={rankByStat("out_red_cards", "Reds")}
@@ -516,16 +606,24 @@ function RecordsSection({
           sub={rankByStat("out_own_goals", "OG")[0]?.name}
           icon={<AlertOctagon className="w-5 h-5" />}
           badge={rankByStat("out_own_goals", "OG")[0]?.badge}
+          tint={tintByManager(rankByStat("out_own_goals", "OG")[0]?.sub as string | undefined)}
           dialogTitle="Top 5 · Most Own Goals"
           valueHeader="OG"
           rows={rankByStat("out_own_goals", "OG")}
         />
+      </div>
+
+      <StatExplorer teamStats={d.teamStats} managers={d.managers} />
+
+      <h3 className="font-display text-2xl text-gold mt-12 mb-4">Time at the Top &amp; Bottom</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <RecordCard
           label="Most GWs at #1"
           value={positionCounts.topId?.[1] ?? "-"}
           sub={positionCounts.topId ? mById(positionCounts.topId[0])?.team_name : ""}
           icon={<Trophy className="w-5 h-5" />}
           badge={positionCounts.topId ? getBranding(positionCounts.topId[0])?.badge : null}
+          tint={positionCounts.topId ? tintById(positionCounts.topId[0]) : null}
           dialogTitle="Top 5 · Most Gameweeks in 1st"
           valueHeader="Gameweeks"
           rows={positionTop5("first")}
@@ -536,13 +634,12 @@ function RecordsSection({
           sub={positionCounts.botId ? mById(positionCounts.botId[0])?.team_name : ""}
           icon={<ArrowDown className="w-5 h-5" />}
           badge={positionCounts.botId ? getBranding(positionCounts.botId[0])?.badge : null}
+          tint={positionCounts.botId ? tintById(positionCounts.botId[0]) : null}
           dialogTitle="Top 5 · Most Gameweeks in Last"
           valueHeader="Gameweeks"
           rows={positionTop5("last")}
         />
       </div>
-
-      <StatExplorer teamStats={d.teamStats} managers={d.managers} />
     </section>
   );
 }
@@ -669,7 +766,7 @@ function StatExplorer({ teamStats, managers }: { teamStats: any[]; managers: any
 
 /* ======================= Hero ======================= */
 
-function SeasonHero({ season, champ, topScorer, topScorerPts, longestWin, longestLose, mostCS, wooden }: any) {
+function SeasonHero({ season, champ, topGoals, longestWin, longestLose, mostCS, wooden }: any) {
   const [yA, yB] = season.name.split("/");
   const champBranding = champ ? getBranding(champ.id) : null;
   const woodenBranding = wooden ? getBranding(wooden.id) : null;
@@ -691,11 +788,11 @@ function SeasonHero({ season, champ, topScorer, topScorerPts, longestWin, longes
         className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full blur-3xl pointer-events-none opacity-50"
         style={{ background: `radial-gradient(circle, ${accent} 0%, transparent 65%)` }}
       />
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-        <div className="grid lg:grid-cols-[auto_1fr] gap-10 lg:gap-16 items-center">
-          {/* Bespoke season crest - base league logo with a season-unique colourway */}
-          <div className="relative mx-auto lg:mx-0">
-            <div className="relative w-[240px] h-[240px] sm:w-[300px] sm:h-[300px] flex items-center justify-center">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-20">
+        <div className="grid lg:grid-cols-[auto_1fr] gap-6 lg:gap-16 items-center">
+          {/* Bespoke season crest - centred on mobile */}
+          <div className="relative mx-auto lg:mx-0 text-center lg:text-left">
+            <div className="relative w-[160px] h-[160px] sm:w-[260px] sm:h-[260px] lg:w-[300px] lg:h-[300px] flex items-center justify-center mx-auto">
               <div className="absolute inset-0 rounded-full" style={{ border: `2px solid ${accent}66` }} />
               <div className="absolute inset-4 rounded-full" style={{ border: `1px solid ${accent}33` }} />
               <div
@@ -716,66 +813,67 @@ function SeasonHero({ season, champ, topScorer, topScorerPts, longestWin, longes
                 style={{ filter: `hue-rotate(${hueRotate}deg) saturate(1.05)` }}
               />
               <Crown
-                className="absolute -top-2 left-1/2 -translate-x-1/2 w-9 h-9"
+                className="absolute -top-2 left-1/2 -translate-x-1/2 w-7 h-7 sm:w-9 sm:h-9"
                 style={{ color: accent, filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.6))" }}
               />
               <div
-                className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-4 py-1 rounded-md border backdrop-blur-sm"
+                className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 sm:px-4 py-0.5 sm:py-1 rounded-md border backdrop-blur-sm"
                 style={{ background: `linear-gradient(180deg, ${accentDeep}cc, #00000099)`, borderColor: `${accent}80` }}
               >
-                <div className="font-display text-lg sm:text-xl tracking-[0.25em] text-white leading-none">
+                <div className="font-display text-sm sm:text-xl tracking-[0.25em] text-white leading-none">
                   {yA}<span className="opacity-60 mx-1">/</span>{yB}
                 </div>
               </div>
             </div>
-            <div className="mt-6 text-center text-[10px] uppercase tracking-[0.4em]" style={{ color: accent }}>
+            <div className="mt-3 sm:mt-6 text-[9px] sm:text-[10px] uppercase tracking-[0.3em] sm:tracking-[0.4em]" style={{ color: accent }}>
               FPL Super League · Season {yA}/{yB}
             </div>
           </div>
 
           {/* Headline + meta */}
-          <div>
-            <div className="text-xs uppercase tracking-[0.35em] text-gold mb-3">Season Hub</div>
-            <h1 className="font-display text-5xl md:text-7xl leading-none mb-4">
+          <div className="text-center lg:text-left">
+            <div className="text-[10px] sm:text-xs uppercase tracking-[0.35em] text-gold mb-2 sm:mb-3">Season Hub</div>
+            <h1 className="font-display text-4xl sm:text-5xl md:text-7xl leading-none mb-3 sm:mb-4">
               <span className="gold-gradient">{season.name}</span>
             </h1>
-            <div className="h-px w-24 bg-gold/60 my-6" />
+            <div className="h-px w-16 sm:w-24 bg-gold/60 my-4 sm:my-6 mx-auto lg:mx-0" />
 
-            <div className="flex flex-wrap gap-3 mb-6">
-              {champ && (
+            {/* Equal-sized champion / wooden spoon cards */}
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6">
+              {champ ? (
                 <Link to="/team/$managerId" params={{ managerId: String(champ.id) }}
-                      className="group inline-flex items-center gap-4 premium-card rounded-lg pl-3 pr-5 py-3 hover:border-gold/60 transition">
+                      className="group flex items-center gap-2 sm:gap-3 premium-card rounded-lg p-2 sm:p-3 hover:border-gold/60 transition min-w-0">
                   {champBranding?.badge && (
-                    <img src={champBranding.badge} alt="" className="w-12 h-12 object-contain" />
+                    <img src={champBranding.badge} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain shrink-0" />
                   )}
-                  <div>
-                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Champion</div>
-                    <div className="font-display text-2xl text-gold leading-none capitalize group-hover:underline">{champ.name}</div>
-                    <div className="text-xs text-muted-foreground">{champ.team_name}</div>
+                  <div className="min-w-0 text-left flex-1">
+                    <div className="text-[8px] sm:text-[10px] uppercase tracking-widest text-muted-foreground">Champion</div>
+                    <div className="font-display text-base sm:text-xl text-gold leading-tight capitalize group-hover:underline truncate">{champ.name}</div>
+                    <div className="text-[10px] sm:text-xs text-muted-foreground truncate">{champ.team_name}</div>
                   </div>
-                  <Trophy className="w-7 h-7 text-gold ml-2" />
+                  <Trophy className="w-4 h-4 sm:w-6 sm:h-6 text-gold shrink-0" />
                 </Link>
-              )}
-              {wooden && (
+              ) : <div />}
+              {wooden ? (
                 <Link to="/team/$managerId" params={{ managerId: String(wooden.id) }}
-                      className="group inline-flex items-center gap-4 premium-card rounded-lg pl-3 pr-5 py-3 hover:border-amber-700/60 transition">
+                      className="group flex items-center gap-2 sm:gap-3 premium-card rounded-lg p-2 sm:p-3 hover:border-amber-700/60 transition min-w-0">
                   {woodenBranding?.badge && (
-                    <img src={woodenBranding.badge} alt="" className="w-12 h-12 object-contain opacity-80" />
+                    <img src={woodenBranding.badge} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain opacity-80 shrink-0" />
                   )}
-                  <div>
-                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Wooden Spoon</div>
-                    <div className="font-display text-2xl text-amber-700 leading-none capitalize group-hover:underline">{wooden.name}</div>
-                    <div className="text-xs text-muted-foreground">{wooden.team_name}</div>
+                  <div className="min-w-0 text-left flex-1">
+                    <div className="text-[8px] sm:text-[10px] uppercase tracking-widest text-muted-foreground">Wooden Spoon</div>
+                    <div className="font-display text-base sm:text-xl text-amber-700 leading-tight capitalize group-hover:underline truncate">{wooden.name}</div>
+                    <div className="text-[10px] sm:text-xs text-muted-foreground truncate">{wooden.team_name}</div>
                   </div>
-                  <span className="text-3xl ml-2" role="img" aria-label="wooden spoon">🥄</span>
+                  <span className="text-xl sm:text-2xl shrink-0" role="img" aria-label="wooden spoon">🥄</span>
                 </Link>
-              )}
+              ) : <div />}
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <Mini label="Top Scorers" value={topScorerPts ? Number(topScorerPts).toFixed(0) : "-"} sub={topScorer?.team_name} />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
               <Mini label="Best Win Run" value={longestWin?.streak_length ?? "-"} sub={longestWin?.team_name} />
               <Mini label="Worst Losing Run" value={longestLose?.streak_length ?? "-"} sub={longestLose?.team_name} />
+              <Mini label="Top Scorers" value={topGoals?.value ?? "-"} sub={topGoals?.name} />
               <Mini label="Most Clean Sheets" value={mostCS?.value ?? "-"} sub={mostCS?.name} />
             </div>
           </div>
