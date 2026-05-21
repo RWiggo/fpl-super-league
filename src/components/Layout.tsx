@@ -133,15 +133,17 @@ export function Layout() {
                           key={m.id}
                           to="/team/$managerId"
                           params={{ managerId: m.id }}
-                          className="group relative flex items-center gap-3 px-3 py-2.5 rounded-md overflow-hidden border border-white/10 hover:border-white/40 transition-all hover:scale-[1.02]"
+                          className="group relative flex items-center gap-3 px-3 py-2.5 rounded-md overflow-hidden border-2 transition-all hover:scale-[1.02]"
                           style={{
-                            background: `linear-gradient(120deg, ${tint}38 0%, ${tint}10 55%, rgba(10,17,48,0.6) 100%)`,
+                            background: `linear-gradient(120deg, ${tint}cc 0%, ${tint}66 55%, rgba(10,17,48,0.55) 100%)`,
+                            borderColor: `${tint}aa`,
+                            boxShadow: `inset 0 0 0 1px ${tint}55, 0 2px 12px ${tint}33`,
                           }}
                         >
                           {/* Tint accent bar */}
                           <span
-                            className="absolute left-0 top-0 bottom-0 w-[3px]"
-                            style={{ background: tint }}
+                            className="absolute left-0 top-0 bottom-0 w-[6px]"
+                            style={{ background: tint, boxShadow: `0 0 10px ${tint}` }}
                           />
                           {b?.badge ? (
                             <img
