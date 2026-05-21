@@ -358,6 +358,7 @@ function RecordsSection({
   positionCounts,
   topWeekly,
   biggestWin,
+  highestFixture,
   longestWin,
   longestLose,
   dominantH2H,
