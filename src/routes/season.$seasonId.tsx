@@ -465,37 +465,18 @@ function RecordsSection({
     <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
       <SectionTitle kicker="Highlights" title="Season Records" />
 
-      <h3 className="font-display text-2xl text-gold mt-8 mb-4">Points & Performance</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <h3 className="font-display text-2xl text-gold mt-8 mb-4">Performance Records</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <RecordCard
-          label="Highest Single GW"
-          value={topWeekly?.score ?? top5HighGW[0]?.score ?? "-"}
-          sub={top5HighGW[0] ? `${top5HighGW[0].team} · GW${top5HighGW[0].gw}` : ""}
-          icon={<Flame className="w-5 h-5" />}
-          badge={badgeByManager(top5HighGW[0]?.manager)}
-          dialogTitle="Top 5 Single Gameweek Scores"
-          valueHeader="Score"
-          rows={top5HighGW.map((r, i) => ({ rank: i + 1, name: r.team, sub: `GW${r.gw} vs ${r.opp_team}`, value: r.score, badge: badgeByManager(r.manager) }))}
-        />
-        <RecordCard
-          label="Biggest Win"
+          label="Biggest Winning Margin"
           value={biggestWin?.margin ?? "-"}
           sub={biggestWin ? `${biggestWin.winner_team} bt ${biggestWin.loser_team}` : ""}
           icon={<Swords className="w-5 h-5" />}
           badge={badgeByTeam(biggestWin?.winner_team)}
-          dialogTitle="Top 5 Biggest Wins"
+          tint={tintByTeam(biggestWin?.winner_team)}
+          dialogTitle="Top 5 Biggest Winning Margins"
           valueHeader="Margin"
           rows={top5Margin.map((f: any, i: number) => ({ rank: i + 1, name: f.winner_team, sub: `bt ${f.loser_team} · GW${f.gameweek}`, value: f.margin, badge: badgeByTeam(f.winner_team) }))}
-        />
-        <RecordCard
-          label="Lowest GW Score"
-          value={top5LowGW[0]?.score ?? "-"}
-          sub={top5LowGW[0] ? `${top5LowGW[0].team} · GW${top5LowGW[0].gw}` : ""}
-          icon={<TrendingDown className="w-5 h-5" />}
-          badge={badgeByManager(top5LowGW[0]?.manager)}
-          dialogTitle="5 Lowest Gameweek Scores"
-          valueHeader="Score"
-          rows={top5LowGW.map((r, i) => ({ rank: i + 1, name: r.team, sub: `GW${r.gw} vs ${r.opp_team}`, value: r.score, badge: badgeByManager(r.manager) }))}
         />
         <RecordCard
           label="Longest Win Streak"
@@ -503,19 +484,10 @@ function RecordsSection({
           sub={longestWin ? `${longestWin.team_name} · GW${longestWin.streak_start_gw}–${longestWin.streak_end_gw}` : ""}
           icon={<TrendingUp className="w-5 h-5" />}
           badge={badgeByTeam(longestWin?.team_name)}
+          tint={tintByTeam(longestWin?.team_name)}
           dialogTitle={longestWin ? `${longestWin.team_name}'s Win Streak (${longestWin.streak_length})` : "Longest Win Streak"}
           valueHeader="Result"
           rows={streakFixtures(longestWin)}
-        />
-        <RecordCard
-          label="Longest Losing Streak"
-          value={longestLose?.streak_length ?? "-"}
-          sub={longestLose ? `${longestLose.team_name} · GW${longestLose.streak_start_gw}–${longestLose.streak_end_gw}` : ""}
-          icon={<Skull className="w-5 h-5" />}
-          badge={badgeByTeam(longestLose?.team_name)}
-          dialogTitle={longestLose ? `${longestLose.team_name}'s Losing Streak (${longestLose.streak_length})` : "Longest Losing Streak"}
-          valueHeader="Result"
-          rows={streakFixtures(longestLose)}
         />
         <RecordCard
           label="Most Dominant H2H"
@@ -523,20 +495,63 @@ function RecordsSection({
           sub={dominantH2H ? `${dominantH2H.winner} over ${dominantH2H.loser}` : ""}
           icon={<Crown className="w-5 h-5" />}
           badge={badgeByManager(dominantH2H?.winner)}
+          tint={tintByManager(dominantH2H?.winner)}
           dialogTitle="Top 5 Most Dominant Head-to-Heads"
           valueHeader="Record"
           rows={top5H2H.map((h, i) => ({ rank: i + 1, name: h.winner, sub: `over ${h.loser}`, value: `${h.wins}-${h.losses}`, badge: badgeByManager(h.winner) }))}
         />
+        <RecordCard
+          label="Lowest GW Score"
+          value={top5LowGW[0]?.score ?? "-"}
+          sub={top5LowGW[0] ? `${top5LowGW[0].team} · GW${top5LowGW[0].gw}` : ""}
+          icon={<TrendingDown className="w-5 h-5" />}
+          badge={badgeByManager(top5LowGW[0]?.manager)}
+          tint={tintByManager(top5LowGW[0]?.manager)}
+          dialogTitle="5 Lowest Gameweek Scores"
+          valueHeader="Score"
+          rows={top5LowGW.map((r, i) => ({ rank: i + 1, name: r.team, sub: `GW${r.gw} vs ${r.opp_team}`, value: r.score, badge: badgeByManager(r.manager) }))}
+        />
+        <RecordCard
+          label="Biggest Losing Run"
+          value={longestLose?.streak_length ?? "-"}
+          sub={longestLose ? `${longestLose.team_name} · GW${longestLose.streak_start_gw}–${longestLose.streak_end_gw}` : ""}
+          icon={<Skull className="w-5 h-5" />}
+          badge={badgeByTeam(longestLose?.team_name)}
+          tint={tintByTeam(longestLose?.team_name)}
+          dialogTitle={longestLose ? `${longestLose.team_name}'s Losing Streak (${longestLose.streak_length})` : "Biggest Losing Run"}
+          valueHeader="Result"
+          rows={streakFixtures(longestLose)}
+        />
+        <RecordCard
+          label="Highest Scoring Fixture"
+          value={highestFixture ? `${highestFixture.home_score}-${highestFixture.away_score}` : "-"}
+          sub={highestFixture ? `${highestFixture.home_team} vs ${highestFixture.away_team} · GW${highestFixture.gameweek}` : ""}
+          icon={<Flame className="w-5 h-5" />}
+          badges={highestFixture ? [badgeByTeam(highestFixture.home_team), badgeByTeam(highestFixture.away_team)] : undefined}
+          tint={highestFixture ? (((highestFixture.home_score ?? 0) >= (highestFixture.away_score ?? 0))
+            ? tintByTeam(highestFixture.home_team)
+            : tintByTeam(highestFixture.away_team)) : null}
+          dialogTitle="Top 5 Highest Scoring Fixtures"
+          valueHeader="Total"
+          rows={top5HighFixtures.map((f: any, i: number) => ({
+            rank: i + 1,
+            name: `${f.home_team} ${f.home_score}-${f.away_score} ${f.away_team}`,
+            sub: `GW${f.gameweek}`,
+            value: (f.home_score ?? 0) + (f.away_score ?? 0),
+            badge: badgeByTeam((f.home_score ?? 0) >= (f.away_score ?? 0) ? f.home_team : f.away_team),
+          }))}
+        />
       </div>
 
-      <h3 className="font-display text-2xl text-gold mt-12 mb-4">Players & Possession</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <h3 className="font-display text-2xl text-gold mt-12 mb-4">Statistic Leaders</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <RecordCard
           label="Most Goals"
           value={mostGoals?.out_goals ?? "-"}
           sub={mostGoals?.team_name}
           icon={<Goal className="w-5 h-5" />}
           badge={badgeByManager(mostGoals?.manager_name)}
+          tint={tintByManager(mostGoals?.manager_name)}
           dialogTitle="Top 5 · Most Goals"
           valueHeader="Goals"
           rows={rankByStat("out_goals", "Goals")}
@@ -547,6 +562,7 @@ function RecordsSection({
           sub={mostAssists?.team_name}
           icon={<HandHelping className="w-5 h-5" />}
           badge={badgeByManager(mostAssists?.manager_name)}
+          tint={tintByManager(mostAssists?.manager_name)}
           dialogTitle="Top 5 · Most Assists"
           valueHeader="Assists"
           rows={rankByStat("out_assists", "Assists")}
@@ -557,6 +573,7 @@ function RecordsSection({
           sub={mostCS?.team_name}
           icon={<Shield className="w-5 h-5" />}
           badge={badgeByManager(mostCS?.manager_name)}
+          tint={tintByManager(mostCS?.manager_name)}
           dialogTitle="Top 5 · Most Clean Sheets"
           valueHeader="CS"
           rows={rankByStat("combined_clean_sheets", "CS")}
@@ -567,6 +584,7 @@ function RecordsSection({
           sub={mostYellows?.team_name}
           icon={<CardIcon color="yellow" />}
           badge={badgeByManager(mostYellows?.manager_name)}
+          tint={tintByManager(mostYellows?.manager_name)}
           dialogTitle="Top 5 · Most Yellow Cards"
           valueHeader="Yellows"
           rows={rankByStat("combined_yellow_cards", "Yellows")}
@@ -577,6 +595,7 @@ function RecordsSection({
           sub={rankByStat("out_red_cards", "Reds")[0]?.name}
           icon={<CardIcon color="red" />}
           badge={rankByStat("out_red_cards", "Reds")[0]?.badge}
+          tint={tintByManager(rankByStat("out_red_cards", "Reds")[0]?.sub as string | undefined)}
           dialogTitle="Top 5 · Most Red Cards"
           valueHeader="Reds"
           rows={rankByStat("out_red_cards", "Reds")}
@@ -587,16 +606,24 @@ function RecordsSection({
           sub={rankByStat("out_own_goals", "OG")[0]?.name}
           icon={<AlertOctagon className="w-5 h-5" />}
           badge={rankByStat("out_own_goals", "OG")[0]?.badge}
+          tint={tintByManager(rankByStat("out_own_goals", "OG")[0]?.sub as string | undefined)}
           dialogTitle="Top 5 · Most Own Goals"
           valueHeader="OG"
           rows={rankByStat("out_own_goals", "OG")}
         />
+      </div>
+
+      <StatExplorer teamStats={d.teamStats} managers={d.managers} />
+
+      <h3 className="font-display text-2xl text-gold mt-12 mb-4">Time at the Top &amp; Bottom</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <RecordCard
           label="Most GWs at #1"
           value={positionCounts.topId?.[1] ?? "-"}
           sub={positionCounts.topId ? mById(positionCounts.topId[0])?.team_name : ""}
           icon={<Trophy className="w-5 h-5" />}
           badge={positionCounts.topId ? getBranding(positionCounts.topId[0])?.badge : null}
+          tint={positionCounts.topId ? tintById(positionCounts.topId[0]) : null}
           dialogTitle="Top 5 · Most Gameweeks in 1st"
           valueHeader="Gameweeks"
           rows={positionTop5("first")}
@@ -607,13 +634,12 @@ function RecordsSection({
           sub={positionCounts.botId ? mById(positionCounts.botId[0])?.team_name : ""}
           icon={<ArrowDown className="w-5 h-5" />}
           badge={positionCounts.botId ? getBranding(positionCounts.botId[0])?.badge : null}
+          tint={positionCounts.botId ? tintById(positionCounts.botId[0]) : null}
           dialogTitle="Top 5 · Most Gameweeks in Last"
           valueHeader="Gameweeks"
           rows={positionTop5("last")}
         />
       </div>
-
-      <StatExplorer teamStats={d.teamStats} managers={d.managers} />
     </section>
   );
 }
