@@ -280,7 +280,6 @@ export function Layout() {
                           className="absolute left-0 top-0 bottom-0 w-[5px]"
                           style={{ background: tint, boxShadow: `0 0 8px ${tint}` }}
                         />
-                      >
                         {b?.badge ? (
                           <img src={b.badge} alt="" className="w-7 h-7 object-contain shrink-0" />
                         ) : (
