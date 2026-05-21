@@ -373,6 +373,9 @@ function RecordsSection({
     ?? (() => { const r = d.mst.find((x: any) => x.team_name === team); return r ? mById(r.manager_id) : null; })() : null;
   const badgeByManager = (name?: string) => { const m = mByName(name); return m ? getBranding(m.id)?.badge ?? null : null; };
   const badgeByTeam = (team?: string) => { const m = mByTeam(team); return m ? getBranding(m.id)?.badge ?? null : null; };
+  const tintByManager = (name?: string) => { const m = mByName(name); return m ? getBranding(m.id)?.primary ?? null : null; };
+  const tintByTeam = (team?: string) => { const m = mByTeam(team); return m ? getBranding(m.id)?.primary ?? null : null; };
+  const tintById = (id?: string) => id ? getBranding(id)?.primary ?? null : null;
 
   // Per-team weekly score entries from fixtures
   const teamScores = useMemo(() => {
