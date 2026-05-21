@@ -71,6 +71,10 @@ function SeasonPage() {
   const highest = [...completed].sort((a: any, b: any) =>
     Math.max(b.home_score, b.away_score) - Math.max(a.home_score, a.away_score)
   )[0];
+  // Highest scoring fixture = max(home + away combined)
+  const highestFixture = [...completed].sort((a: any, b: any) =>
+    ((b.home_score ?? 0) + (b.away_score ?? 0)) - ((a.home_score ?? 0) + (a.away_score ?? 0))
+  )[0];
   const lowest = [...completed].sort((a: any, b: any) =>
     Math.min(a.home_score, a.away_score) - Math.min(b.home_score, b.away_score)
   )[0];
