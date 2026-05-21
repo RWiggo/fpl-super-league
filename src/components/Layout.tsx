@@ -269,8 +269,11 @@ export function Layout() {
                         to="/team/$managerId"
                         params={{ managerId: m.id }}
                         onClick={() => setOpen(false)}
-                        className="flex items-center gap-2 px-2 py-2 rounded-md border border-white/10 hover:border-white/40 transition"
-                        style={{ background: `linear-gradient(120deg, ${tint}30 0%, ${tint}10 60%, rgba(10,17,48,0.5) 100%)` }}
+                        className="relative flex items-center gap-2 pl-3 pr-2 py-2 rounded-md border-2 overflow-hidden transition"
+                        style={{
+                          background: `linear-gradient(120deg, ${tint}cc 0%, ${tint}55 60%, rgba(10,17,48,0.5) 100%)`,
+                          borderColor: `${tint}aa`,
+                        }}
                       >
                         {b?.badge ? (
                           <img src={b.badge} alt="" className="w-7 h-7 object-contain shrink-0" />
