@@ -261,6 +261,8 @@ function RecordCard({
   sub,
   icon,
   badge,
+  badges,
+  tint,
   dialogTitle,
   rows,
   valueHeader = "Value",
@@ -270,27 +272,48 @@ function RecordCard({
   sub?: React.ReactNode;
   icon?: React.ReactNode;
   badge?: string | null;
+  /** Optional pair of badges shown side-by-side (for fixtures involving two teams). */
+  badges?: (string | null | undefined)[];
+  /** Team primary colour applied as a soft gradient backdrop to the card. */
+  tint?: string | null;
   dialogTitle: string;
   rows: RankRow[];
   valueHeader?: string;
 }) {
+  const tintStyle = tint
+    ? {
+        backgroundImage: `linear-gradient(135deg, color-mix(in oklab, ${tint} 28%, transparent) 0%, color-mix(in oklab, ${tint} 10%, transparent) 55%, transparent 100%)`,
+        borderColor: `color-mix(in oklab, ${tint} 55%, transparent)`,
+      }
+    : undefined;
   return (
     <Dialog>
       <DialogTrigger asChild>
         <button className="text-left w-full focus:outline-none focus:ring-2 focus:ring-gold/50 rounded-lg">
-          <div className="premium-card rounded-lg p-4 sm:p-6 group hover:border-gold/50 transition-all hover:-translate-y-1 text-center sm:text-left relative">
-            <div className="flex items-center justify-between mb-3">
+          <div
+            className="premium-card rounded-lg p-4 sm:p-6 group hover:border-gold/50 transition-all hover:-translate-y-1 text-center sm:text-left relative overflow-hidden"
+            style={tintStyle}
+          >
+            <div className="flex items-center justify-between mb-3 relative">
               <span className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground">{label}</span>
               {icon && <span className="text-gold opacity-60 group-hover:opacity-100 transition shrink-0">{icon}</span>}
             </div>
-            <div className="flex items-center justify-center sm:justify-start gap-3">
-              {badge && <img src={badge} alt="" className="w-10 h-10 sm:w-12 sm:h-12 object-contain shrink-0" />}
+            <div className="flex items-center justify-center sm:justify-start gap-3 relative">
+              {badges && badges.filter(Boolean).length > 0 ? (
+                <div className="flex -space-x-2 shrink-0">
+                  {badges.filter(Boolean).map((b, i) => (
+                    <img key={i} src={b as string} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain rounded-full bg-background/30 ring-2 ring-background" />
+                  ))}
+                </div>
+              ) : badge ? (
+                <img src={badge} alt="" className="w-10 h-10 sm:w-12 sm:h-12 object-contain shrink-0" />
+              ) : null}
               <div className="min-w-0">
                 <div className="font-display text-3xl sm:text-4xl gold-gradient leading-none">{value}</div>
                 {sub && <div className="text-[11px] sm:text-xs text-muted-foreground mt-1.5 truncate">{sub}</div>}
               </div>
             </div>
-            <div className="mt-3 pt-3 border-t border-border/40 flex items-center justify-center sm:justify-start gap-1.5 text-[10px] uppercase tracking-[0.2em] text-gold/70 group-hover:text-gold transition">
+            <div className="mt-3 pt-3 border-t border-border/40 flex items-center justify-center sm:justify-start gap-1.5 text-[10px] uppercase tracking-[0.2em] text-gold/70 group-hover:text-gold transition relative">
               <Info className="w-3 h-3" />
               <span>Tap for details</span>
               <ChevronRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
