@@ -766,7 +766,7 @@ function StatExplorer({ teamStats, managers }: { teamStats: any[]; managers: any
 
 /* ======================= Hero ======================= */
 
-function SeasonHero({ season, champ, topScorer, topScorerPts, longestWin, longestLose, mostCS, wooden }: any) {
+function SeasonHero({ season, champ, topGoals, longestWin, longestLose, mostCS, wooden }: any) {
   const [yA, yB] = season.name.split("/");
   const champBranding = champ ? getBranding(champ.id) : null;
   const woodenBranding = wooden ? getBranding(wooden.id) : null;
@@ -788,11 +788,11 @@ function SeasonHero({ season, champ, topScorer, topScorerPts, longestWin, longes
         className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full blur-3xl pointer-events-none opacity-50"
         style={{ background: `radial-gradient(circle, ${accent} 0%, transparent 65%)` }}
       />
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-        <div className="grid lg:grid-cols-[auto_1fr] gap-10 lg:gap-16 items-center">
-          {/* Bespoke season crest - base league logo with a season-unique colourway */}
-          <div className="relative mx-auto lg:mx-0">
-            <div className="relative w-[240px] h-[240px] sm:w-[300px] sm:h-[300px] flex items-center justify-center">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-20">
+        <div className="grid lg:grid-cols-[auto_1fr] gap-6 lg:gap-16 items-center">
+          {/* Bespoke season crest - centred on mobile */}
+          <div className="relative mx-auto lg:mx-0 text-center lg:text-left">
+            <div className="relative w-[160px] h-[160px] sm:w-[260px] sm:h-[260px] lg:w-[300px] lg:h-[300px] flex items-center justify-center mx-auto">
               <div className="absolute inset-0 rounded-full" style={{ border: `2px solid ${accent}66` }} />
               <div className="absolute inset-4 rounded-full" style={{ border: `1px solid ${accent}33` }} />
               <div
@@ -813,66 +813,67 @@ function SeasonHero({ season, champ, topScorer, topScorerPts, longestWin, longes
                 style={{ filter: `hue-rotate(${hueRotate}deg) saturate(1.05)` }}
               />
               <Crown
-                className="absolute -top-2 left-1/2 -translate-x-1/2 w-9 h-9"
+                className="absolute -top-2 left-1/2 -translate-x-1/2 w-7 h-7 sm:w-9 sm:h-9"
                 style={{ color: accent, filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.6))" }}
               />
               <div
-                className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-4 py-1 rounded-md border backdrop-blur-sm"
+                className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 sm:px-4 py-0.5 sm:py-1 rounded-md border backdrop-blur-sm"
                 style={{ background: `linear-gradient(180deg, ${accentDeep}cc, #00000099)`, borderColor: `${accent}80` }}
               >
-                <div className="font-display text-lg sm:text-xl tracking-[0.25em] text-white leading-none">
+                <div className="font-display text-sm sm:text-xl tracking-[0.25em] text-white leading-none">
                   {yA}<span className="opacity-60 mx-1">/</span>{yB}
                 </div>
               </div>
             </div>
-            <div className="mt-6 text-center text-[10px] uppercase tracking-[0.4em]" style={{ color: accent }}>
+            <div className="mt-3 sm:mt-6 text-[9px] sm:text-[10px] uppercase tracking-[0.3em] sm:tracking-[0.4em]" style={{ color: accent }}>
               FPL Super League · Season {yA}/{yB}
             </div>
           </div>
 
           {/* Headline + meta */}
-          <div>
-            <div className="text-xs uppercase tracking-[0.35em] text-gold mb-3">Season Hub</div>
-            <h1 className="font-display text-5xl md:text-7xl leading-none mb-4">
+          <div className="text-center lg:text-left">
+            <div className="text-[10px] sm:text-xs uppercase tracking-[0.35em] text-gold mb-2 sm:mb-3">Season Hub</div>
+            <h1 className="font-display text-4xl sm:text-5xl md:text-7xl leading-none mb-3 sm:mb-4">
               <span className="gold-gradient">{season.name}</span>
             </h1>
-            <div className="h-px w-24 bg-gold/60 my-6" />
+            <div className="h-px w-16 sm:w-24 bg-gold/60 my-4 sm:my-6 mx-auto lg:mx-0" />
 
-            <div className="flex flex-wrap gap-3 mb-6">
-              {champ && (
+            {/* Equal-sized champion / wooden spoon cards */}
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6">
+              {champ ? (
                 <Link to="/team/$managerId" params={{ managerId: String(champ.id) }}
-                      className="group inline-flex items-center gap-4 premium-card rounded-lg pl-3 pr-5 py-3 hover:border-gold/60 transition">
+                      className="group flex items-center gap-2 sm:gap-3 premium-card rounded-lg p-2 sm:p-3 hover:border-gold/60 transition min-w-0">
                   {champBranding?.badge && (
-                    <img src={champBranding.badge} alt="" className="w-12 h-12 object-contain" />
+                    <img src={champBranding.badge} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain shrink-0" />
                   )}
-                  <div>
-                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Champion</div>
-                    <div className="font-display text-2xl text-gold leading-none capitalize group-hover:underline">{champ.name}</div>
-                    <div className="text-xs text-muted-foreground">{champ.team_name}</div>
+                  <div className="min-w-0 text-left flex-1">
+                    <div className="text-[8px] sm:text-[10px] uppercase tracking-widest text-muted-foreground">Champion</div>
+                    <div className="font-display text-base sm:text-xl text-gold leading-tight capitalize group-hover:underline truncate">{champ.name}</div>
+                    <div className="text-[10px] sm:text-xs text-muted-foreground truncate">{champ.team_name}</div>
                   </div>
-                  <Trophy className="w-7 h-7 text-gold ml-2" />
+                  <Trophy className="w-4 h-4 sm:w-6 sm:h-6 text-gold shrink-0" />
                 </Link>
-              )}
-              {wooden && (
+              ) : <div />}
+              {wooden ? (
                 <Link to="/team/$managerId" params={{ managerId: String(wooden.id) }}
-                      className="group inline-flex items-center gap-4 premium-card rounded-lg pl-3 pr-5 py-3 hover:border-amber-700/60 transition">
+                      className="group flex items-center gap-2 sm:gap-3 premium-card rounded-lg p-2 sm:p-3 hover:border-amber-700/60 transition min-w-0">
                   {woodenBranding?.badge && (
-                    <img src={woodenBranding.badge} alt="" className="w-12 h-12 object-contain opacity-80" />
+                    <img src={woodenBranding.badge} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain opacity-80 shrink-0" />
                   )}
-                  <div>
-                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Wooden Spoon</div>
-                    <div className="font-display text-2xl text-amber-700 leading-none capitalize group-hover:underline">{wooden.name}</div>
-                    <div className="text-xs text-muted-foreground">{wooden.team_name}</div>
+                  <div className="min-w-0 text-left flex-1">
+                    <div className="text-[8px] sm:text-[10px] uppercase tracking-widest text-muted-foreground">Wooden Spoon</div>
+                    <div className="font-display text-base sm:text-xl text-amber-700 leading-tight capitalize group-hover:underline truncate">{wooden.name}</div>
+                    <div className="text-[10px] sm:text-xs text-muted-foreground truncate">{wooden.team_name}</div>
                   </div>
-                  <span className="text-3xl ml-2" role="img" aria-label="wooden spoon">🥄</span>
+                  <span className="text-xl sm:text-2xl shrink-0" role="img" aria-label="wooden spoon">🥄</span>
                 </Link>
-              )}
+              ) : <div />}
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <Mini label="Top Scorers" value={topScorerPts ? Number(topScorerPts).toFixed(0) : "-"} sub={topScorer?.team_name} />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
               <Mini label="Best Win Run" value={longestWin?.streak_length ?? "-"} sub={longestWin?.team_name} />
               <Mini label="Worst Losing Run" value={longestLose?.streak_length ?? "-"} sub={longestLose?.team_name} />
+              <Mini label="Top Scorers" value={topGoals?.value ?? "-"} sub={topGoals?.name} />
               <Mini label="Most Clean Sheets" value={mostCS?.value ?? "-"} sub={mostCS?.name} />
             </div>
           </div>
