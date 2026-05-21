@@ -133,15 +133,17 @@ export function Layout() {
                           key={m.id}
                           to="/team/$managerId"
                           params={{ managerId: m.id }}
-                          className="group relative flex items-center gap-3 px-3 py-2.5 rounded-md overflow-hidden border border-white/10 hover:border-white/40 transition-all hover:scale-[1.02]"
+                          className="group relative flex items-center gap-3 pl-4 pr-3 py-2.5 rounded-md overflow-hidden border transition-all hover:scale-[1.02]"
                           style={{
-                            background: `linear-gradient(120deg, ${tint}38 0%, ${tint}10 55%, rgba(10,17,48,0.6) 100%)`,
+                            background: `linear-gradient(120deg, ${tint}55 0%, ${tint}1f 55%, rgba(10,17,48,0.7) 100%)`,
+                            borderColor: `${tint}99`,
+                            boxShadow: `0 0 0 1px ${tint}33, 0 2px 14px ${tint}40`,
                           }}
                         >
                           {/* Tint accent bar */}
                           <span
-                            className="absolute left-0 top-0 bottom-0 w-[3px]"
-                            style={{ background: tint }}
+                            className="absolute left-0 top-0 bottom-0 w-[6px]"
+                            style={{ background: tint, boxShadow: `0 0 12px ${tint}` }}
                           />
                           {b?.badge ? (
                             <img
@@ -267,9 +269,17 @@ export function Layout() {
                         to="/team/$managerId"
                         params={{ managerId: m.id }}
                         onClick={() => setOpen(false)}
-                        className="flex items-center gap-2 px-2 py-2 rounded-md border border-white/10 hover:border-white/40 transition"
-                        style={{ background: `linear-gradient(120deg, ${tint}30 0%, ${tint}10 60%, rgba(10,17,48,0.5) 100%)` }}
+                        className="relative flex items-center gap-2 pl-3.5 pr-2 py-2 rounded-md border overflow-hidden transition"
+                        style={{
+                          background: `linear-gradient(120deg, ${tint}55 0%, ${tint}1f 60%, rgba(10,17,48,0.6) 100%)`,
+                          borderColor: `${tint}99`,
+                          boxShadow: `0 0 10px ${tint}33`,
+                        }}
                       >
+                        <span
+                          className="absolute left-0 top-0 bottom-0 w-[5px]"
+                          style={{ background: tint, boxShadow: `0 0 8px ${tint}` }}
+                        />
                         {b?.badge ? (
                           <img src={b.badge} alt="" className="w-7 h-7 object-contain shrink-0" />
                         ) : (

@@ -104,7 +104,7 @@ function PlayerChip({
         </div>
       )}
       <div className="bg-background/85 backdrop-blur-sm border border-gold/40 rounded px-1 sm:px-2 py-0.5 sm:py-1 text-center w-full shadow-lg">
-        <div className="text-[9px] sm:text-xs font-medium truncate leading-tight">{player.player_name ?? player.name}</div>
+        <div className="text-[8px] sm:text-[11px] font-medium leading-[1.05] break-words hyphens-auto line-clamp-2 min-h-[18px] sm:min-h-[24px]">{player.player_name ?? player.name}</div>
         {player.club && <div className="text-[7px] sm:text-[8px] uppercase tracking-wider text-muted-foreground truncate">{player.club}</div>}
         <div className="text-[11px] sm:text-sm font-display text-gold leading-tight">{Number(points).toFixed(0)}</div>
         {ppg != null && <div className="hidden sm:block text-[8px] text-muted-foreground">{Number(ppg).toFixed(1)} ppg</div>}
