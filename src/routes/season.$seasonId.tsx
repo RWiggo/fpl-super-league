@@ -19,7 +19,7 @@ function SeasonPage() {
     (async () => {
       const seasonRes = await supabase.from("seasons").select("*").eq("id", seasonId).single();
       const sname = seasonRes.data?.name;
-      const [managers, mst, standings, fixtures, gwTable, winS, loseS, unbeatenS, winlessS, teamStats, overallTOTS, weeklyHi] = await Promise.all([
+      const [managers, mst, standings, fixtures, gwTable, winS, loseS, unbeatenS, winlessS, teamStats, overallTOTS, weeklyHi, seasonPlayers] = await Promise.all([
         supabase.from("managers").select("*"),
         supabase.from("manager_season_teams").select("*").eq("season_id", seasonId),
         supabase.from("season_standings").select("*").eq("season_id", seasonId),
@@ -32,6 +32,7 @@ function SeasonPage() {
         supabase.from("team_season_stats_full").select("*").eq("season_name", sname),
         supabase.from("overall_team_of_the_season").select("*").eq("season_name", sname),
         supabase.from("weekly_high_scores").select("*").eq("season_id", seasonId),
+        supabase.from("player_team_history").select("*").eq("season_name", sname),
       ]);
       setD({
         season: seasonRes.data,
@@ -47,6 +48,7 @@ function SeasonPage() {
         teamStats: teamStats.data ?? [],
         overallTOTS: overallTOTS.data ?? [],
         weeklyHi: weeklyHi.data ?? [],
+        seasonPlayers: seasonPlayers.data ?? [],
       });
     })();
   }, [seasonId]);
