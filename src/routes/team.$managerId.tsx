@@ -596,7 +596,7 @@ function TeamPage() {
                         </span>
                         {sub ? (
                           <div className="min-w-0 flex-1">
-                            <div className="text-sm font-medium truncate">{sub.player_name ?? sub.name}</div>
+                            <div className="text-sm font-medium leading-tight break-words">{sub.player_name ?? sub.name}</div>
                             <div className="text-[10px] text-muted-foreground truncate">
                               {sub.club ?? "-"} · <span className="text-gold font-display">{Number(sub.total_fantasy_points ?? 0).toFixed(0)}</span> pts
                             </div>
