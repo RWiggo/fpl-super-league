@@ -848,8 +848,8 @@ function SeasonHero({ season, champ, topGoals, longestWin, longestLose, mostCS, 
                   )}
                   <div className="min-w-0 text-left flex-1">
                     <div className="text-[8px] sm:text-[10px] uppercase tracking-widest text-muted-foreground">Champion</div>
-                    <div className="font-display text-base sm:text-xl text-gold leading-tight capitalize group-hover:underline truncate">{champ.name}</div>
-                    <div className="text-[10px] sm:text-xs text-muted-foreground truncate">{champ.team_name}</div>
+                    <div className="font-display text-base sm:text-xl text-gold leading-tight group-hover:underline break-words">{currentTeamName(champ.id, champ.team_name)}</div>
+                    <div className="text-[10px] sm:text-xs text-muted-foreground capitalize break-words">{champ.name}</div>
                   </div>
                   <Trophy className="w-4 h-4 sm:w-6 sm:h-6 text-gold shrink-0" />
                 </Link>
@@ -862,8 +862,8 @@ function SeasonHero({ season, champ, topGoals, longestWin, longestLose, mostCS, 
                   )}
                   <div className="min-w-0 text-left flex-1">
                     <div className="text-[8px] sm:text-[10px] uppercase tracking-widest text-muted-foreground">Wooden Spoon</div>
-                    <div className="font-display text-base sm:text-xl text-amber-700 leading-tight capitalize group-hover:underline truncate">{wooden.name}</div>
-                    <div className="text-[10px] sm:text-xs text-muted-foreground truncate">{wooden.team_name}</div>
+                    <div className="font-display text-base sm:text-xl text-amber-700 leading-tight group-hover:underline break-words">{currentTeamName(wooden.id, wooden.team_name)}</div>
+                    <div className="text-[10px] sm:text-xs text-muted-foreground capitalize break-words">{wooden.name}</div>
                   </div>
                   <span className="text-xl sm:text-2xl shrink-0" role="img" aria-label="wooden spoon">🥄</span>
                 </Link>
