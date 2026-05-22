@@ -233,8 +233,8 @@ function SeasonPage() {
                         {branding?.badge && <img src={branding.badge} alt="" className="w-10 h-10 object-contain shrink-0" />}
                         <div className="min-w-0">
                           <div className="text-[9px] uppercase tracking-widest text-muted-foreground">{s.position}</div>
-                          <div className="font-medium text-sm truncate">{s.player_name}</div>
-                          <div className="text-[10px] text-muted-foreground truncate">{s.club} · <span className="text-gold tabular-nums">{Number(s.fantasy_points ?? 0).toFixed(0)} pts</span></div>
+                          <div className="font-medium text-sm leading-tight break-words">{s.player_name}</div>
+                          <div className="text-[10px] text-muted-foreground break-words">{s.club} · <span className="text-gold tabular-nums">{Number(s.fantasy_points ?? 0).toFixed(0)} pts</span></div>
                         </div>
                       </div>
                     );
