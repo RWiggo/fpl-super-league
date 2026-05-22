@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/StatCard";
 import { FormationPitch } from "@/components/FormationPitch";
 import { getBranding } from "@/lib/managerBranding";
+import { currentTeamName } from "@/lib/currentTeamNames";
 import { Trophy, Crown, Flame, Target, Zap, Skull, Shield, TrendingUp, TrendingDown, Users, Swords, Star, Goal, HandHelping, ArrowDown, AlertOctagon, Info, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/season/$seasonId")({
@@ -233,8 +234,8 @@ function SeasonPage() {
                         {branding?.badge && <img src={branding.badge} alt="" className="w-10 h-10 object-contain shrink-0" />}
                         <div className="min-w-0">
                           <div className="text-[9px] uppercase tracking-widest text-muted-foreground">{s.position}</div>
-                          <div className="font-medium text-sm truncate">{s.player_name}</div>
-                          <div className="text-[10px] text-muted-foreground truncate">{s.club} · <span className="text-gold tabular-nums">{Number(s.fantasy_points ?? 0).toFixed(0)} pts</span></div>
+                          <div className="font-medium text-sm leading-tight break-words">{s.player_name}</div>
+                          <div className="text-[10px] text-muted-foreground break-words">{s.club} · <span className="text-gold tabular-nums">{Number(s.fantasy_points ?? 0).toFixed(0)} pts</span></div>
                         </div>
                       </div>
                     );
@@ -481,7 +482,7 @@ function RecordsSection({
         <RecordCard
           label="Longest Win Streak"
           value={longestWin?.streak_length ?? "-"}
-          sub={longestWin ? `${longestWin.team_name} · GW${longestWin.streak_start_gw}–${longestWin.streak_end_gw}` : ""}
+          sub={longestWin ? `${longestWin.team_name} · GW${longestWin.streak_start_gw}-${longestWin.streak_end_gw}` : ""}
           icon={<TrendingUp className="w-5 h-5" />}
           badge={badgeByTeam(longestWin?.team_name)}
           tint={tintByTeam(longestWin?.team_name)}
@@ -514,7 +515,7 @@ function RecordsSection({
         <RecordCard
           label="Biggest Losing Run"
           value={longestLose?.streak_length ?? "-"}
-          sub={longestLose ? `${longestLose.team_name} · GW${longestLose.streak_start_gw}–${longestLose.streak_end_gw}` : ""}
+          sub={longestLose ? `${longestLose.team_name} · GW${longestLose.streak_start_gw}-${longestLose.streak_end_gw}` : ""}
           icon={<Skull className="w-5 h-5" />}
           badge={badgeByTeam(longestLose?.team_name)}
           tint={tintByTeam(longestLose?.team_name)}
@@ -848,8 +849,8 @@ function SeasonHero({ season, champ, topGoals, longestWin, longestLose, mostCS, 
                   )}
                   <div className="min-w-0 text-left flex-1">
                     <div className="text-[8px] sm:text-[10px] uppercase tracking-widest text-muted-foreground">Champion</div>
-                    <div className="font-display text-base sm:text-xl text-gold leading-tight capitalize group-hover:underline truncate">{champ.name}</div>
-                    <div className="text-[10px] sm:text-xs text-muted-foreground truncate">{champ.team_name}</div>
+                    <div className="font-display text-base sm:text-xl text-gold leading-tight group-hover:underline break-words">{currentTeamName(champ.id, champ.team_name)}</div>
+                    <div className="text-[10px] sm:text-xs text-muted-foreground capitalize break-words">{champ.name}</div>
                   </div>
                   <Trophy className="w-4 h-4 sm:w-6 sm:h-6 text-gold shrink-0" />
                 </Link>
@@ -862,8 +863,8 @@ function SeasonHero({ season, champ, topGoals, longestWin, longestLose, mostCS, 
                   )}
                   <div className="min-w-0 text-left flex-1">
                     <div className="text-[8px] sm:text-[10px] uppercase tracking-widest text-muted-foreground">Wooden Spoon</div>
-                    <div className="font-display text-base sm:text-xl text-amber-700 leading-tight capitalize group-hover:underline truncate">{wooden.name}</div>
-                    <div className="text-[10px] sm:text-xs text-muted-foreground truncate">{wooden.team_name}</div>
+                    <div className="font-display text-base sm:text-xl text-amber-700 leading-tight group-hover:underline break-words">{currentTeamName(wooden.id, wooden.team_name)}</div>
+                    <div className="text-[10px] sm:text-xs text-muted-foreground capitalize break-words">{wooden.name}</div>
                   </div>
                   <span className="text-xl sm:text-2xl shrink-0" role="img" aria-label="wooden spoon">🥄</span>
                 </Link>

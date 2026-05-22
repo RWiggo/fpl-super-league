@@ -90,6 +90,7 @@ const PL_CLUB_OPTA_ID: Record<string, number> = {
   tot: 6,
   whu: 21,
   wol: 39,
+  sun: 56,
 };
 
 function normalize(name: string): string {
