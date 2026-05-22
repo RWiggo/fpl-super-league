@@ -481,7 +481,7 @@ function RecordsSection({
         <RecordCard
           label="Longest Win Streak"
           value={longestWin?.streak_length ?? "-"}
-          sub={longestWin ? `${longestWin.team_name} · GW${longestWin.streak_start_gw}–${longestWin.streak_end_gw}` : ""}
+          sub={longestWin ? `${longestWin.team_name} · GW${longestWin.streak_start_gw}-${longestWin.streak_end_gw}` : ""}
           icon={<TrendingUp className="w-5 h-5" />}
           badge={badgeByTeam(longestWin?.team_name)}
           tint={tintByTeam(longestWin?.team_name)}
@@ -514,7 +514,7 @@ function RecordsSection({
         <RecordCard
           label="Biggest Losing Run"
           value={longestLose?.streak_length ?? "-"}
-          sub={longestLose ? `${longestLose.team_name} · GW${longestLose.streak_start_gw}–${longestLose.streak_end_gw}` : ""}
+          sub={longestLose ? `${longestLose.team_name} · GW${longestLose.streak_start_gw}-${longestLose.streak_end_gw}` : ""}
           icon={<Skull className="w-5 h-5" />}
           badge={badgeByTeam(longestLose?.team_name)}
           tint={tintByTeam(longestLose?.team_name)}

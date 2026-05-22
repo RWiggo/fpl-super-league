@@ -311,7 +311,7 @@ function H2HPage() {
                                       </span>
                                       <span className="font-display tabular-nums text-sm flex-1 text-center">
                                         <span className={result === "W" ? "text-emerald-300" : ""}>{yourScore}</span>
-                                        <span className="text-muted-foreground mx-1.5">–</span>
+                                        <span className="text-muted-foreground mx-1.5">-</span>
                                         <span className={result === "L" ? "text-red-300" : ""}>{theirScore}</span>
                                       </span>
                                       <span className="text-[10px] uppercase text-muted-foreground tracking-wider hidden sm:inline">

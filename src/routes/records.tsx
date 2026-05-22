@@ -230,14 +230,14 @@ function buildRecords(d: any) {
       managerName: f.home_manager,
       value: Number(f.home_score),
       formatted: String(f.home_score),
-      context: `${ctx} · vs ${f.away_manager} (${f.home_score}–${f.away_score})`,
+      context: `${ctx} · vs ${f.away_manager} (${f.home_score}-${f.away_score})`,
     });
     sideScores.push({
       managerId: mIdByName(f.away_manager),
       managerName: f.away_manager,
       value: Number(f.away_score),
       formatted: String(f.away_score),
-      context: `${ctx} · vs ${f.home_manager} (${f.away_score}–${f.home_score})`,
+      context: `${ctx} · vs ${f.home_manager} (${f.away_score}-${f.home_score})`,
     });
   });
   const highestGW = [...sideScores].sort((a, b) => b.value - a.value);
@@ -252,7 +252,7 @@ function buildRecords(d: any) {
       managerName: f.winner_name,
       value: Number(f.margin),
       formatted: String(f.margin),
-      context: `${f.season_name} · GW${f.gameweek} · beat ${f.loser_name} ${f.winning_score}–${f.losing_score}`,
+      context: `${f.season_name} · GW${f.gameweek} · beat ${f.loser_name} ${f.winning_score}-${f.losing_score}`,
     }))
     .sort((a: Entry, b: Entry) => b.value - a.value);
 
@@ -265,13 +265,13 @@ function buildRecords(d: any) {
       secondaryManagerName: f.away_manager,
       value: Number(f.combined_score ?? f.home_score + f.away_score),
       formatted: String(f.combined_score ?? f.home_score + f.away_score),
-      context: `${f.season_name} · GW${f.gameweek} · ${f.home_manager} ${f.home_score}–${f.away_score} ${f.away_manager}`,
+      context: `${f.season_name} · GW${f.gameweek} · ${f.home_manager} ${f.home_score}-${f.away_score} ${f.away_manager}`,
     }))
     .sort((a: Entry, b: Entry) => b.value - a.value);
   // Lowest combined: exclude fixtures where either side scored 0 (outliers)
   const combinedLow = [...combined]
     .filter((e: any) => {
-      const ctxScores = String(e.context).match(/(\d+)–(\d+)/);
+      const ctxScores = String(e.context).match(/(\d+)-(\d+)/);
       if (!ctxScores) return e.value > 0;
       return Number(ctxScores[1]) > 0 && Number(ctxScores[2]) > 0;
     })
@@ -354,7 +354,7 @@ function buildRecords(d: any) {
         managerName: s.manager_name,
         value: s.streak_length,
         formatted: String(s.streak_length),
-        context: `${s.season_name} · GW${s.streak_start_gw}–${s.streak_end_gw}`,
+        context: `${s.season_name} · GW${s.streak_start_gw}-${s.streak_end_gw}`,
       }))
       .sort((a, b) => b.value - a.value);
 

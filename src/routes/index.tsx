@@ -396,7 +396,7 @@ function Home() {
         return { label: def.label, value: def.value(id) };
       }
     }
-    // Fallback only for Average Team — never invents records.
+    // Fallback only for Average Team - never invents records.
     if (id === "12") return { label: "Mission Statement", value: "Just here to fill the numbers" };
     return null;
   };

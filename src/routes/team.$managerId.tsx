@@ -941,7 +941,7 @@ function H2HCard({
                       <span className={r === "W" ? "text-emerald-400" : r === "L" ? "text-red-400" : "text-yellow-400"}>
                         {Number(f.my).toFixed(0)}
                       </span>
-                      <span className="text-muted-foreground mx-1">–</span>
+                      <span className="text-muted-foreground mx-1">-</span>
                       <span className="text-muted-foreground">{Number(f.op).toFixed(0)}</span>
                     </td>
                     <td className="p-2 text-center">
@@ -995,7 +995,7 @@ function StreakList({ rows, accent }: { rows: StreakRow[]; accent: "good" | "bad
           <span className={`font-display text-2xl w-10 text-center ${valueClass}`}>{s.streak_length ?? 0}</span>
           <span className="text-xs uppercase tracking-wider text-muted-foreground">games</span>
           <span className="ml-auto text-xs text-silver/80 truncate">
-            {s.season_name} · GW{s.streak_start_gw}–{s.streak_end_gw}
+            {s.season_name} · GW{s.streak_start_gw}-{s.streak_end_gw}
           </span>
         </li>
       ))}
@@ -1104,7 +1104,7 @@ function RecordsSection({
           align="center"
           label="Greatest Winning Run"
           value={bestWinRun?.streak_length ?? 0}
-          sub={bestWinRun ? `${bestWinRun.season_name} · GW${bestWinRun.streak_start_gw}–${bestWinRun.streak_end_gw}` : undefined}
+          sub={bestWinRun ? `${bestWinRun.season_name} · GW${bestWinRun.streak_start_gw}-${bestWinRun.streak_end_gw}` : undefined}
           icon={<Zap className="w-5 h-5" />}
           onClick={() => setDialog({ kind: "streaks", accent: "good", rows: allStreaks.win, title: "All Winning Runs" })}
           hint="Tap for full list"
@@ -1113,7 +1113,7 @@ function RecordsSection({
           align="center"
           label="Greatest Unbeaten Run"
           value={bestUnbeatenRun?.streak_length ?? 0}
-          sub={bestUnbeatenRun ? `${bestUnbeatenRun.season_name} · GW${bestUnbeatenRun.streak_start_gw}–${bestUnbeatenRun.streak_end_gw}` : undefined}
+          sub={bestUnbeatenRun ? `${bestUnbeatenRun.season_name} · GW${bestUnbeatenRun.streak_start_gw}-${bestUnbeatenRun.streak_end_gw}` : undefined}
           icon={<Award className="w-5 h-5" />}
           onClick={() => setDialog({ kind: "streaks", accent: "good", rows: allStreaks.unbeaten, title: "All Unbeaten Runs" })}
           hint="Tap for full list"
@@ -1122,7 +1122,7 @@ function RecordsSection({
           align="center"
           label="Worst Winless Run"
           value={worstWinlessRun?.streak_length ?? 0}
-          sub={worstWinlessRun ? `${worstWinlessRun.season_name} · GW${worstWinlessRun.streak_start_gw}–${worstWinlessRun.streak_end_gw}` : undefined}
+          sub={worstWinlessRun ? `${worstWinlessRun.season_name} · GW${worstWinlessRun.streak_start_gw}-${worstWinlessRun.streak_end_gw}` : undefined}
           icon={<ShieldOff className="w-5 h-5" />}
           onClick={() => setDialog({ kind: "streaks", accent: "bad", rows: allStreaks.winless, title: "All Winless Runs" })}
           hint="Tap for full list"
@@ -1131,7 +1131,7 @@ function RecordsSection({
           align="center"
           label="Worst Losing Run"
           value={worstLosingRun?.streak_length ?? 0}
-          sub={worstLosingRun ? `${worstLosingRun.season_name} · GW${worstLosingRun.streak_start_gw}–${worstLosingRun.streak_end_gw}` : undefined}
+          sub={worstLosingRun ? `${worstLosingRun.season_name} · GW${worstLosingRun.streak_start_gw}-${worstLosingRun.streak_end_gw}` : undefined}
           icon={<TrendingDown className="w-5 h-5" />}
           onClick={() => setDialog({ kind: "streaks", accent: "bad", rows: allStreaks.losing, title: "All Losing Runs" })}
           hint="Tap for full list"
@@ -1151,7 +1151,7 @@ function RecordsSection({
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display text-2xl uppercase">{dialog?.title}</DialogTitle>
-            <DialogDescription>Extended records — top performers across every season.</DialogDescription>
+            <DialogDescription>Extended records - top performers across every season.</DialogDescription>
           </DialogHeader>
           {dialog?.kind === "players" && (
             <PlayersList players={allPlayersWithSeasons} accent={dialog.accent} />
