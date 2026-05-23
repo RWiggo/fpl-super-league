@@ -141,6 +141,12 @@ function RecordsPage() {
       <RecordSection kicker="Single Season" title="Season Records" defs={records.season} onOpen={setOpen} mById={mById} />
       <RecordSection kicker="Form" title="Streak Records" defs={records.streaks} onOpen={setOpen} mById={mById} />
 
+      {/* All-Time Stat Explorer */}
+      <section className="max-w-7xl mx-auto px-4 py-16 border-t border-border/50">
+        <SectionTitle kicker="Search the Archive" title="All-Time Stat Explorer" />
+        <AllTimeStatExplorer teamSeasonStats={d.teamSeasonStats ?? []} managers={d.managers} />
+      </section>
+
       {/* All-Time XI */}
       <section className="max-w-7xl mx-auto px-4 py-16 border-t border-border/50">
         <SectionTitle kicker="The Immortals" title="All-Time XI" />
@@ -152,6 +158,7 @@ function RecordsPage() {
           <FormationPitch players={records.bestXI.players} getManagerName={(id: string) => { const mm = mById(id); return mm?.team_name ?? mm?.name ?? ""; }} />
         </div>
       </section>
+
 
       {open && <RecordModal def={open} mById={mById} onClose={() => setOpen(null)} />}
     </div>
