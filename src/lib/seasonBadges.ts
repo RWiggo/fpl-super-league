@@ -13,10 +13,17 @@ import s1_6 from "@/assets/badges/season1/6.png";
 import s1_7 from "@/assets/badges/season1/7.png";
 import s1_8 from "@/assets/badges/season1/8.png";
 
+import s2_4 from "@/assets/badges/season2/4.png";
+import s2_8 from "@/assets/badges/season2/8.png";
+
 type Override = { badge?: string; teamName?: string };
 
 // Keyed by `${managerId}|${seasonId}`.
+// Note: the original imported `@/assets/badges/<id>.svg` set represents the
+// Season 3 & 4 badges (badges did not change between those seasons), so we
+// only override here where a season-specific asset differs.
 const OVERRIDES: Record<string, Override> = {
+  // Season 1
   "1|1": { badge: s1_1, teamName: "El Changusto" },
   "2|1": { badge: s1_2, teamName: "Charleston Athletic" },
   "3|1": { badge: s1_3, teamName: "Wiggo Wanderers" },
@@ -25,6 +32,9 @@ const OVERRIDES: Record<string, Override> = {
   "6|1": { badge: s1_6, teamName: "Jeffery Schlupp The Bum FC" },
   "7|1": { badge: s1_7, teamName: "Ryan's Lions" },
   "8|1": { badge: s1_8, teamName: "Adam All Stars" },
+  // Season 2 (only badges supplied so far; others fall back to S3/4)
+  "4|2": { badge: s2_4 },
+  "8|2": { badge: s2_8 },
 };
 
 /** Badge for a manager in a given season. Falls back to the latest badge. */
