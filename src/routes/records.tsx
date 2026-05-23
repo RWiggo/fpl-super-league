@@ -617,3 +617,153 @@ function SectionTitle({ kicker, title }: { kicker: string; title: string }) {
     </div>
   );
 }
+
+/* ======================= All-Time Stat Explorer ======================= */
+
+const ALL_TIME_STAT_OPTIONS: { key: string; label: string; group: string }[] = [
+  { group: "Featured", key: "out_goals", label: "Goals" },
+  { group: "Featured", key: "out_assists", label: "Assists" },
+  { group: "Featured", key: "combined_clean_sheets", label: "Clean Sheets" },
+  { group: "Featured", key: "combined_yellow_cards", label: "Yellow Cards" },
+  { group: "Featured", key: "out_red_cards", label: "Red Cards" },
+  { group: "Featured", key: "out_own_goals", label: "Own Goals" },
+  { group: "Featured", key: "total_fpts", label: "Total Fantasy Points" },
+  { group: "Attack", key: "out_goals_outside_box", label: "Goals from Outside the Box" },
+  { group: "Attack", key: "out_fantasy_assists", label: "Fantasy Assists" },
+  { group: "Attack", key: "out_key_passes", label: "Key Passes" },
+  { group: "Attack", key: "out_shots_on_target", label: "Shots on Target" },
+  { group: "Attack", key: "out_successful_dribbles", label: "Successful Dribbles" },
+  { group: "Attack", key: "out_accurate_crosses", label: "Accurate Crosses" },
+  { group: "Attack", key: "out_big_chances_created", label: "Big Chances Created" },
+  { group: "Attack", key: "out_big_chances_missed", label: "Big Chances Missed" },
+  { group: "Attack", key: "out_free_kick_goals", label: "Free Kick Goals" },
+  { group: "Attack", key: "out_hat_tricks", label: "Hat-tricks" },
+  { group: "Attack", key: "out_penalties_drawn", label: "Penalties Drawn" },
+  { group: "Attack", key: "out_penalties_missed", label: "Penalties Missed" },
+  { group: "Defence", key: "out_tackles_won", label: "Tackles Won" },
+  { group: "Defence", key: "out_interceptions", label: "Interceptions" },
+  { group: "Defence", key: "out_ball_recoveries", label: "Ball Recoveries" },
+  { group: "Defence", key: "combined_aerial_duels_won", label: "Aerial Duels Won" },
+  { group: "Defence", key: "combined_clearances_off_line", label: "Clearances off the Line" },
+  { group: "Defence", key: "combined_goals_against", label: "Goals Against" },
+  { group: "Defence", key: "combined_errors", label: "Errors Leading to Goal" },
+  { group: "Defence", key: "combined_penalties_given_away", label: "Penalties Given Away" },
+  { group: "Discipline", key: "combined_fouls_suffered", label: "Fouls Suffered" },
+  { group: "Discipline", key: "out_offsides", label: "Offsides" },
+  { group: "Goalkeeping", key: "gk_saves", label: "GK Saves" },
+  { group: "Goalkeeping", key: "gk_clean_sheets", label: "GK Clean Sheets" },
+  { group: "Goalkeeping", key: "gk_penalty_saves", label: "GK Penalty Saves" },
+  { group: "Goalkeeping", key: "gk_one_on_ones_won", label: "GK 1-on-1s Won" },
+  { group: "Goalkeeping", key: "gk_aerial_duels_won", label: "GK Aerial Duels Won" },
+  { group: "Goalkeeping", key: "gk_error_goals", label: "GK Errors Leading to Goal" },
+  { group: "Workload", key: "combined_minutes", label: "Minutes Played" },
+  { group: "Workload", key: "combined_games_started", label: "Games Started" },
+  { group: "Workload", key: "out_subs_on", label: "Substitutions On" },
+];
+
+function AllTimeStatExplorer({
+  teamSeasonStats,
+  managers,
+}: {
+  teamSeasonStats: any[];
+  managers: any[];
+}) {
+  const [stat, setStat] = useState<string>("out_goals");
+
+  // Aggregate per manager by summing the chosen stat across every season they played.
+  const ranked = useMemo(() => {
+    const byManager: Record<string, { managerId: any; managerName: string; value: number }> = {};
+    for (const t of teamSeasonStats) {
+      const v = Number(t[stat] ?? 0);
+      if (!Number.isFinite(v)) continue;
+      const key = String(t.manager_name ?? t.manager_id ?? "");
+      if (!key) continue;
+      if (!byManager[key]) {
+        byManager[key] = { managerId: t.manager_id, managerName: t.manager_name, value: 0 };
+      }
+      byManager[key].value += v;
+    }
+    // Make sure every manager appears, even if they have no entries for this stat.
+    for (const m of managers) {
+      const key = String(m.name);
+      if (!byManager[key]) {
+        byManager[key] = { managerId: m.id, managerName: m.name, value: 0 };
+      }
+    }
+    return Object.values(byManager)
+      .sort((a, b) => b.value - a.value)
+      .map((r, i) => ({ rank: i + 1, ...r }));
+  }, [teamSeasonStats, managers, stat]);
+
+  const mById = (id: any) => managers.find((m: any) => String(m.id) === String(id));
+  const current = ALL_TIME_STAT_OPTIONS.find((o) => o.key === stat);
+
+  return (
+    <div className="mt-6">
+      <p className="text-sm text-muted-foreground mb-4">
+        Pick any stat to see every manager in the league ranked across every season they have ever played.
+      </p>
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Stat</label>
+        <select
+          value={stat}
+          onChange={(e) => setStat(e.target.value)}
+          className="bg-card border border-border rounded px-3 py-2 text-sm font-display text-gold min-w-[260px]"
+        >
+          {Array.from(new Set(ALL_TIME_STAT_OPTIONS.map((o) => o.group))).map((g) => (
+            <optgroup key={g} label={g}>
+              {ALL_TIME_STAT_OPTIONS.filter((o) => o.group === g).map((o) => (
+                <option key={o.key} value={o.key}>{o.label}</option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+      </div>
+      <div className="premium-card rounded-lg overflow-hidden">
+        <table className="w-full text-xs sm:text-sm">
+          <thead className="bg-card/60 text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground">
+            <tr>
+              <th className="p-2 sm:p-3 text-left w-8">#</th>
+              <th className="p-2 sm:p-3 text-left">Team</th>
+              <th className="hidden sm:table-cell p-3 text-left">Manager</th>
+              <th className="p-2 sm:p-3 text-right">{current?.label ?? "Value"} (all-time)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ranked.map((r) => {
+              const m = mById(r.managerId);
+              const b = m ? getBranding(m.id) : null;
+              const teamName = m?.team_name ?? m?.name ?? r.managerName;
+              return (
+                <tr key={r.rank} className="border-t border-border/40 hover:bg-gold/5">
+                  <td className="p-2 sm:p-3 font-display text-gold">{r.rank}</td>
+                  <td className="p-2 sm:p-3 font-medium">
+                    <Link
+                      to="/team/$managerId"
+                      params={{ managerId: String(r.managerId) }}
+                      className="flex items-center gap-2 sm:gap-3 min-w-0 hover:text-gold"
+                    >
+                      {b?.badge && (
+                        <img src={b.badge} alt="" className="w-6 h-6 sm:w-7 sm:h-7 object-contain shrink-0" />
+                      )}
+                      <div className="min-w-0">
+                        <div className="truncate">{teamName}</div>
+                        <div className="sm:hidden text-[10px] text-muted-foreground capitalize truncate">{r.managerName}</div>
+                      </div>
+                    </Link>
+                  </td>
+                  <td className="hidden sm:table-cell p-3 text-muted-foreground capitalize">{r.managerName}</td>
+                  <td className="p-2 sm:p-3 text-right font-display text-gold tabular-nums">{r.value.toLocaleString()}</td>
+                </tr>
+              );
+            })}
+            {ranked.length === 0 && (
+              <tr><td colSpan={4} className="p-6 text-center text-muted-foreground">No data.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
