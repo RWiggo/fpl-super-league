@@ -61,7 +61,8 @@ function RecordsPage() {
       supabase.from("unbeaten_streaks").select("*"),
       supabase.from("winless_streaks").select("*"),
       supabase.from("losing_streaks").select("*"),
-    ]).then(([s, m, a, f, st, sd, tots, pth, ub, wl, ls]) =>
+      supabase.from("team_season_stats_full").select("*"),
+    ]).then(([s, m, a, f, st, sd, tots, pth, ub, wl, ls, tss]) =>
       setD({
         seasons: s.data ?? [],
         managers: m.data ?? [],
@@ -74,9 +75,11 @@ function RecordsPage() {
         unbeaten: ub.data ?? [],
         winless: wl.data ?? [],
         losing: ls.data ?? [],
+        teamSeasonStats: tss.data ?? [],
       })
     );
   }, []);
+
 
   const records = useMemo(() => buildRecords(d), [d]);
 
