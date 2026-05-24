@@ -5,7 +5,7 @@ import { StatCard, Skeleton } from "@/components/StatCard";
 import { Trophy, Flame, Target, Crown, TrendingUp, Zap, Skull } from "lucide-react";
 import logo from "@/assets/fpl-super-league-logo.png";
 import { getBranding } from "@/lib/managerBranding";
-import { getSeasonBadge } from "@/lib/seasonBadges";
+import { getSeasonBadge, getSeasonTeamName } from "@/lib/seasonBadges";
 import { getSeasonKit } from "@/lib/seasonKits";
 import { getNickname } from "@/lib/managerNicknames";
 import { currentTeamName } from "@/lib/currentTeamNames";
@@ -415,6 +415,8 @@ function Home() {
   };
 
   const definingStat = (id: string): { label: string; value: string } | null => {
+    // Average Team's calling card is its mission statement — always show it.
+    if (id === "12") return { label: "Mission Statement", value: "Just here to fill the numbers" };
     // Prefer a stat the manager actually leads.
     for (const def of leaderDefs) {
       if (leaderByKey[def.key] === id) {
@@ -430,7 +432,6 @@ function Home() {
       if (!best || r < best.rank) best = { def, rank: r };
     }
     if (best) return { label: best.def.label, value: best.def.value(id) };
-    if (id === "12") return { label: "Mission Statement", value: "Just here to fill the numbers" };
     return null;
   };
 
@@ -491,6 +492,8 @@ function Home() {
             const b = champ ? getBranding(String(champ.id)) : null;
             const tint = b?.primary ?? "#d4af37";
             const kit = champ ? getSeasonKit(champ.id, s.id)?.home : null;
+            const seasonBadge = champ ? getSeasonBadge(champ.id, s.id) : null;
+            const seasonTeam = champ ? getSeasonTeamName(champ.id, s.id, champ.team_name ?? champ.name) : "-";
             return (
               <Link
                 key={s.id}
@@ -506,8 +509,8 @@ function Home() {
                     <Crown className="w-6 h-6 text-gold" />
                     <span className="text-[10px] uppercase tracking-[0.3em] text-gold/90 font-bold">{s.name} Champion</span>
                   </div>
-                  {b?.badge && <img src={b.badge} alt="" className="w-16 h-16 object-contain mb-4 drop-shadow-[0_0_20px_rgba(212,175,55,0.4)]" />}
-                  <div className="font-display text-4xl mb-1 capitalize text-white">{currentTeamName(champ?.id, champ?.team_name ?? champ?.name)}</div>
+                  {seasonBadge && <img src={seasonBadge} alt="" className="w-16 h-16 object-contain mb-4 drop-shadow-[0_0_20px_rgba(212,175,55,0.4)]" />}
+                  <div className="font-display text-4xl mb-1 capitalize text-white">{seasonTeam}</div>
                   <div className="text-sm text-muted-foreground capitalize">Managed by {champ?.name}</div>
                 </div>
               </Link>
