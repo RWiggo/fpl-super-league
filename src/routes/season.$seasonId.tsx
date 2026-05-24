@@ -1232,8 +1232,8 @@ function FixturesPanel({ fixtures, managers, maxGW, seasonId }: any) {
         {list.map((f: any) => {
           const homeM = mByName(f.home_manager);
           const awayM = mByName(f.away_manager);
-          const hb = homeM ? getBranding(homeM.id) : null;
-          const ab = awayM ? getBranding(awayM.id) : null;
+          const hb = homeM ? { badge: getSeasonBadge(homeM.id, seasonId) ?? getBranding(homeM.id)?.badge } : null;
+          const ab = awayM ? { badge: getSeasonBadge(awayM.id, seasonId) ?? getBranding(awayM.id)?.badge } : null;
           const homeWon = f.home_score > f.away_score;
           const awayWon = f.away_score > f.home_score;
           const isDraw = f.home_score != null && f.home_score === f.away_score;
