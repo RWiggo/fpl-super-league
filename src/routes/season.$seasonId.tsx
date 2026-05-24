@@ -897,10 +897,10 @@ function SeasonHero({ season, champ, topGoals, longestWin, longestLose, longestW
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
-              <Mini label="Best Win Run" value={longestWin?.streak_length ?? "-"} sub={longestWin?.team_name} />
-              <Mini label="Worst Losing Run" value={longestLose?.streak_length ?? "-"} sub={longestLose?.team_name} />
-              <Mini label="Top Scorers" value={topGoals?.value ?? "-"} sub={topGoals?.name} />
-              <Mini label="Most Clean Sheets" value={mostCS?.value ?? "-"} sub={mostCS?.name} />
+              <Mini label="Best Win Run" value={longestWin?.streak_length ?? "-"} sub={longestWin?.team_name} badge={longestWinManagerId ? (getSeasonBadge(longestWinManagerId, season.id) ?? getBranding(longestWinManagerId)?.badge) : null} />
+              <Mini label="Worst Losing Run" value={longestLose?.streak_length ?? "-"} sub={longestLose?.team_name} badge={longestLoseManagerId ? (getSeasonBadge(longestLoseManagerId, season.id) ?? getBranding(longestLoseManagerId)?.badge) : null} />
+              <Mini label="Top Scorers" value={topGoals?.value ?? "-"} sub={topGoals?.name} badge={topGoals?.managerId ? (getSeasonBadge(topGoals.managerId, season.id) ?? getBranding(topGoals.managerId)?.badge) : null} />
+              <Mini label="Most Clean Sheets" value={mostCS?.value ?? "-"} sub={mostCS?.name} badge={mostCS?.managerId ? (getSeasonBadge(mostCS.managerId, season.id) ?? getBranding(mostCS.managerId)?.badge) : null} />
             </div>
           </div>
         </div>
