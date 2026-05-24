@@ -11,6 +11,7 @@ export function TeamHero({
   formerlyKnownAs,
   facts,
   secondaryFacts,
+  extras,
 }: {
   managerName: string;
   teamName: string;
@@ -20,6 +21,7 @@ export function TeamHero({
   formerlyKnownAs?: string[];
   facts: QuickFact[];
   secondaryFacts?: QuickFact[];
+  extras?: ReactNode;
 }) {
   // UCL-style team hero: dark navy base, diagonal team-colour wash on the
   // right, oversized faded crest watermark, crest + name on the left, and
