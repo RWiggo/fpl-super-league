@@ -31,6 +31,8 @@ const OVERRIDES: Record<string, Override> = {
   "8|1": { badge: s1_8, teamName: "Adam All Stars" },
   "4|2": { badge: s2_4 },
   "8|2": { badge: s2_8 },
+  "9|3": { teamName: "Lallana Rhoades FC" },
+  "9|2": { teamName: "Lallana Rhoades FC" },
 };
 
 /** Badge for a manager in a given season. Falls back to the latest badge. */

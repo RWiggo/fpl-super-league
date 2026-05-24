@@ -375,7 +375,7 @@ export function Layout() {
             </div>
             <div>
               <div className="text-[10px] uppercase tracking-[0.3em] text-gold mb-3">Teams</div>
-              <ul className="space-y-2 text-xs max-h-48 overflow-auto pr-2">
+              <ul className="space-y-2 text-xs">
                 {teamsList.map((m) => (
                   <li key={m.id}><Link to="/team/$managerId" params={{ managerId: m.id }} className="hover:text-foreground capitalize">{m.displayName}</Link></li>
                 ))}
