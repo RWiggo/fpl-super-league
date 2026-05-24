@@ -221,9 +221,9 @@ function buildRecords(d: any) {
 
   const competition: RecordDef[] = [
     { key: "titles", label: "Most Titles", icon: <Crown />, tint: "hsl(45 90% 55%)", entries: titlesEntries, unit: "titles" },
-    { key: "career-wins", label: "Most Wins", icon: <Trophy />, tint: "hsl(145 70% 50%)", entries: careerEntry("total_wins"), unit: "wins" },
-    { key: "career-draws", label: "Most Draws", icon: <Shield />, tint: "hsl(45 60% 60%)", entries: careerEntry("total_draws"), unit: "draws" },
-    { key: "career-losses", label: "Most Losses", icon: <TrendingDown />, tint: "hsl(0 70% 55%)", entries: careerEntry("total_losses"), unit: "losses" },
+    { key: "career-wins", label: "Most Wins", icon: <LetterIcon ch="W" />, tint: "hsl(145 70% 50%)", entries: careerEntry("total_wins"), unit: "wins" },
+    { key: "career-draws", label: "Most Draws", icon: <LetterIcon ch="D" />, tint: "hsl(45 60% 60%)", entries: careerEntry("total_draws"), unit: "draws" },
+    { key: "career-losses", label: "Most Losses", icon: <LetterIcon ch="L" />, tint: "hsl(0 70% 55%)", entries: careerEntry("total_losses"), unit: "losses" },
     { key: "career-fpl-high", label: "Most FPL Points", icon: <Flame />, tint: "hsl(15 85% 55%)", entries: fplCareer(false), unit: "pts" },
     { key: "career-fpl-low", label: "Fewest FPL Points", icon: <TrendingDown />, tint: "hsl(200 40% 55%)", entries: fplCareer(true), unit: "pts" },
   ];
@@ -349,7 +349,7 @@ function buildRecords(d: any) {
     .sort((a, b) => b.value - a.value);
 
   const season: RecordDef[] = [
-    { key: "s-wins", label: "Most Wins (Season)", icon: <Trophy />, tint: "hsl(45 90% 55%)", entries: seasonEntry("wins"), unit: "wins" },
+    { key: "s-wins", label: "Most Wins (Season)", icon: <LetterIcon ch="W" />, tint: "hsl(45 90% 55%)", entries: seasonEntry("wins"), unit: "wins" },
     { key: "s-pts", label: "Most League Points (Season)", icon: <Crown />, tint: "hsl(285 70% 60%)", entries: seasonEntry("total_points"), unit: "pts" },
     { key: "s-pf", label: "Most FPL Points (Season)", icon: <Flame />, tint: "hsl(15 85% 55%)", entries: seasonEntry("points_for", (v) => v.toFixed(0)), unit: "pts" },
     { key: "s-losses", label: "Fewest Losses (Season)", icon: <Shield />, tint: "hsl(195 80% 55%)", entries: seasonEntry("losses", String, true), unit: "losses" },
