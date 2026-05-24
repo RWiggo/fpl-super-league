@@ -921,72 +921,85 @@ function H2HCard({
     r === "W" ? "bg-emerald-600/80 text-white" : r === "L" ? "bg-red-600/80 text-white" : "bg-yellow-500/80 text-black";
 
   return (
-    <div className={`relative shrink-0 snap-start premium-card rounded-lg overflow-hidden transition-all w-full ${open ? "sm:w-[520px]" : "sm:w-[300px]"}`}>
-      {/* Top tint accent */}
-      <div className="h-1 w-full" style={{ background: tint }} />
-      <button onClick={() => setOpen((o) => !o)} className="w-full text-left">
-        <div className="p-4 flex items-center gap-3 border-b border-border/40">
-          {opponentBadge && (
-            <img src={opponentBadge} alt="" className="w-12 h-12 shrink-0 drop-shadow" />
-          )}
-          <div className="min-w-0 flex-1">
-            <div className="text-[10px] uppercase tracking-[0.25em] text-silver/60">Opponent</div>
-            <div className="font-display text-lg uppercase truncate">{opponentName}</div>
+    <>
+      <div className="relative premium-card rounded-lg overflow-hidden w-full">
+        <div className="h-1 w-full" style={{ background: tint }} />
+        <button onClick={() => setOpen(true)} className="w-full text-left">
+          <div className="p-4 flex items-center gap-3 border-b border-border/40">
+            {opponentBadge && (
+              <img src={opponentBadge} alt="" className="w-12 h-12 shrink-0 drop-shadow" />
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="text-[10px] uppercase tracking-[0.25em] text-silver/60">Opponent</div>
+              <div className="font-display text-lg uppercase truncate">{opponentName}</div>
+            </div>
+            <div className="text-right">
+              <div className="text-[10px] uppercase tracking-wider text-silver/60">Win %</div>
+              <div className="font-display text-2xl" style={{ color: tint }}>{wp}%</div>
+            </div>
           </div>
-          <div className="text-right">
-            <div className="text-[10px] uppercase tracking-wider text-silver/60">Win %</div>
-            <div className="font-display text-2xl" style={{ color: tint }}>{wp}%</div>
+          <div className="grid grid-cols-3 divide-x divide-border/40 text-center">
+            <div className="py-3">
+              <div className="text-[10px] uppercase tracking-wider text-silver/60">W</div>
+              <div className="font-display text-xl text-emerald-400">{wins}</div>
+            </div>
+            <div className="py-3">
+              <div className="text-[10px] uppercase tracking-wider text-silver/60">D</div>
+              <div className="font-display text-xl text-yellow-400">{draws}</div>
+            </div>
+            <div className="py-3">
+              <div className="text-[10px] uppercase tracking-wider text-silver/60">L</div>
+              <div className="font-display text-xl text-red-400">{losses}</div>
+            </div>
           </div>
-        </div>
-        <div className="grid grid-cols-3 divide-x divide-border/40 text-center">
-          <div className="py-3">
-            <div className="text-[10px] uppercase tracking-wider text-silver/60">W</div>
-            <div className="font-display text-xl text-emerald-400">{wins}</div>
+          <div className="px-4 pb-3 grid grid-cols-2 gap-2 text-xs">
+            <div className="text-muted-foreground">PF <span className="text-foreground font-display ml-1">{pf.toFixed(0)}</span></div>
+            <div className="text-muted-foreground text-right">PA <span className="text-foreground font-display ml-1">{pa.toFixed(0)}</span></div>
           </div>
-          <div className="py-3">
-            <div className="text-[10px] uppercase tracking-wider text-silver/60">D</div>
-            <div className="font-display text-xl text-yellow-400">{draws}</div>
+          <div className="px-4 pb-4">
+            <div className="text-[10px] uppercase tracking-[0.25em] text-silver/60 mb-2">Recent Form</div>
+            <div className="flex gap-1.5">
+              {recent.length === 0 && <span className="text-xs text-muted-foreground">No fixtures yet</span>}
+              {recent.map((f, i) => {
+                const r = resultLetter(f.my, f.op);
+                return (
+                  <span key={i} className={`w-7 h-7 rounded text-[11px] font-display flex items-center justify-center ${resultClass(r)}`} title={`${f.seasonName} GW${f.gameweek}: ${f.my}-${f.op}`}>
+                    {r}
+                  </span>
+                );
+              })}
+            </div>
+            <div className="mt-3 text-[10px] uppercase tracking-wider text-silver/50">Tap for every result</div>
           </div>
-          <div className="py-3">
-            <div className="text-[10px] uppercase tracking-wider text-silver/60">L</div>
-            <div className="font-display text-xl text-red-400">{losses}</div>
-          </div>
-        </div>
-        <div className="px-4 pb-3 grid grid-cols-2 gap-2 text-xs">
-          <div className="text-muted-foreground">PF <span className="text-foreground font-display ml-1">{pf.toFixed(0)}</span></div>
-          <div className="text-muted-foreground text-right">PA <span className="text-foreground font-display ml-1">{pa.toFixed(0)}</span></div>
-        </div>
-        <div className="px-4 pb-4">
-          <div className="text-[10px] uppercase tracking-[0.25em] text-silver/60 mb-2">Recent Form</div>
-          <div className="flex gap-1.5">
-            {recent.length === 0 && <span className="text-xs text-muted-foreground">No fixtures yet</span>}
-            {recent.map((f, i) => {
-              const r = resultLetter(f.my, f.op);
-              return (
-                <span key={i} className={`w-7 h-7 rounded text-[11px] font-display flex items-center justify-center ${resultClass(r)}`} title={`${f.seasonName} GW${f.gameweek}: ${f.my}-${f.op}`}>
-                  {r}
-                </span>
-              );
-            })}
-          </div>
-          <div className="mt-3 text-[10px] uppercase tracking-wider text-silver/50 flex items-center gap-1">
-            {open ? "Hide all results" : "Tap for every result"}
-            <span className="ml-auto" style={{ color: tint }}>{open ? "−" : "+"}</span>
-          </div>
-        </div>
-      </button>
-      {open && (
-        <div className="border-t border-border/40 bg-black/20 max-h-72 overflow-y-auto">
-          <table className="w-full text-xs">
+        </button>
+      </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              {opponentBadge && <img src={opponentBadge} alt="" className="w-10 h-10" />}
+              <div>
+                <DialogTitle className="font-display text-2xl uppercase">vs {opponentName}</DialogTitle>
+                <DialogDescription>
+                  {wins}W · {draws}D · {losses}L · {wp}% win rate
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+          <table className="w-full text-sm mt-2">
             <thead className="bg-card/60 text-[10px] uppercase tracking-wider text-muted-foreground sticky top-0">
               <tr>
                 <th className="p-2 text-left">Season</th>
                 <th className="p-2 text-center">GW</th>
                 <th className="p-2 text-right">Score</th>
-                <th className="p-2 text-center w-8">R</th>
+                <th className="p-2 text-center w-10">R</th>
               </tr>
             </thead>
             <tbody>
+              {fixtures.length === 0 && (
+                <tr><td colSpan={4} className="p-6 text-center text-muted-foreground">No fixtures yet</td></tr>
+              )}
               {fixtures.map((f, i) => {
                 const r = resultLetter(f.my, f.op);
                 return (
@@ -1001,16 +1014,110 @@ function H2HCard({
                       <span className="text-muted-foreground">{Number(f.op).toFixed(0)}</span>
                     </td>
                     <td className="p-2 text-center">
-                      <span className={`inline-flex w-5 h-5 rounded text-[10px] font-display items-center justify-center ${resultClass(r)}`}>{r}</span>
+                      <span className={`inline-flex w-6 h-6 rounded text-[10px] font-display items-center justify-center ${resultClass(r)}`}>{r}</span>
                     </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-        </div>
-      )}
-    </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+function ArchiveButtons({
+  badgeArchive,
+  kitArchive,
+  teamName,
+}: {
+  badgeArchive: { seasonId: string | number; seasonName?: string; badge: string | null; teamName: string }[];
+  kitArchive: { seasonId: string | number; seasonName?: string; kit: any; teamName: string }[];
+  teamName: string;
+}) {
+  const [open, setOpen] = useState<"badge" | "kit" | null>(null);
+  return (
+    <>
+      <div className="flex gap-3 flex-wrap">
+        <button
+          type="button"
+          onClick={() => setOpen("badge")}
+          className="text-[10px] uppercase tracking-[0.3em] text-gold/90 hover:text-gold border-b border-gold/40 hover:border-gold pb-0.5 transition"
+        >
+          Badge Archive →
+        </button>
+        <button
+          type="button"
+          onClick={() => setOpen("kit")}
+          className="text-[10px] uppercase tracking-[0.3em] text-gold/90 hover:text-gold border-b border-gold/40 hover:border-gold pb-0.5 transition"
+        >
+          Kit Archive →
+        </button>
+      </div>
+      <Dialog open={open === "badge"} onOpenChange={(o) => { if (!o) setOpen(null); }}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl uppercase">{teamName} · Badge Archive</DialogTitle>
+            <DialogDescription>Crests worn through the seasons.</DialogDescription>
+          </DialogHeader>
+          <ArchiveTimeline
+            items={badgeArchive.map((b) => ({
+              seasonName: b.seasonName,
+              teamName: b.teamName,
+              image: b.badge ?? "",
+              imageClass: "w-24 h-24 sm:w-28 sm:h-28 object-contain",
+            }))}
+          />
+        </DialogContent>
+      </Dialog>
+      <Dialog open={open === "kit"} onOpenChange={(o) => { if (!o) setOpen(null); }}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl uppercase">{teamName} · Kit Archive</DialogTitle>
+            <DialogDescription>Home kits worn through the seasons.</DialogDescription>
+          </DialogHeader>
+          <ArchiveTimeline
+            items={kitArchive.map((k) => ({
+              seasonName: k.seasonName,
+              teamName: k.teamName,
+              image: k.kit?.home ?? "",
+              imageClass: "w-24 h-24 sm:w-28 sm:h-28 object-contain",
+            }))}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+function ArchiveTimeline({
+  items,
+}: {
+  items: { seasonName?: string; teamName: string; image: string; imageClass: string }[];
+}) {
+  if (!items.length) return <div className="text-sm text-muted-foreground p-6 text-center">No archive entries yet.</div>;
+  return (
+    <ol className="relative mt-4 border-l border-gold/30 ml-4">
+      {items.map((it, i) => (
+        <li key={i} className="relative pl-8 pb-8 last:pb-2">
+          <span className="absolute -left-[7px] top-2 w-3 h-3 rounded-full bg-gold shadow-[0_0_0_4px_rgba(0,0,0,0.6)]" />
+          <div className="flex items-center gap-5">
+            <div className="shrink-0 bg-black/30 rounded-lg p-3 border border-border/40">
+              {it.image ? (
+                <img src={it.image} alt="" loading="lazy" className={it.imageClass} />
+              ) : (
+                <div className="w-24 h-24 grid place-items-center text-xs text-muted-foreground">No asset</div>
+              )}
+            </div>
+            <div className="min-w-0">
+              <div className="text-[10px] uppercase tracking-[0.3em] text-silver/60">{it.seasonName}</div>
+              <div className="font-display text-xl uppercase truncate">{it.teamName}</div>
+            </div>
+          </div>
+        </li>
+      ))}
+    </ol>
   );
 }
 
