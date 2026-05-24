@@ -93,7 +93,7 @@ function TeamPage() {
   useEffect(() => {
     if (!earlyBranding) return;
     const root = document.documentElement;
-    const props = ["--gold", "--color-gold", "--gold-bright", "--color-gold-bright", "--primary", "--color-primary"];
+    const props = ["--gold", "--color-gold", "--gold-bright", "--color-gold-bright", "--primary", "--color-primary", "--team-primary"];
     const prev = Object.fromEntries(props.map((p) => [p, root.style.getPropertyValue(p)]));
     props.forEach((p) => root.style.setProperty(p, earlyBranding.primary));
     let prevFg: Record<string, string> | null = null;
@@ -102,11 +102,14 @@ function TeamPage() {
       prevFg = Object.fromEntries(fgProps.map((p) => [p, root.style.getPropertyValue(p)]));
       fgProps.forEach((p) => root.style.setProperty(p, earlyBranding.primaryFg!));
     }
+    document.body.classList.add("team-branded");
     return () => {
       Object.entries(prev).forEach(([p, v]) => v ? root.style.setProperty(p, v) : root.style.removeProperty(p));
       if (prevFg) Object.entries(prevFg).forEach(([p, v]) => v ? root.style.setProperty(p, v) : root.style.removeProperty(p));
+      document.body.classList.remove("team-branded");
     };
   }, [earlyBranding?.primary, earlyBranding?.primaryFg]);
+
 
   useEffect(() => { if (d?.tots?.length && !totsSeason) setTotsSeason(d.tots[0].season_name); }, [d]);
 
