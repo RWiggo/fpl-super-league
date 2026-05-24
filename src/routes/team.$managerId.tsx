@@ -413,7 +413,7 @@ function TeamPage() {
   }));
 
   return (
-    <div style={brandStyle}>
+    <div className="team-page" style={brandStyle}>
 
       <TeamHero
         managerName={d.manager.name}
