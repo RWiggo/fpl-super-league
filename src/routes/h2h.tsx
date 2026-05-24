@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/StatCard";
 import { getBranding } from "@/lib/managerBranding";
+import { currentTeamName } from "@/lib/currentTeamNames";
 import { Swords, ChevronDown, Flame, Snowflake, Trophy, Skull } from "lucide-react";
 
 export const Route = createFileRoute("/h2h")({
@@ -175,14 +176,14 @@ function H2HPage() {
                   <img src={b.badge} alt="" className="w-12 h-12 object-contain flex-shrink-0" />
                 ) : (
                   <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white flex-shrink-0" style={{ background: tint }}>
-                    {(m.team_name ?? m.name)?.charAt(0).toUpperCase()}
+                    {currentTeamName(m.id, m.team_name).charAt(0).toUpperCase()}
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <Link to="/team/$managerId" params={{ managerId: id }}
                     onClick={(e) => e.stopPropagation()}
-                    className="font-display text-xl md:text-2xl capitalize hover:text-gold transition block truncate">
-                    {m.team_name ?? m.name}
+                    className="font-display text-base sm:text-xl md:text-2xl capitalize hover:text-gold transition block break-words leading-tight">
+                    {currentTeamName(m.id, m.team_name)}
                   </Link>
                   <div className="text-[11px] uppercase tracking-widest text-muted-foreground">{rows.length} rivalries · {totalGames} matches</div>
                 </div>
@@ -252,12 +253,12 @@ function H2HPage() {
                                 <img src={ob.badge} alt="" className="w-9 h-9 object-contain flex-shrink-0" />
                               ) : (
                                 <div className="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0" style={{ background: oTint }}>
-                                  {(opp.team_name ?? opp.name)?.charAt(0).toUpperCase()}
+                                  {currentTeamName(opp.id, opp.team_name).charAt(0).toUpperCase()}
                                 </div>
                               )}
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm font-bold capitalize truncate">{opp.team_name ?? opp.name}</span>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-sm font-bold capitalize break-words leading-tight">{currentTeamName(opp.id, opp.team_name)}</span>
                                   <span className={`text-[9px] uppercase tracking-widest font-bold ${vColor}`}>{verdict}</span>
                                 </div>
                                 <div className="h-1.5 mt-1.5 rounded-full overflow-hidden flex bg-secondary/60">
@@ -379,12 +380,12 @@ function RivalHighlight({ kind, rivalry, oppMgr }: { kind: "best" | "worst"; riv
           <img src={b.badge} alt="" className="w-12 h-12 object-contain" />
         ) : (
           <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-white" style={{ background: tint }}>
-            {(oppMgr.team_name ?? oppMgr.name)?.charAt(0).toUpperCase()}
+            {currentTeamName(oppMgr.id, oppMgr.team_name).charAt(0).toUpperCase()}
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <Link to="/team/$managerId" params={{ managerId: String(oppMgr.id) }} className="font-display text-lg capitalize hover:text-gold transition block truncate">
-            {oppMgr.team_name ?? oppMgr.name}
+          <Link to="/team/$managerId" params={{ managerId: String(oppMgr.id) }} className="font-display text-base sm:text-lg capitalize hover:text-gold transition block break-words leading-tight">
+            {currentTeamName(oppMgr.id, oppMgr.team_name)}
           </Link>
           <div className="text-xs text-muted-foreground">
             <span className="text-emerald-400 font-bold">{rivalry.wins}W</span>
