@@ -40,7 +40,6 @@ function H2HPage() {
     ]).then(([m, h, f]) => {
       const managers = (m.data ?? []).slice().sort((a: any, b: any) => (a.name ?? "").localeCompare(b.name ?? ""));
       setD({ managers, h2h: h.data ?? [], fixtures: f.data ?? [] });
-      if (managers[0]) setOpenMgr(String(managers[0].id));
     });
   }, []);
 

@@ -843,16 +843,18 @@ function SeasonHero({ season, champ, topGoals, longestWin, longestLose, longestW
                 style={{ color: accent, filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.6))" }}
               />
               <div
-                className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 sm:px-4 py-0.5 sm:py-1 rounded-md border backdrop-blur-sm"
+                className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 sm:px-4 py-0.5 sm:py-1 rounded-md border backdrop-blur-sm whitespace-nowrap"
                 style={{ background: `linear-gradient(180deg, ${accentDeep}cc, #00000099)`, borderColor: `${accent}80` }}
               >
-                <div className="font-display text-sm sm:text-xl tracking-[0.25em] text-white leading-none">
-                  {yA}<span className="opacity-60 mx-1">/</span>{yB}
+                <div className="font-display text-sm sm:text-xl tracking-[0.2em] text-white leading-none flex items-center gap-2">
+                  <span>{yA}<span className="opacity-60 mx-1">/</span>{yB}</span>
+                  <span className="opacity-50">·</span>
+                  <span className="text-[10px] sm:text-xs uppercase tracking-[0.18em]" style={{ color: accent }}>Season {season.id}</span>
                 </div>
               </div>
             </div>
             <div className="mt-3 sm:mt-6 text-[9px] sm:text-[10px] uppercase tracking-[0.3em] sm:tracking-[0.4em]" style={{ color: accent }}>
-              FPL Super League · Season {yA}/{yB}
+              FPL Super League · Season {season.id} · {yA}/{yB}
             </div>
           </div>
 
