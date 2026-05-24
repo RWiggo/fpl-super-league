@@ -1143,7 +1143,7 @@ function RecordsSection({
 
   return (
     <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-      <SectionTitle kicker="The Highs and Lows" title="Records and Statistics" />
+      <SectionTitle kicker={`${teamName} · The Highs and Lows`} title="Records and Statistics" />
 
       <div className="grid lg:grid-cols-2 gap-6 mt-8">
         <div onClick={() => setDialog({ kind: "players", accent: "good", title: "All Players · Best to Worst" })} className="cursor-pointer">
