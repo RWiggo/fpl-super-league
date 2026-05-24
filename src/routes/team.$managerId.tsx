@@ -10,6 +10,9 @@ import { getNickname } from "@/lib/managerNicknames";
 import { getPlClubBadge } from "@/lib/plClubBadges";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getKit } from "@/lib/managerKits";
+import { getSeasonBadge, getSeasonTeamName } from "@/lib/seasonBadges";
+import { getSeasonKit } from "@/lib/seasonKits";
+import { useSeasonAssets } from "@/lib/seasonAssets";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/team/$managerId")({
