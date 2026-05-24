@@ -4,6 +4,9 @@ import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/StatCard";
 import { FormationPitch } from "@/components/FormationPitch";
 import { getBranding } from "@/lib/managerBranding";
+import { currentTeamName } from "@/lib/currentTeamNames";
+import { getSeasonKit } from "@/lib/seasonKits";
+import { GoalkeeperKit } from "@/components/GoalkeeperKit";
 import { Flame, Trophy, Crown, Target, Zap, Shield, TrendingDown, X, Award } from "lucide-react";
 
 export const Route = createFileRoute("/records")({
