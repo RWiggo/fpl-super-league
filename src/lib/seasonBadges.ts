@@ -31,6 +31,7 @@ const OVERRIDES: Record<string, Override> = {
   "8|1": { badge: s1_8, teamName: "Adam All Stars" },
   "4|2": { badge: s2_4 },
   "8|2": { badge: s2_8 },
+  "6|2": { teamName: "Jeffrey Schlupp the Bum FC" },
   "9|3": { teamName: "Lallana Rhoades FC" },
   "9|2": { teamName: "Lallana Rhoades FC" },
 };
