@@ -5,7 +5,8 @@ import { Skeleton } from "@/components/StatCard";
 import { FormationPitch } from "@/components/FormationPitch";
 import { getBranding } from "@/lib/managerBranding";
 import { currentTeamName } from "@/lib/currentTeamNames";
-import { Trophy, Crown, Flame, Target, Zap, Skull, Shield, TrendingUp, TrendingDown, Users, Swords, Star, Goal, HandHelping, ArrowDown, AlertOctagon, Info, ChevronRight } from "lucide-react";
+import { getSeasonBadge } from "@/lib/seasonBadges";
+import { Trophy, Crown, Flame, Target, Zap, Skull, Shield, TrendingUp, TrendingDown, Users, Swords, Star, Goal, HandHelping, ArrowDown, ArrowUp, AlertOctagon, Info, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/season/$seasonId")({
   component: SeasonPage,
@@ -135,19 +136,32 @@ function SeasonPage() {
     return arr.sort((a, b) => (b.wins - b.losses) - (a.wins - a.losses))[0];
   })();
 
+  // Live-season guard: only show champion / wooden spoon when mathematically
+  // confirmed (standard 3/1/0, 38-GW season). For completed seasons, always show.
+  const seasonComplete = !!d.season.season_complete;
+  const GAMES_PER_TEAM = 38;
+  const maxPossibleFor = (row: any) => {
+    const played = (row.wins ?? 0) + (row.draws ?? 0) + (row.losses ?? 0);
+    const remaining = Math.max(0, GAMES_PER_TEAM - played);
+    return (row.total_points ?? 0) + remaining * 3;
+  };
+  const leader = d.standings[0];
+  const second = d.standings[1];
+  const last = d.standings[d.standings.length - 1];
+  const secondLast = d.standings[d.standings.length - 2];
+  const champConfirmed = seasonComplete || (leader && second && (leader.total_points ?? 0) > maxPossibleFor(second));
+  const spoonConfirmed = seasonComplete || (last && secondLast && maxPossibleFor(last) < (secondLast.total_points ?? 0));
+
   return (
     <div>
       <SeasonHero
         season={d.season}
-        champ={champ}
+        champ={champConfirmed ? champ : null}
         topGoals={mostGoals ? { name: mByName(mostGoals.manager_name)?.team_name ?? mostGoals.team_name, value: mostGoals.out_goals } : null}
         longestWin={longestWin}
         longestLose={longestLose}
         mostCS={mostCS ? { name: mostCS.manager_name, value: mostCS.combined_clean_sheets } : null}
-        wooden={(() => {
-          const last = d.standings[d.standings.length - 1];
-          return last ? mById(last.manager_id) : null;
-        })()}
+        wooden={spoonConfirmed ? (last ? mById(last.manager_id) : null) : null}
       />
 
       <ParticipantsCarousel participants={participants} />
@@ -221,7 +235,7 @@ function SeasonPage() {
                 Combined Points · <span className="text-gold font-display text-lg">{totalPts.toFixed(0)}</span>
               </div>
             </div>
-            <FormationPitch players={totsForPitch} getManagerName={(id) => mById(id)?.name ?? ""} />
+            <FormationPitch players={totsForPitch} getManagerName={(id) => mById(id)?.name ?? ""} seasonId={d.season.id} />
 
             {subs.length > 0 && (
               <div className="mt-8">
@@ -264,6 +278,7 @@ function RecordCard({
   badge,
   badges,
   tint,
+  tints,
   dialogTitle,
   rows,
   valueHeader = "Value",
@@ -277,14 +292,22 @@ function RecordCard({
   badges?: (string | null | undefined)[];
   /** Team primary colour applied as a soft gradient backdrop to the card. */
   tint?: string | null;
+  /** When a record is shared by two teams, blend both primary colours. */
+  tints?: (string | null | undefined)[];
   dialogTitle: string;
   rows: RankRow[];
   valueHeader?: string;
 }) {
-  const tintStyle = tint
+  const tintList = (tints?.filter(Boolean) as string[] | undefined) ?? (tint ? [tint] : []);
+  const tintStyle = tintList.length === 1
     ? {
-        backgroundImage: `linear-gradient(135deg, color-mix(in oklab, ${tint} 28%, transparent) 0%, color-mix(in oklab, ${tint} 10%, transparent) 55%, transparent 100%)`,
-        borderColor: `color-mix(in oklab, ${tint} 55%, transparent)`,
+        backgroundImage: `linear-gradient(135deg, color-mix(in oklab, ${tintList[0]} 28%, transparent) 0%, color-mix(in oklab, ${tintList[0]} 10%, transparent) 55%, transparent 100%)`,
+        borderColor: `color-mix(in oklab, ${tintList[0]} 55%, transparent)`,
+      }
+    : tintList.length >= 2
+    ? {
+        backgroundImage: `linear-gradient(135deg, color-mix(in oklab, ${tintList[0]} 32%, transparent) 0%, color-mix(in oklab, ${tintList[0]} 14%, transparent) 38%, color-mix(in oklab, ${tintList[1]} 14%, transparent) 62%, color-mix(in oklab, ${tintList[1]} 32%, transparent) 100%)`,
+        borderColor: `color-mix(in oklab, ${tintList[0]} 45%, transparent)`,
       }
     : undefined;
   return (
@@ -309,9 +332,9 @@ function RecordCard({
               ) : badge ? (
                 <img src={badge} alt="" className="w-10 h-10 sm:w-12 sm:h-12 object-contain shrink-0" />
               ) : null}
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="font-display text-3xl sm:text-4xl gold-gradient leading-none">{value}</div>
-                {sub && <div className="text-[11px] sm:text-xs text-muted-foreground mt-1.5 truncate">{sub}</div>}
+                {sub && <div className="text-[11px] sm:text-xs text-muted-foreground mt-1.5 leading-tight break-words whitespace-normal">{sub}</div>}
               </div>
             </div>
             <div className="mt-3 pt-3 border-t border-border/40 flex items-center justify-center sm:justify-start gap-1.5 text-[10px] uppercase tracking-[0.2em] text-gold/70 group-hover:text-gold transition relative">
@@ -372,8 +395,9 @@ function RecordsSection({
   const mByName = (name?: string) => name ? d.managers.find((m: any) => m.name === name) : null;
   const mByTeam = (team?: string) => team ? d.managers.find((m: any) => m.team_name === team)
     ?? (() => { const r = d.mst.find((x: any) => x.team_name === team); return r ? mById(r.manager_id) : null; })() : null;
-  const badgeByManager = (name?: string) => { const m = mByName(name); return m ? getBranding(m.id)?.badge ?? null : null; };
-  const badgeByTeam = (team?: string) => { const m = mByTeam(team); return m ? getBranding(m.id)?.badge ?? null : null; };
+  const sid = d.season.id;
+  const badgeByManager = (name?: string) => { const m = mByName(name); return m ? (getSeasonBadge(m.id, sid) ?? getBranding(m.id)?.badge ?? null) : null; };
+  const badgeByTeam = (team?: string) => { const m = mByTeam(team); return m ? (getSeasonBadge(m.id, sid) ?? getBranding(m.id)?.badge ?? null) : null; };
   const tintByManager = (name?: string) => { const m = mByName(name); return m ? getBranding(m.id)?.primary ?? null : null; };
   const tintByTeam = (team?: string) => { const m = mByTeam(team); return m ? getBranding(m.id)?.primary ?? null : null; };
   const tintById = (id?: string) => id ? getBranding(id)?.primary ?? null : null;
@@ -458,7 +482,7 @@ function RecordsSection({
     });
     return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([id, n], i) => {
       const m = mById(id);
-      return { rank: i + 1, name: m?.team_name ?? "-", sub: m?.name, value: `${n} GW${n === 1 ? "" : "s"}`, badge: m ? getBranding(m.id)?.badge ?? null : null };
+      return { rank: i + 1, name: m?.team_name ?? "-", sub: m?.name, value: `${n} GW${n === 1 ? "" : "s"}`, badge: m ? (getSeasonBadge(m.id, sid) ?? getBranding(m.id)?.badge ?? null) : null };
     });
   };
 
@@ -529,9 +553,7 @@ function RecordsSection({
           sub={highestFixture ? `${highestFixture.home_team} vs ${highestFixture.away_team} · GW${highestFixture.gameweek}` : ""}
           icon={<Flame className="w-5 h-5" />}
           badges={highestFixture ? [badgeByTeam(highestFixture.home_team), badgeByTeam(highestFixture.away_team)] : undefined}
-          tint={highestFixture ? (((highestFixture.home_score ?? 0) >= (highestFixture.away_score ?? 0))
-            ? tintByTeam(highestFixture.home_team)
-            : tintByTeam(highestFixture.away_team)) : null}
+          tints={highestFixture ? [tintByTeam(highestFixture.home_team), tintByTeam(highestFixture.away_team)] : undefined}
           dialogTitle="Top 5 Highest Scoring Fixtures"
           valueHeader="Total"
           rows={top5HighFixtures.map((f: any, i: number) => ({
@@ -622,8 +644,8 @@ function RecordsSection({
           label="Most GWs at #1"
           value={positionCounts.topId?.[1] ?? "-"}
           sub={positionCounts.topId ? mById(positionCounts.topId[0])?.team_name : ""}
-          icon={<Trophy className="w-5 h-5" />}
-          badge={positionCounts.topId ? getBranding(positionCounts.topId[0])?.badge : null}
+          icon={<ArrowUp className="w-5 h-5" />}
+          badge={positionCounts.topId ? (getSeasonBadge(positionCounts.topId[0], sid) ?? getBranding(positionCounts.topId[0])?.badge) : null}
           tint={positionCounts.topId ? tintById(positionCounts.topId[0]) : null}
           dialogTitle="Top 5 · Most Gameweeks in 1st"
           valueHeader="Gameweeks"
@@ -634,7 +656,7 @@ function RecordsSection({
           value={positionCounts.botId?.[1] ?? "-"}
           sub={positionCounts.botId ? mById(positionCounts.botId[0])?.team_name : ""}
           icon={<ArrowDown className="w-5 h-5" />}
-          badge={positionCounts.botId ? getBranding(positionCounts.botId[0])?.badge : null}
+          badge={positionCounts.botId ? (getSeasonBadge(positionCounts.botId[0], sid) ?? getBranding(positionCounts.botId[0])?.badge) : null}
           tint={positionCounts.botId ? tintById(positionCounts.botId[0]) : null}
           dialogTitle="Top 5 · Most Gameweeks in Last"
           valueHeader="Gameweeks"
@@ -769,8 +791,8 @@ function StatExplorer({ teamStats, managers }: { teamStats: any[]; managers: any
 
 function SeasonHero({ season, champ, topGoals, longestWin, longestLose, mostCS, wooden }: any) {
   const [yA, yB] = season.name.split("/");
-  const champBranding = champ ? getBranding(champ.id) : null;
-  const woodenBranding = wooden ? getBranding(wooden.id) : null;
+  const champBadge = champ ? (getSeasonBadge(champ.id, season.id) ?? getBranding(champ.id)?.badge) : null;
+  const woodenBadge = wooden ? (getSeasonBadge(wooden.id, season.id) ?? getBranding(wooden.id)?.badge) : null;
 
   // Season-unique accent: each season gets a deliberately distinct hue from a
   // curated, well-spaced palette so consecutive seasons never look alike.
@@ -844,8 +866,8 @@ function SeasonHero({ season, champ, topGoals, longestWin, longestLose, mostCS, 
               {champ ? (
                 <Link to="/team/$managerId" params={{ managerId: String(champ.id) }}
                       className="group flex items-center gap-2 sm:gap-3 premium-card rounded-lg p-2 sm:p-3 hover:border-gold/60 transition min-w-0">
-                  {champBranding?.badge && (
-                    <img src={champBranding.badge} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain shrink-0" />
+                  {champBadge && (
+                    <img src={champBadge} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain shrink-0" />
                   )}
                   <div className="min-w-0 text-left flex-1">
                     <div className="text-[8px] sm:text-[10px] uppercase tracking-widest text-muted-foreground">Champion</div>
@@ -858,8 +880,8 @@ function SeasonHero({ season, champ, topGoals, longestWin, longestLose, mostCS, 
               {wooden ? (
                 <Link to="/team/$managerId" params={{ managerId: String(wooden.id) }}
                       className="group flex items-center gap-2 sm:gap-3 premium-card rounded-lg p-2 sm:p-3 hover:border-amber-700/60 transition min-w-0">
-                  {woodenBranding?.badge && (
-                    <img src={woodenBranding.badge} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain opacity-80 shrink-0" />
+                  {woodenBadge && (
+                    <img src={woodenBadge} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain opacity-80 shrink-0" />
                   )}
                   <div className="min-w-0 text-left flex-1">
                     <div className="text-[8px] sm:text-[10px] uppercase tracking-widest text-muted-foreground">Wooden Spoon</div>

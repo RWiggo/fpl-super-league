@@ -5,7 +5,8 @@ import { StatCard, Skeleton } from "@/components/StatCard";
 import { Trophy, Flame, Target, Crown, TrendingUp, Zap, Skull } from "lucide-react";
 import logo from "@/assets/fpl-super-league-logo.png";
 import { getBranding } from "@/lib/managerBranding";
-import { MANAGER_KITS } from "@/lib/managerKits";
+import { getDbSeasonKit } from "@/lib/seasonAssets";
+import { getSeasonBadge } from "@/lib/seasonBadges";
 import { getNickname } from "@/lib/managerNicknames";
 import { currentTeamName } from "@/lib/currentTeamNames";
 

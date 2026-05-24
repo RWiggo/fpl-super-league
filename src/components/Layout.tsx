@@ -4,6 +4,8 @@ import { supabase, type Manager, type Season } from "@/lib/supabase";
 import { Menu, X, ChevronDown } from "lucide-react";
 import logo from "@/assets/fpl-super-league-logo.png";
 import { getBranding } from "@/lib/managerBranding";
+import { useSeasonAssets } from "@/lib/seasonAssets";
+import { getSeasonBadge } from "@/lib/seasonBadges";
 
 // Same palette used on the season hero so menu tiles match each season's crest.
 const SEASON_HUES = [220, 0, 145, 35, 285, 175, 50, 320, 110, 260, 15, 195];
@@ -37,6 +39,8 @@ function SeasonCrest({ id, size = 36 }: { id: any; size?: number }) {
 }
 
 export function Layout() {
+  // Load badges + kits once so synchronous lookups across the app work.
+  useSeasonAssets();
   const [managers, setManagers] = useState<Manager[]>([]);
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [mst, setMst] = useState<any[]>([]);
@@ -62,7 +66,11 @@ export function Layout() {
       }
     }
     return managers
-      .map((m) => ({ ...m, displayName: latestName.get(m.id) ?? m.team_name ?? m.name }))
+      .map((m) => ({
+        ...m,
+        displayName: latestName.get(m.id) ?? m.team_name ?? m.name,
+        latestSeasonId: latestSeason.get(m.id),
+      }))
       .sort((a, b) => a.displayName.localeCompare(b.displayName));
   }, [managers, mst]);
 
@@ -127,6 +135,7 @@ export function Layout() {
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                     {teamsList.map((m) => {
                       const b = getBranding(m.id);
+                      const badge = getSeasonBadge(m.id, m.latestSeasonId) ?? b?.badge ?? null;
                       const tint = b?.primary ?? "#508cff";
                       return (
                         <Link
@@ -145,9 +154,9 @@ export function Layout() {
                             className="absolute left-0 top-0 bottom-0 w-[6px]"
                             style={{ background: tint, boxShadow: `0 0 12px ${tint}` }}
                           />
-                          {b?.badge ? (
+                          {badge ? (
                             <img
-                              src={b.badge}
+                              src={badge}
                               alt=""
                               className="w-9 h-9 object-contain flex-shrink-0 drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]"
                             />
@@ -262,6 +271,7 @@ export function Layout() {
                 <div className="grid grid-cols-2 gap-2 pt-2 pb-1">
                   {teamsList.map((m) => {
                     const b = getBranding(m.id);
+                    const badge = getSeasonBadge(m.id, m.latestSeasonId) ?? b?.badge ?? null;
                     const tint = b?.primary ?? "#508cff";
                     return (
                       <Link
@@ -280,8 +290,8 @@ export function Layout() {
                           className="absolute left-0 top-0 bottom-0 w-[5px]"
                           style={{ background: tint, boxShadow: `0 0 8px ${tint}` }}
                         />
-                        {b?.badge ? (
-                          <img src={b.badge} alt="" className="w-7 h-7 object-contain shrink-0" />
+                        {badge ? (
+                          <img src={badge} alt="" className="w-7 h-7 object-contain shrink-0" />
                         ) : (
                           <div className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold text-white" style={{ background: tint }}>
                             {m.displayName.charAt(0)}
@@ -335,7 +345,7 @@ export function Layout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-silver/20 mt-20 pt-12 pb-10 text-sm text-muted-foreground">
+      <footer className="border-t border-silver/20 mt-0 pt-10 pb-6 text-sm text-muted-foreground">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
             <div>
