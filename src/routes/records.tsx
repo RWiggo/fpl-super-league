@@ -441,6 +441,15 @@ function buildBestXI(history: any[], mgrByName: Record<string, any>) {
   return { formation: best.formation, players: mapped };
 }
 
+// ---------- UI: Letter Icon (e.g. W / D / L) ----------
+function LetterIcon({ ch }: { ch: string }) {
+  return (
+    <span className="inline-flex items-center justify-center w-5 h-5 rounded-sm font-display text-[13px] leading-none font-bold border border-current/60">
+      {ch}
+    </span>
+  );
+}
+
 // ---------- UI: Section ----------
 function RecordSection({
   kicker,
