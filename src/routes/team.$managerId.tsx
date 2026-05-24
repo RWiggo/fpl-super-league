@@ -1126,12 +1126,14 @@ type RecordsSectionProps = {
   bestUnbeatenRun?: StreakRow;
   worstWinlessRun?: StreakRow;
   worstLosingRun?: StreakRow;
+  teamName: string;
 };
 
 function RecordsSection({
   topPlayers, bottomPlayers, allPlayersSorted, seasonsForPlayer,
   topClubs, bottomClubs, allClubsRanked,
   allStreaks, bestWinRun, bestUnbeatenRun, worstWinlessRun, worstLosingRun,
+  teamName,
 }: RecordsSectionProps) {
   type DialogKey =
     | { kind: "players"; accent: "good" | "bad"; title: string }
