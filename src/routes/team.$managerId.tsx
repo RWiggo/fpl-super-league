@@ -86,6 +86,28 @@ function TeamPage() {
   const [h2hPage, setH2hPage] = useState(0);
   const isMobile = useIsMobile();
   useSeasonAssets();
+
+  // Apply this team's primary colour globally (header / menu / focus rings)
+  // for the duration of this page, then restore on unmount.
+  const earlyBranding = getBranding(managerId);
+  useEffect(() => {
+    if (!earlyBranding) return;
+    const root = document.documentElement;
+    const props = ["--gold", "--color-gold", "--gold-bright", "--color-gold-bright", "--primary", "--color-primary"];
+    const prev = Object.fromEntries(props.map((p) => [p, root.style.getPropertyValue(p)]));
+    props.forEach((p) => root.style.setProperty(p, earlyBranding.primary));
+    let prevFg: Record<string, string> | null = null;
+    if (earlyBranding.primaryFg) {
+      const fgProps = ["--primary-foreground", "--color-primary-foreground"];
+      prevFg = Object.fromEntries(fgProps.map((p) => [p, root.style.getPropertyValue(p)]));
+      fgProps.forEach((p) => root.style.setProperty(p, earlyBranding.primaryFg!));
+    }
+    return () => {
+      Object.entries(prev).forEach(([p, v]) => v ? root.style.setProperty(p, v) : root.style.removeProperty(p));
+      if (prevFg) Object.entries(prevFg).forEach(([p, v]) => v ? root.style.setProperty(p, v) : root.style.removeProperty(p));
+    };
+  }, [earlyBranding?.primary, earlyBranding?.primaryFg]);
+
   useEffect(() => { if (d?.tots?.length && !totsSeason) setTotsSeason(d.tots[0].season_name); }, [d]);
 
   // Player search: club -> players from history; selected player aggregated stats
