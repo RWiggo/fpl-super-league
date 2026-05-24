@@ -425,10 +425,10 @@ function TablePage() {
                       <img src={b.badge} alt="" className="w-7 h-7 object-contain" />
                     ) : (
                       <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ background: tint }}>
-                        {(m?.team_name ?? m?.name ?? leader.manager_name ?? "?").charAt(0).toUpperCase()}
+                        {currentTeamName(leader.manager_id, m?.team_name).charAt(0).toUpperCase()}
                       </div>
                     )}
-                    <span className="text-sm font-bold capitalize text-white truncate">{m?.team_name ?? m?.name ?? leader.manager_name}</span>
+                    <span className="text-sm font-bold capitalize text-white truncate">{currentTeamName(leader.manager_id, m?.team_name)}</span>
                   </div>
                   <div className="text-[10px] uppercase tracking-widest mt-3 opacity-70" style={{ color: tint }}>
                     Tap for top 5 →
@@ -500,10 +500,10 @@ function TablePage() {
                         <img src={b.badge} alt="" className="w-9 h-9 object-contain" />
                       ) : (
                         <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ background: tint }}>
-                          {(m?.team_name ?? m?.name ?? r.manager_name ?? "?").charAt(0).toUpperCase()}
+                          {currentTeamName(r.manager_id, m?.team_name).charAt(0).toUpperCase()}
                         </div>
                       )}
-                      <span className="flex-1 capitalize font-medium truncate">{m?.team_name ?? m?.name ?? r.manager_name}</span>
+                      <span className="flex-1 capitalize font-medium truncate">{currentTeamName(r.manager_id, m?.team_name)}</span>
                       <span className="font-display text-lg text-gold tabular-nums">{openAwardDef.format(r)}</span>
                     </Link>
                   </li>
@@ -520,15 +520,15 @@ function TablePage() {
 function SortTh({ col, active, dir, onClick }: { col: typeof COLS[number]; active: boolean; dir: "asc" | "desc"; onClick: () => void }) {
   return (
     <th
-      className={`px-0.5 py-1 sm:p-3 cursor-pointer select-none hover:text-white transition text-${col.align} ${active ? "text-gold" : ""}`}
+      className={`px-2 py-2 cursor-pointer select-none hover:text-white transition whitespace-nowrap text-${col.align} ${active ? "text-gold" : ""}`}
       onClick={onClick}
       title={col.tip}
     >
-      <span className={`inline-flex items-center gap-0.5 sm:gap-1 ${col.align === "right" ? "justify-end w-full" : col.align === "center" ? "justify-center w-full" : ""}`}>
+      <span className={`inline-flex items-center gap-1 ${col.align === "right" ? "justify-end w-full" : col.align === "center" ? "justify-center w-full" : ""}`}>
         {col.label}
         {active
-          ? (dir === "asc" ? <ArrowUp className="hidden sm:block w-3 h-3" /> : <ArrowDown className="hidden sm:block w-3 h-3" />)
-          : <ChevronsUpDown className="hidden sm:block w-3 h-3 opacity-40" />}
+          ? (dir === "asc" ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)
+          : <ChevronsUpDown className="w-3 h-3 opacity-40" />}
       </span>
     </th>
   );
