@@ -627,14 +627,14 @@ function TeamPage() {
           <div>
             <div className="flex items-baseline justify-between flex-wrap gap-2 mb-4">
               <div>
-                <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">All-Time XI</div>
+                <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">{currentTeamName} · All-Time XI</div>
                 <h3 className="font-display text-2xl md:text-3xl">Best Eleven · {bestFormation.join("-")}</h3>
               </div>
               <div className="text-sm text-muted-foreground">
                 Combined Points · <span className="text-gold font-display text-lg">{bestXISum.toFixed(0)}</span>
               </div>
             </div>
-            <FormationPitch players={bestXIForPitch} managerId={managerId} />
+            <FormationPitch players={bestXIWithSeason} />
 
             {/* Subs bench - next-highest scorer per position */}
             {subsByPos && (
