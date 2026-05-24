@@ -604,6 +604,7 @@ function TeamPage() {
       {/* Highs and Lows */}
       <RecordsSection
         teamName={currentTeamName}
+        topPlayers={top5Players}
         bottomPlayers={bottom5Players}
         allPlayersSorted={sortedPlayers}
         seasonsForPlayer={seasonsForPlayer}
