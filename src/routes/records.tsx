@@ -715,15 +715,20 @@ function AllTimeStatExplorer({
 }) {
   const [stat, setStat] = useState<string>("out_goals");
 
-  // Aggregate per manager_id (not name) so misaligned names can never credit the wrong team.
+  // team_season_stats_full has no manager_id column — resolve via manager_name to managers list.
   const ranked = useMemo(() => {
+    const nameToId = new Map<string, any>();
+    for (const m of managers) {
+      if (m?.name) nameToId.set(String(m.name).toLowerCase().trim(), m.id);
+    }
     const byMgr: Record<string, { managerId: any; value: number }> = {};
     for (const t of teamSeasonStats) {
       const v = Number(t[stat] ?? 0);
       if (!Number.isFinite(v)) continue;
-      const key = String(t.manager_id ?? "");
-      if (!key) continue;
-      if (!byMgr[key]) byMgr[key] = { managerId: t.manager_id, value: 0 };
+      const id = nameToId.get(String(t.manager_name ?? "").toLowerCase().trim());
+      if (!id) continue;
+      const key = String(id);
+      if (!byMgr[key]) byMgr[key] = { managerId: id, value: 0 };
       byMgr[key].value += v;
     }
     for (const m of managers) {
