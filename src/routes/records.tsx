@@ -715,27 +715,22 @@ function AllTimeStatExplorer({
 }) {
   const [stat, setStat] = useState<string>("out_goals");
 
-  // Aggregate per manager by summing the chosen stat across every season they played.
+  // Aggregate per manager_id (not name) so misaligned names can never credit the wrong team.
   const ranked = useMemo(() => {
-    const byManager: Record<string, { managerId: any; managerName: string; value: number }> = {};
+    const byMgr: Record<string, { managerId: any; value: number }> = {};
     for (const t of teamSeasonStats) {
       const v = Number(t[stat] ?? 0);
       if (!Number.isFinite(v)) continue;
-      const key = String(t.manager_name ?? t.manager_id ?? "");
+      const key = String(t.manager_id ?? "");
       if (!key) continue;
-      if (!byManager[key]) {
-        byManager[key] = { managerId: t.manager_id, managerName: t.manager_name, value: 0 };
-      }
-      byManager[key].value += v;
+      if (!byMgr[key]) byMgr[key] = { managerId: t.manager_id, value: 0 };
+      byMgr[key].value += v;
     }
-    // Make sure every manager appears, even if they have no entries for this stat.
     for (const m of managers) {
-      const key = String(m.name);
-      if (!byManager[key]) {
-        byManager[key] = { managerId: m.id, managerName: m.name, value: 0 };
-      }
+      const key = String(m.id);
+      if (!byMgr[key]) byMgr[key] = { managerId: m.id, value: 0 };
     }
-    return Object.values(byManager)
+    return Object.values(byMgr)
       .sort((a, b) => b.value - a.value)
       .map((r, i) => ({ rank: i + 1, ...r }));
   }, [teamSeasonStats, managers, stat]);
@@ -778,7 +773,7 @@ function AllTimeStatExplorer({
             {ranked.map((r) => {
               const m = mById(r.managerId);
               const b = m ? getBranding(m.id) : null;
-              const teamName = m?.team_name ?? m?.name ?? r.managerName;
+              const teamName = currentTeamName(r.managerId, m?.team_name);
               return (
                 <tr key={r.rank} className="border-t border-border/40 hover:bg-gold/5">
                   <td className="p-2 sm:p-3 font-display text-gold">{r.rank}</td>
@@ -788,16 +783,20 @@ function AllTimeStatExplorer({
                       params={{ managerId: String(r.managerId) }}
                       className="flex items-center gap-2 sm:gap-3 min-w-0 hover:text-gold"
                     >
-                      {b?.badge && (
-                        <img src={b.badge} alt="" className="w-6 h-6 sm:w-7 sm:h-7 object-contain shrink-0" />
+                      {b?.badge ? (
+                        <img src={b.badge} alt="" className="w-7 h-7 sm:w-8 sm:h-8 object-contain shrink-0" />
+                      ) : (
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0" style={{ background: getBranding(String(r.managerId))?.primary ?? "#508cff" }}>
+                          {teamName.charAt(0).toUpperCase()}
+                        </div>
                       )}
                       <div className="min-w-0">
-                        <div className="truncate">{teamName}</div>
-                        <div className="sm:hidden text-[10px] text-muted-foreground capitalize truncate">{r.managerName}</div>
+                        <div className="break-words leading-tight">{teamName}</div>
+                        <div className="sm:hidden text-[10px] text-muted-foreground capitalize truncate">{m?.name}</div>
                       </div>
                     </Link>
                   </td>
-                  <td className="hidden sm:table-cell p-3 text-muted-foreground capitalize">{r.managerName}</td>
+                  <td className="hidden sm:table-cell p-3 text-muted-foreground capitalize">{m?.name}</td>
                   <td className="p-2 sm:p-3 text-right font-display text-gold tabular-nums">{r.value.toLocaleString()}</td>
                 </tr>
               );
