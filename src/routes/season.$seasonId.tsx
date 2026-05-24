@@ -911,7 +911,7 @@ function SeasonHero({ season, champ, topGoals, longestWin, longestLose, longestW
 
 /* ======================= Participants Carousel ======================= */
 
-function ParticipantsCarousel({ participants }: { participants: any[] }) {
+function ParticipantsCarousel({ participants, seasonId }: { participants: any[]; seasonId: string | number }) {
   if (!participants.length) return null;
   // Duplicate the list so the marquee loops seamlessly
   const items = [...participants, ...participants];
@@ -923,12 +923,12 @@ function ParticipantsCarousel({ participants }: { participants: any[] }) {
       <div className="relative">
         <div className="flex gap-12 marquee w-max items-center">
           {items.map((m, i) => {
-            const branding = getBranding(m.id);
+            const badge = getSeasonBadge(m.id, seasonId) ?? getBranding(m.id)?.badge;
             return (
               <Link key={i} to="/team/$managerId" params={{ managerId: String(m.id) }}
                     className="flex flex-col items-center gap-2 min-w-[110px] group">
-                {branding?.badge ? (
-                  <img src={branding.badge} alt={m.team_name}
+                {badge ? (
+                  <img src={badge} alt={m.team_name}
                        className="w-20 h-20 object-contain drop-shadow-lg group-hover:scale-110 transition-transform" />
                 ) : (
                   <div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center text-2xl">{m.name?.[0]}</div>
