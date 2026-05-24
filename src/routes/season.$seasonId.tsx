@@ -575,7 +575,7 @@ function RecordsSection({
           label="Most Goals"
           value={mostGoals?.out_goals ?? "-"}
           sub={mostGoals?.team_name}
-          icon={<Goal className="w-5 h-5" />}
+          icon={<span className="text-lg leading-none" aria-hidden>⚽</span>}
           badge={badgeByManager(mostGoals?.manager_name)}
           tint={tintByManager(mostGoals?.manager_name)}
           dialogTitle="Top 5 · Most Goals"
