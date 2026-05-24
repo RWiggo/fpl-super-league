@@ -1061,7 +1061,7 @@ function LeagueTable({ standings, managers, mst, gwTable, maxGW, seasonId }: any
         <tbody>
           {sortedRows.map((row: any) => {
             const m = mById(row.manager_id);
-            const branding = getBranding(row.manager_id);
+            const badge = getSeasonBadge(row.manager_id, seasonId) ?? getBranding(row.manager_id)?.badge;
             const games = (row.wins ?? 0) + (row.draws ?? 0) + (row.losses ?? 0);
             const isChamp = row.position === 1;
             const form = formByManager[String(row.manager_id)] ?? [];
