@@ -465,12 +465,14 @@ function TeamPage() {
               (d.allStandings as any[]).filter((x) => x.season_id === s.season_id).map((x) => x.manager_id)
             ).size;
             const pos = s.position;
+            const seasonObj = d.seasons.find((x: any) => x.id === s.season_id);
+            const seasonComplete = seasonObj?.season_complete !== false;
             let posClass = "text-yellow-400";
             let posBg = "bg-yellow-400/10 border-yellow-400/30";
-            if (pos === 1) { posClass = "text-emerald-300"; posBg = "bg-emerald-400/15 border-emerald-400/40"; }
-            else if (pos === 2 || pos === 3) { posClass = "text-emerald-500"; posBg = "bg-emerald-500/10 border-emerald-500/30"; }
-            else if (seasonSize > 0 && pos === seasonSize) { posClass = "text-red-500"; posBg = "bg-red-500/15 border-red-500/40"; }
-            else if (seasonSize > 0 && pos > seasonSize - 3) { posClass = "text-red-400"; posBg = "bg-red-400/10 border-red-400/30"; }
+            if (pos === 1 && seasonComplete) { posClass = "text-emerald-300"; posBg = "bg-emerald-400/15 border-emerald-400/40"; }
+            else if ((pos === 2 || pos === 3) && seasonComplete) { posClass = "text-emerald-500"; posBg = "bg-emerald-500/10 border-emerald-500/30"; }
+            else if (seasonComplete && seasonSize > 0 && pos === seasonSize) { posClass = "text-red-500"; posBg = "bg-red-500/15 border-red-500/40"; }
+            else if (seasonComplete && seasonSize > 0 && pos > seasonSize - 3) { posClass = "text-red-400"; posBg = "bg-red-400/10 border-red-400/30"; }
             const diff = Number(s.points_for ?? 0) - Number(s.points_against ?? 0);
             const tint = branding?.primary ?? "var(--color-primary)";
             return (
