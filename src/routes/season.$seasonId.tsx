@@ -792,7 +792,7 @@ function StatExplorer({ teamStats, managers }: { teamStats: any[]; managers: any
 
 /* ======================= Hero ======================= */
 
-function SeasonHero({ season, champ, topGoals, longestWin, longestLose, mostCS, wooden }: any) {
+function SeasonHero({ season, champ, topGoals, longestWin, longestLose, longestWinManagerId, longestLoseManagerId, mostCS, wooden }: any) {
   const [yA, yB] = season.name.split("/");
   const champBadge = champ ? (getSeasonBadge(champ.id, season.id) ?? getBranding(champ.id)?.badge) : null;
   const woodenBadge = wooden ? (getSeasonBadge(wooden.id, season.id) ?? getBranding(wooden.id)?.badge) : null;
