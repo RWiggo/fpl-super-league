@@ -322,7 +322,6 @@ function TeamPage() {
     : null;
 
   const kit = getKit(managerId);
-  useSeasonAssets();
 
   // Per-season badge + kit archive (sorted oldest -> newest)
   const seasonsChrono = [...d.standings].sort((a: any, b: any) => {
