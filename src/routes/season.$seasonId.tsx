@@ -1106,7 +1106,7 @@ function LeagueTable({ standings, managers, mst, gwTable, maxGW, seasonId }: any
 
 /* ======================= Position Chart ======================= */
 
-function PositionChart({ gwTable, managers, maxGW }: any) {
+function PositionChart({ gwTable, managers, maxGW, seasonId }: any) {
   const [hover, setHover] = useState<string | null>(null);
   const W = 800;
   const H = 320;
