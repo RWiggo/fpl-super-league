@@ -158,8 +158,32 @@ function RecordsPage() {
           ({records.bestXI.formation.def}-{records.bestXI.formation.mid}-{records.bestXI.formation.fwd}) that maximises total fantasy points.
         </p>
         <div className="mt-6">
-          <FormationPitch players={records.bestXI.players} getManagerName={(id: string) => { const mm = mById(id); return mm?.team_name ?? mm?.name ?? ""; }} />
+          <FormationPitch players={records.bestXI.players} getManagerName={(id: string) => { const mm = mById(id); return currentTeamName(id, mm?.team_name); }} />
         </div>
+        {records.bestXI.subs && records.bestXI.subs.length > 0 && (
+          <div className="mt-8">
+            <div className="text-[10px] uppercase tracking-[0.3em] text-gold/80 mb-3">On the bench</div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {records.bestXI.subs.map((s: any, i: number) => {
+                const mm = s.manager_id ? mById(s.manager_id) : null;
+                const b = s.manager_id ? getBranding(String(s.manager_id)) : null;
+                return (
+                  <div key={i} className="premium-card rounded-lg p-3 flex items-center gap-3">
+                    {b?.badge && <img src={b.badge} alt="" className="w-10 h-10 object-contain shrink-0" />}
+                    <div className="min-w-0">
+                      <div className="text-[9px] uppercase tracking-widest text-muted-foreground">{s.position}</div>
+                      <div className="font-medium text-sm leading-tight break-words">{s.player_name}</div>
+                      <div className="text-[10px] text-muted-foreground break-words">
+                        {s.club} · <span className="text-gold tabular-nums">{Number(s.total_fantasy_points ?? 0).toFixed(0)} pts</span>
+                      </div>
+                      {mm && <div className="text-[9px] uppercase tracking-wider text-gold/70 truncate mt-0.5">{currentTeamName(s.manager_id, mm?.team_name)}</div>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </section>
 
 
@@ -433,15 +457,24 @@ function buildBestXI(history: any[], mgrByName: Record<string, any>) {
     if (total > best.total) best = { total, formation: f, players: all };
   }
   // Normalise for FormationPitch (carry manager_id so each player wears their kit)
-  const mapped = best.players.map((p) => ({
+  const mapPlayer = (p: any) => ({
     player_name: p.player_name,
-    position: ({ G: "GK", D: "DEF", M: "MID", F: "FWD" } as any)[p.position],
+    position: ({ G: "GK", D: "DEF", M: "MID", F: "FWD" } as any)[p.position] ?? p.position,
     club: p.club,
     total_fantasy_points: p.fantasy_points,
     avg_points_per_game: p.avg_points_per_game,
     manager_id: p.manager_id ?? mgrByName[p.manager_name]?.id,
-  }));
-  return { formation: best.formation, players: mapped };
+  });
+  const mapped = best.players.map(mapPlayer);
+  // Subs: next-highest scorer per position not in the starting XI
+  const starterNames = new Set(best.players.map((p: any) => p.player_name));
+  const subsByPos: Record<string, any> = {};
+  (["GK", "DEF", "MID", "FWD"] as const).forEach((pos) => {
+    const next = byPos[pos].find((p) => !starterNames.has(p.player_name));
+    if (next) subsByPos[pos] = mapPlayer(next);
+  });
+  const subs = ["GK", "DEF", "MID", "FWD"].map((p) => subsByPos[p]).filter(Boolean);
+  return { formation: best.formation, players: mapped, subs };
 }
 
 // ---------- UI: Letter Icon (e.g. W / D / L) ----------
