@@ -997,9 +997,10 @@ function H2HCard({
               <div className="font-display text-xl text-red-400">{losses}</div>
             </div>
           </div>
-          <div className="px-4 pb-3 grid grid-cols-2 gap-2 text-xs">
+          <div className="px-4 pb-3 grid grid-cols-3 gap-2 text-xs">
             <div className="text-muted-foreground">PF <span className="text-foreground font-display ml-1">{pf.toFixed(0)}</span></div>
-            <div className="text-muted-foreground text-right">PA <span className="text-foreground font-display ml-1">{pa.toFixed(0)}</span></div>
+            <div className="text-muted-foreground text-center">PA <span className="text-foreground font-display ml-1">{pa.toFixed(0)}</span></div>
+            <div className="text-muted-foreground text-right">PD <span className={`font-display ml-1 ${pf - pa > 0 ? "text-emerald-400" : pf - pa < 0 ? "text-red-400" : "text-foreground"}`}>{`${pf - pa > 0 ? "+" : ""}${(pf - pa).toFixed(0)}`}</span></div>
           </div>
           <div className="px-4 pb-4">
             <div className="text-[10px] uppercase tracking-[0.25em] text-silver/60 mb-2">Recent Form</div>
