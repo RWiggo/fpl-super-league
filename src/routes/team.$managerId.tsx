@@ -419,7 +419,7 @@ function TeamPage() {
   const bestXIWithSeason = bestXIForPitch.map((p: any) => ({
     ...p,
     manager_id: managerId,
-    season_id: playerLastSeason.get(p.player_name) ?? p.season_id,
+    season_id: playerBestSeason.get(p.player_name)?.seasonId ?? p.season_id,
   }));
 
   return (
