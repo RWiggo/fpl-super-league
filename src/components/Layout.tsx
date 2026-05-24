@@ -31,8 +31,8 @@ function SeasonCrest({ id, size = 36 }: { id: any; size?: number }) {
       <img
         src={logo}
         alt=""
-        className="w-[78%] h-[78%] object-contain"
-        style={{ filter: `hue-rotate(${hueRotate}deg) saturate(1.05)` }}
+        className="w-[62%] h-[62%] object-contain"
+        style={{ filter: `hue-rotate(${hueRotate}deg) saturate(1.05)`, transform: "translateY(1px)" }}
       />
     </div>
   );
@@ -237,9 +237,9 @@ export function Layout() {
                 <div className="fixed left-0 right-0 top-[68px] bg-[#15164a] border-y border-cyan-500/20 shadow-2xl shadow-black/60">
                   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <HistoryTile to="/records" tint="hsl(15 85% 55%)" kicker="Greatest Feats" title="All-Time Records" desc="Every record. Every milestone." />
-                      <HistoryTile to="/h2h" tint="hsl(0 80% 55%)" kicker="Rivalries" title="H2H History" desc="Every battle, every grudge." />
-                      <HistoryTile to="/table" tint="hsl(45 90% 55%)" kicker="Eternal Standings" title="All-Time League Table" desc="The undisputed ranking." />
+                      <HistoryTile to="/records" tint="hsl(15 85% 55%)" iconKind="records" title="All-Time Records" />
+                      <HistoryTile to="/h2h" tint="hsl(0 80% 55%)" iconKind="h2h" title="H2H History" />
+                      <HistoryTile to="/table" tint="hsl(45 90% 55%)" iconKind="table" title="All-Time League Table" />
                     </div>
                   </div>
                 </div>
@@ -334,9 +334,9 @@ export function Layout() {
               <details className="border-t border-cyan-500/15 pt-2 mt-2">
                 <summary className="py-2 text-xs font-bold uppercase tracking-[0.18em] cursor-pointer text-white/85">Historic Overviews</summary>
                 <div className="grid grid-cols-1 gap-2 pt-2 pb-1">
-                  <Link to="/records" onClick={() => setOpen(false)} className="block px-3 py-2 rounded-md border border-white/10 text-[11px] font-bold uppercase tracking-wider text-white/90" style={{ background: "linear-gradient(120deg, hsl(15 85% 55% / 0.25) 0%, rgba(10,17,48,0.5) 100%)" }}>All-Time Records</Link>
-                  <Link to="/h2h" onClick={() => setOpen(false)} className="block px-3 py-2 rounded-md border border-white/10 text-[11px] font-bold uppercase tracking-wider text-white/90" style={{ background: "linear-gradient(120deg, hsl(0 80% 55% / 0.25) 0%, rgba(10,17,48,0.5) 100%)" }}>H2H History</Link>
-                  <Link to="/table" onClick={() => setOpen(false)} className="block px-3 py-2 rounded-md border border-white/10 text-[11px] font-bold uppercase tracking-wider text-white/90" style={{ background: "linear-gradient(120deg, hsl(45 90% 55% / 0.25) 0%, rgba(10,17,48,0.5) 100%)" }}>All-Time League Table</Link>
+                  <HistoryTile to="/records" tint="hsl(15 85% 55%)" iconKind="records" title="All-Time Records" compact onClick={() => setOpen(false)} />
+                  <HistoryTile to="/h2h" tint="hsl(0 80% 55%)" iconKind="h2h" title="H2H History" compact onClick={() => setOpen(false)} />
+                  <HistoryTile to="/table" tint="hsl(45 90% 55%)" iconKind="table" title="All-Time League Table" compact onClick={() => setOpen(false)} />
                 </div>
               </details>
             </div>
@@ -396,17 +396,56 @@ export function Layout() {
   );
 }
 
-function HistoryTile({ to, tint, kicker, title, desc }: { to: string; tint: string; kicker: string; title: string; desc: string }) {
+function HistoryCrest({ kind, tint, size = 36 }: { kind: "records" | "h2h" | "table"; tint: string; size?: number }) {
+  return (
+    <div
+      className="relative shrink-0 rounded-full flex items-center justify-center overflow-hidden"
+      style={{
+        width: size,
+        height: size,
+        background: `radial-gradient(circle, ${tint}55 0%, #0a1240 80%)`,
+        border: `1.5px solid ${tint}`,
+        boxShadow: `0 0 10px ${tint}55`,
+      }}
+    >
+      <svg viewBox="0 0 24 24" width={size * 0.55} height={size * 0.55} fill="none" stroke={tint} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        {kind === "records" && (
+          <>
+            <path d="M6 9a6 6 0 0 0 12 0V3H6z" />
+            <path d="M4 5h2M18 5h2" />
+            <path d="M10 21h4M12 15v6" />
+          </>
+        )}
+        {kind === "h2h" && (
+          <>
+            <path d="M14.5 17.5 4 7V3h4l10.5 10.5" />
+            <path d="m13 19 6-6M16 16l4 4" />
+            <path d="M19.5 6.5 22 4M5 14l-3 3" />
+          </>
+        )}
+        {kind === "table" && (
+          <>
+            <line x1="4" y1="6" x2="20" y2="6" />
+            <line x1="4" y1="12" x2="20" y2="12" />
+            <line x1="4" y1="18" x2="20" y2="18" />
+          </>
+        )}
+      </svg>
+    </div>
+  );
+}
+
+function HistoryTile({ to, tint, iconKind, title, compact, onClick }: { to: string; tint: string; iconKind: "records" | "h2h" | "table"; title: string; compact?: boolean; onClick?: () => void }) {
   return (
     <Link
       to={to}
-      className="group relative flex flex-col gap-1 px-4 py-3 rounded-md overflow-hidden border border-white/10 hover:border-white/40 transition-all hover:scale-[1.02]"
+      onClick={onClick}
+      className="group relative flex items-center gap-3 px-3 py-2.5 rounded-md overflow-hidden border border-white/10 hover:border-white/40 transition-all hover:scale-[1.02]"
       style={{ background: `linear-gradient(120deg, ${tint}38 0%, ${tint}10 55%, rgba(10,17,48,0.6) 100%)` }}
     >
       <span className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: tint }} />
-      <span className="text-[9px] uppercase tracking-[0.25em] font-bold" style={{ color: tint }}>{kicker}</span>
-      <span className="text-sm font-bold uppercase tracking-wider text-white">{title}</span>
-      <span className="text-[10px] text-white/60">{desc}</span>
+      <HistoryCrest kind={iconKind} tint={tint} size={compact ? 28 : 36} />
+      <span className="text-[11px] font-bold uppercase tracking-wider text-white leading-tight flex-1">{title}</span>
     </Link>
   );
 }
