@@ -376,9 +376,12 @@ function TeamPage() {
         primary={branding?.primary}
         nickname={getNickname(managerId)}
         formerlyKnownAs={formerlyKnownAs}
+        extras={
+          <ArchiveButtons badgeArchive={badgeArchive} kitArchive={kitArchive} teamName={currentTeamName} />
+        }
         facts={[
-          { label: "Seasons", value: d.standings.length },
-          { label: "Titles", value: titles },
+          { label: "Seasons Played in", value: d.standings.length },
+          { label: "Titles Won", value: titles },
           { label: "All-Time Rank", value: allTimeRank > 0 ? ordinal(allTimeRank) : "-" },
           { label: "Win %", value: `${winPct}%` },
         ]}
