@@ -1168,7 +1168,7 @@ function PositionChart({ gwTable, managers, maxGW, seasonId }: any) {
         {/* Final position end-caps with team badges */}
         {lines.map((l: any) => {
           const m = managers.find((x: any) => String(x.id) === l.id);
-          const badge = m ? getBranding(m.id)?.badge : null;
+          const badge = m ? (getSeasonBadge(m.id, seasonId) ?? getBranding(m.id)?.badge) : null;
           const cx = xFor(l.final.gameweek);
           const cy = yFor(l.final.position);
           const size = hover === l.id ? 18 : 14;
