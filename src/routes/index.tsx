@@ -5,8 +5,8 @@ import { StatCard, Skeleton } from "@/components/StatCard";
 import { Trophy, Flame, Target, Crown, TrendingUp, Zap, Skull } from "lucide-react";
 import logo from "@/assets/fpl-super-league-logo.png";
 import { getBranding } from "@/lib/managerBranding";
-import { getDbSeasonKit } from "@/lib/seasonAssets";
 import { getSeasonBadge } from "@/lib/seasonBadges";
+import { getSeasonKit } from "@/lib/seasonKits";
 import { getNickname } from "@/lib/managerNicknames";
 import { currentTeamName } from "@/lib/currentTeamNames";
 
@@ -458,7 +458,7 @@ function Home() {
             const champ = managerById(s.champion_manager_id);
             const b = champ ? getBranding(String(champ.id)) : null;
             const tint = b?.primary ?? "#d4af37";
-            const kit = champ ? MANAGER_KITS[String(champ.id)]?.home : null;
+            const kit = champ ? getSeasonKit(champ.id, s.id)?.home : null;
             return (
               <Link
                 key={s.id}
@@ -501,7 +501,7 @@ function Home() {
             {stinkers.map((s: any, i: number) => {
               const b = getBranding(String(s.manager.id));
               const tint = b?.primary ?? "#b34747";
-              const kit = MANAGER_KITS[String(s.manager.id)]?.home;
+              const kit = getSeasonKit(s.manager.id, s.season_id)?.home;
               return (
                 <Link
                   key={s.manager.id}
@@ -634,7 +634,7 @@ function Home() {
             const b = getBranding(String(m.id));
             const tint = b?.primary ?? "#508cff";
             const accent = (b as any)?.secondary ?? tint;
-            const kit = MANAGER_KITS[String(m.id)]?.home;
+            const kit = getSeasonKit(m.id, null)?.home;
             const titles = titleCounts[m.id] ?? 0;
             const spoons = spoonCounts[m.id] ?? 0;
             const allTime = data.alltime.find((r: any) => r.manager_id === m.id);
