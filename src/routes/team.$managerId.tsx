@@ -351,37 +351,60 @@ function TeamPage() {
     const sb = d.seasons.find((s: any) => s.id === b.season_id)?.year_start ?? 0;
     return sa - sb;
   });
-  const badgeArchive = seasonsChrono
-    .map((s: any) => {
-      const season = sById(s.season_id);
-      return {
-        seasonId: s.season_id,
-        seasonName: season?.name,
-        badge: getSeasonBadge(managerId, s.season_id),
-        teamName: getSeasonTeamName(managerId, s.season_id, d.mst.find((t: any) => t.season_id === s.season_id)?.team_name),
-      };
-    })
-    .filter((r) => r.badge);
-  const kitArchive = seasonsChrono
-    .map((s: any) => {
-      const season = sById(s.season_id);
-      return {
-        seasonId: s.season_id,
-        seasonName: season?.name,
-        kit: getSeasonKit(managerId, s.season_id),
-        teamName: getSeasonTeamName(managerId, s.season_id, d.mst.find((t: any) => t.season_id === s.season_id)?.team_name),
-      };
-    })
-    .filter((r) => r.kit?.home);
+  const dedupeAdjacent = <T extends { __key: string }>(rows: T[]) => {
+    const out: (T & { spanLabels: string[] })[] = [];
+    for (const r of rows) {
+      const last = out[out.length - 1];
+      if (last && last.__key === r.__key) {
+        last.spanLabels.push((r as any).seasonName);
+      } else {
+        out.push({ ...r, spanLabels: [(r as any).seasonName] });
+      }
+    }
+    return out;
+  };
+  const badgeArchive = dedupeAdjacent(
+    seasonsChrono
+      .map((s: any) => {
+        const season = sById(s.season_id);
+        const badge = getSeasonBadge(managerId, s.season_id);
+        return {
+          seasonId: s.season_id,
+          seasonName: season?.name,
+          badge,
+          teamName: getSeasonTeamName(managerId, s.season_id, d.mst.find((t: any) => t.season_id === s.season_id)?.team_name),
+          __key: `${badge ?? ""}`,
+        };
+      })
+      .filter((r) => r.badge),
+  );
+  const kitArchive = dedupeAdjacent(
+    seasonsChrono
+      .map((s: any) => {
+        const season = sById(s.season_id);
+        const kit = getSeasonKit(managerId, s.season_id);
+        return {
+          seasonId: s.season_id,
+          seasonName: season?.name,
+          kit,
+          teamName: getSeasonTeamName(managerId, s.season_id, d.mst.find((t: any) => t.season_id === s.season_id)?.team_name),
+          __key: `${kit?.home ?? ""}`,
+        };
+      })
+      .filter((r) => r.kit?.home),
+  );
 
   // Per-player most recent season for Best XI kit display
   const playerLastSeason = new Map<string, string | number>();
   for (const r of d.history as any[]) {
-    if (!r.player_name || r.season_id == null) continue;
+    if (!r.player_name) continue;
+    const season = r.season_id
+      ? d.seasons.find((s: any) => s.id === r.season_id)
+      : d.seasons.find((s: any) => s.name === r.season_name);
+    if (!season) continue;
     const prev = playerLastSeason.get(r.player_name);
-    const prevYear = prev ? (d.seasons.find((s: any) => s.id === prev)?.year_start ?? 0) : -1;
-    const thisYear = d.seasons.find((s: any) => s.id === r.season_id)?.year_start ?? 0;
-    if (thisYear > prevYear) playerLastSeason.set(r.player_name, r.season_id);
+    const prevYear = prev ? (d.seasons.find((s: any) => s.id === prev)?.year_start ?? -1) : -1;
+    if ((season.year_start ?? 0) > prevYear) playerLastSeason.set(r.player_name, season.id);
   }
   const bestXIWithSeason = bestXIForPitch.map((p: any) => ({
     ...p,
@@ -390,7 +413,7 @@ function TeamPage() {
   }));
 
   return (
-    <div style={brandStyle}>
+    <div className="team-page" style={brandStyle}>
 
       <TeamHero
         managerName={d.manager.name}
@@ -974,9 +997,10 @@ function H2HCard({
               <div className="font-display text-xl text-red-400">{losses}</div>
             </div>
           </div>
-          <div className="px-4 pb-3 grid grid-cols-2 gap-2 text-xs">
+          <div className="px-4 pb-3 grid grid-cols-3 gap-2 text-xs">
             <div className="text-muted-foreground">PF <span className="text-foreground font-display ml-1">{pf.toFixed(0)}</span></div>
-            <div className="text-muted-foreground text-right">PA <span className="text-foreground font-display ml-1">{pa.toFixed(0)}</span></div>
+            <div className="text-muted-foreground text-center">PA <span className="text-foreground font-display ml-1">{pa.toFixed(0)}</span></div>
+            <div className="text-muted-foreground text-right">PD <span className={`font-display ml-1 ${pf - pa > 0 ? "text-emerald-400" : pf - pa < 0 ? "text-red-400" : "text-foreground"}`}>{`${pf - pa > 0 ? "+" : ""}${(pf - pa).toFixed(0)}`}</span></div>
           </div>
           <div className="px-4 pb-4">
             <div className="text-[10px] uppercase tracking-[0.25em] text-silver/60 mb-2">Recent Form</div>
@@ -1054,11 +1078,13 @@ function ArchiveButtons({
   kitArchive,
   teamName,
 }: {
-  badgeArchive: { seasonId: string | number; seasonName?: string; badge: string | null; teamName: string }[];
-  kitArchive: { seasonId: string | number; seasonName?: string; kit: any; teamName: string }[];
+  badgeArchive: { seasonId: string | number; seasonName?: string; badge: string | null; teamName: string; spanLabels: string[] }[];
+  kitArchive: { seasonId: string | number; seasonName?: string; kit: any; teamName: string; spanLabels: string[] }[];
   teamName: string;
 }) {
   const [open, setOpen] = useState<"badge" | "kit" | null>(null);
+  const spanLabel = (labels: string[]) =>
+    labels.length <= 1 ? labels[0] ?? "" : `${labels[0]} – ${labels[labels.length - 1]}`;
   return (
     <>
       <div className="flex gap-3 flex-wrap">
@@ -1085,7 +1111,7 @@ function ArchiveButtons({
           </DialogHeader>
           <ArchiveTimeline
             items={badgeArchive.map((b) => ({
-              seasonName: b.seasonName,
+              seasonLabel: spanLabel(b.spanLabels),
               teamName: b.teamName,
               image: b.badge ?? "",
               imageClass: "w-24 h-24 sm:w-28 sm:h-28 object-contain",
@@ -1101,7 +1127,7 @@ function ArchiveButtons({
           </DialogHeader>
           <ArchiveTimeline
             items={kitArchive.map((k) => ({
-              seasonName: k.seasonName,
+              seasonLabel: spanLabel(k.spanLabels),
               teamName: k.teamName,
               image: k.kit?.home ?? "",
               imageClass: "w-24 h-24 sm:w-28 sm:h-28 object-contain",
@@ -1116,7 +1142,7 @@ function ArchiveButtons({
 function ArchiveTimeline({
   items,
 }: {
-  items: { seasonName?: string; teamName: string; image: string; imageClass: string }[];
+  items: { seasonLabel: string; teamName: string; image: string; imageClass: string }[];
 }) {
   if (!items.length) return <div className="text-sm text-muted-foreground p-6 text-center">No archive entries yet.</div>;
   return (
@@ -1133,7 +1159,7 @@ function ArchiveTimeline({
               )}
             </div>
             <div className="min-w-0">
-              <div className="text-[10px] uppercase tracking-[0.3em] text-silver/60">{it.seasonName}</div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-silver/60">{it.seasonLabel}</div>
               <div className="font-display text-xl uppercase truncate">{it.teamName}</div>
             </div>
           </div>

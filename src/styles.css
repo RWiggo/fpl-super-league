@@ -171,6 +171,18 @@
       radial-gradient(ellipse 60% 50% at 0% 0%, oklch(0.6 0.18 260 / 12%), transparent 70%),
       radial-gradient(ellipse 55% 50% at 100% 100%, oklch(0.65 0.2 200 / 8%), transparent 70%);
   }
+  /* On a team page, add a coloured top stripe + tinted border to every
+     premium-card so the team's primary colour pops on stat boxes,
+     leaderboards, h2h cards, journey cards etc. */
+  .team-page .premium-card {
+    border-color: color-mix(in oklab, var(--color-gold) 40%, oklch(0.55 0.06 250 / 28%));
+    border-top: 3px solid var(--color-gold);
+    box-shadow:
+      0 10px 36px -14px oklch(0.04 0.05 270 / 85%),
+      inset 0 1px 0 oklch(1 0 0 / 7%),
+      inset 0 -1px 0 oklch(0 0 0 / 30%),
+      0 0 0 1px color-mix(in oklab, var(--color-gold) 12%, transparent);
+  }
   /* gold-glow / silver-glow / primary-glow share the same surface,
      team pages re-tint via --gold override. */
   .gold-glow {
