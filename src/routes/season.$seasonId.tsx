@@ -947,7 +947,7 @@ function ParticipantsCarousel({ participants, seasonId }: { participants: any[];
 
 /* ======================= League Table ======================= */
 
-function LeagueTable({ standings, managers, mst, gwTable, maxGW }: any) {
+function LeagueTable({ standings, managers, mst, gwTable, maxGW, seasonId }: any) {
   const mById = (id: any) => managers.find((m: any) => String(m.id) === String(id));
   const teamNameFor = (mid: any) => mst.find((r: any) => String(r.manager_id) === String(mid))?.team_name ?? mById(mid)?.team_name;
 
