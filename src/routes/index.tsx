@@ -390,14 +390,46 @@ function Home() {
     leaderByKey[def.key] = best?.id ?? null;
   }
 
+  // Stats safe to surface even when the manager isn't #1 (positive/neutral framing only).
+  const FALLBACK_KEYS = new Set([
+    "wins","pf","gw","streak","goals","assists","cleans","gkSaves","hatTricks",
+    "bigChancesCreated","ballRecoveries","tackles","interceptions","keyPasses",
+    "aerials","dribbles","crosses","goalsOutsideBox","freeKickGoals","pensWon",
+    "pensSaved","oneOnOnesWon","minutes",
+  ]);
+
+  // Rank of a manager within a stat (1 = best). Returns Infinity if not eligible.
+  const rankIn = (def: typeof leaderDefs[number], id: string): number => {
+    if (!def.valid(id)) return Infinity;
+    const mode = def.mode ?? "max";
+    const myV = def.score(id);
+    if (!isFinite(myV)) return Infinity;
+    let rank = 1;
+    for (const other of allMgrIds) {
+      if (other === id || !def.valid(other)) continue;
+      const v = def.score(other);
+      if (!isFinite(v)) continue;
+      if (mode === "max" ? v > myV : v < myV) rank++;
+    }
+    return rank;
+  };
+
   const definingStat = (id: string): { label: string; value: string } | null => {
-    // Only show a stat if this manager actually leads the league in it.
+    // Prefer a stat the manager actually leads.
     for (const def of leaderDefs) {
       if (leaderByKey[def.key] === id) {
         return { label: def.label, value: def.value(id) };
       }
     }
-    // Fallback only for Average Team - never invents records.
+    // Fallback: best rank among neutrally-framed stats, so everyone has a calling card.
+    let best: { def: typeof leaderDefs[number]; rank: number } | null = null;
+    for (const def of leaderDefs) {
+      if (!FALLBACK_KEYS.has(def.key)) continue;
+      const r = rankIn(def, id);
+      if (r === Infinity) continue;
+      if (!best || r < best.rank) best = { def, rank: r };
+    }
+    if (best) return { label: best.def.label, value: best.def.value(id) };
     if (id === "12") return { label: "Mission Statement", value: "Just here to fill the numbers" };
     return null;
   };

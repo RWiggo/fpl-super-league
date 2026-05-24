@@ -8,7 +8,7 @@ export const CURRENT_TEAM_NAMES: Record<string, string> = {
   "6": "Fill Her Wycombe",
   "7": "Raybould Eagles",
   "8": "Adam All Stars",
-  "9": "Lallana Rhoades",
+  "9": "Chuck Morris",
   "10": "Send Me Location",
   "11": "Not Too Xabi FC",
   "12": "Average Team",
