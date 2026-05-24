@@ -351,37 +351,60 @@ function TeamPage() {
     const sb = d.seasons.find((s: any) => s.id === b.season_id)?.year_start ?? 0;
     return sa - sb;
   });
-  const badgeArchive = seasonsChrono
-    .map((s: any) => {
-      const season = sById(s.season_id);
-      return {
-        seasonId: s.season_id,
-        seasonName: season?.name,
-        badge: getSeasonBadge(managerId, s.season_id),
-        teamName: getSeasonTeamName(managerId, s.season_id, d.mst.find((t: any) => t.season_id === s.season_id)?.team_name),
-      };
-    })
-    .filter((r) => r.badge);
-  const kitArchive = seasonsChrono
-    .map((s: any) => {
-      const season = sById(s.season_id);
-      return {
-        seasonId: s.season_id,
-        seasonName: season?.name,
-        kit: getSeasonKit(managerId, s.season_id),
-        teamName: getSeasonTeamName(managerId, s.season_id, d.mst.find((t: any) => t.season_id === s.season_id)?.team_name),
-      };
-    })
-    .filter((r) => r.kit?.home);
+  const dedupeAdjacent = <T extends { __key: string }>(rows: T[]) => {
+    const out: (T & { spanLabels: string[] })[] = [];
+    for (const r of rows) {
+      const last = out[out.length - 1];
+      if (last && last.__key === r.__key) {
+        last.spanLabels.push((r as any).seasonName);
+      } else {
+        out.push({ ...r, spanLabels: [(r as any).seasonName] });
+      }
+    }
+    return out;
+  };
+  const badgeArchive = dedupeAdjacent(
+    seasonsChrono
+      .map((s: any) => {
+        const season = sById(s.season_id);
+        const badge = getSeasonBadge(managerId, s.season_id);
+        return {
+          seasonId: s.season_id,
+          seasonName: season?.name,
+          badge,
+          teamName: getSeasonTeamName(managerId, s.season_id, d.mst.find((t: any) => t.season_id === s.season_id)?.team_name),
+          __key: `${badge ?? ""}`,
+        };
+      })
+      .filter((r) => r.badge),
+  );
+  const kitArchive = dedupeAdjacent(
+    seasonsChrono
+      .map((s: any) => {
+        const season = sById(s.season_id);
+        const kit = getSeasonKit(managerId, s.season_id);
+        return {
+          seasonId: s.season_id,
+          seasonName: season?.name,
+          kit,
+          teamName: getSeasonTeamName(managerId, s.season_id, d.mst.find((t: any) => t.season_id === s.season_id)?.team_name),
+          __key: `${kit?.home ?? ""}`,
+        };
+      })
+      .filter((r) => r.kit?.home),
+  );
 
   // Per-player most recent season for Best XI kit display
   const playerLastSeason = new Map<string, string | number>();
   for (const r of d.history as any[]) {
-    if (!r.player_name || r.season_id == null) continue;
+    if (!r.player_name) continue;
+    const season = r.season_id
+      ? d.seasons.find((s: any) => s.id === r.season_id)
+      : d.seasons.find((s: any) => s.name === r.season_name);
+    if (!season) continue;
     const prev = playerLastSeason.get(r.player_name);
-    const prevYear = prev ? (d.seasons.find((s: any) => s.id === prev)?.year_start ?? 0) : -1;
-    const thisYear = d.seasons.find((s: any) => s.id === r.season_id)?.year_start ?? 0;
-    if (thisYear > prevYear) playerLastSeason.set(r.player_name, r.season_id);
+    const prevYear = prev ? (d.seasons.find((s: any) => s.id === prev)?.year_start ?? -1) : -1;
+    if ((season.year_start ?? 0) > prevYear) playerLastSeason.set(r.player_name, season.id);
   }
   const bestXIWithSeason = bestXIForPitch.map((p: any) => ({
     ...p,
