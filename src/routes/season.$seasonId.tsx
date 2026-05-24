@@ -245,10 +245,10 @@ function SeasonPage() {
                 <div className="text-[10px] uppercase tracking-[0.3em] text-gold/80 mb-3">On the bench</div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {subs.map((s, i) => {
-                    const branding = s.manager_id ? getBranding(s.manager_id) : null;
+                    const benchBadge = s.manager_id ? (getSeasonBadge(s.manager_id, d.season.id) ?? getBranding(s.manager_id)?.badge) : null;
                     return (
                       <div key={i} className="premium-card rounded-lg p-3 flex items-center gap-3">
-                        {branding?.badge && <img src={branding.badge} alt="" className="w-10 h-10 object-contain shrink-0" />}
+                        {benchBadge && <img src={benchBadge} alt="" className="w-10 h-10 object-contain shrink-0" />}
                         <div className="min-w-0">
                           <div className="text-[9px] uppercase tracking-widest text-muted-foreground">{s.position}</div>
                           <div className="font-medium text-sm leading-tight break-words">{s.player_name}</div>
