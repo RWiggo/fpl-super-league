@@ -586,7 +586,7 @@ function RecordsSection({
           label="Most Assists"
           value={mostAssists?.out_assists ?? "-"}
           sub={mostAssists?.team_name}
-          icon={<HandHelping className="w-5 h-5" />}
+          icon={<span className="text-lg leading-none" aria-hidden>🥾</span>}
           badge={badgeByManager(mostAssists?.manager_name)}
           tint={tintByManager(mostAssists?.manager_name)}
           dialogTitle="Top 5 · Most Assists"
