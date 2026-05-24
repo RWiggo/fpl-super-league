@@ -10,6 +10,9 @@ import { getNickname } from "@/lib/managerNicknames";
 import { getPlClubBadge } from "@/lib/plClubBadges";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getKit } from "@/lib/managerKits";
+import { getSeasonBadge, getSeasonTeamName } from "@/lib/seasonBadges";
+import { getSeasonKit } from "@/lib/seasonKits";
+import { useSeasonAssets } from "@/lib/seasonAssets";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/team/$managerId")({
@@ -318,9 +321,55 @@ function TeamPage() {
     : null;
 
   const kit = getKit(managerId);
+  useSeasonAssets();
+
+  // Per-season badge + kit archive (sorted oldest -> newest)
+  const seasonsChrono = [...d.standings].sort((a: any, b: any) => {
+    const sa = d.seasons.find((s: any) => s.id === a.season_id)?.year_start ?? 0;
+    const sb = d.seasons.find((s: any) => s.id === b.season_id)?.year_start ?? 0;
+    return sa - sb;
+  });
+  const badgeArchive = seasonsChrono
+    .map((s: any) => {
+      const season = sById(s.season_id);
+      return {
+        seasonId: s.season_id,
+        seasonName: season?.name,
+        badge: getSeasonBadge(managerId, s.season_id),
+        teamName: getSeasonTeamName(managerId, s.season_id, d.mst.find((t: any) => t.season_id === s.season_id)?.team_name),
+      };
+    })
+    .filter((r) => r.badge);
+  const kitArchive = seasonsChrono
+    .map((s: any) => {
+      const season = sById(s.season_id);
+      return {
+        seasonId: s.season_id,
+        seasonName: season?.name,
+        kit: getSeasonKit(managerId, s.season_id),
+        teamName: getSeasonTeamName(managerId, s.season_id, d.mst.find((t: any) => t.season_id === s.season_id)?.team_name),
+      };
+    })
+    .filter((r) => r.kit?.home);
+
+  // Per-player most recent season for Best XI kit display
+  const playerLastSeason = new Map<string, string | number>();
+  for (const r of d.history as any[]) {
+    if (!r.player_name || r.season_id == null) continue;
+    const prev = playerLastSeason.get(r.player_name);
+    const prevYear = prev ? (d.seasons.find((s: any) => s.id === prev)?.year_start ?? 0) : -1;
+    const thisYear = d.seasons.find((s: any) => s.id === r.season_id)?.year_start ?? 0;
+    if (thisYear > prevYear) playerLastSeason.set(r.player_name, r.season_id);
+  }
+  const bestXIWithSeason = bestXIForPitch.map((p: any) => ({
+    ...p,
+    manager_id: managerId,
+    season_id: playerLastSeason.get(p.player_name) ?? p.season_id,
+  }));
 
   return (
     <div style={brandStyle}>
+
       <TeamHero
         managerName={d.manager.name}
         teamName={currentTeamName}
@@ -328,9 +377,12 @@ function TeamPage() {
         primary={branding?.primary}
         nickname={getNickname(managerId)}
         formerlyKnownAs={formerlyKnownAs}
+        extras={
+          <ArchiveButtons badgeArchive={badgeArchive} kitArchive={kitArchive} teamName={currentTeamName} />
+        }
         facts={[
-          { label: "Seasons", value: d.standings.length },
-          { label: "Titles", value: titles },
+          { label: "Seasons Played in", value: d.standings.length },
+          { label: "Titles Won", value: titles },
           { label: "All-Time Rank", value: allTimeRank > 0 ? ordinal(allTimeRank) : "-" },
           { label: "Win %", value: `${winPct}%` },
         ]}
@@ -346,7 +398,7 @@ function TeamPage() {
 
       {/* Season Hist - eye-catching kit-driven cards */}
       <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-        <SectionTitle kicker="Season History" title="The Journey so far" />
+        <SectionTitle kicker={`${currentTeamName} · Season History`} title="The Journey so far" />
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
           {d.standings.map((s: any) => {
             const teamName = d.mst.find((t: any) => t.season_id === s.season_id)?.team_name;
@@ -386,14 +438,17 @@ function TeamPage() {
 
                 <div className="relative p-4 flex items-start gap-3">
                   {/* Kit */}
-                  {kit && (
-                    <img
-                      src={kit.home}
-                      alt=""
-                      loading="lazy"
-                      className="w-16 h-16 sm:w-20 sm:h-20 object-contain shrink-0 drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] group-hover:scale-110 transition-transform"
-                    />
-                  )}
+                  {(() => {
+                    const seasonKit = getSeasonKit(managerId, s.season_id) ?? kit;
+                    return seasonKit ? (
+                      <img
+                        src={seasonKit.home}
+                        alt=""
+                        loading="lazy"
+                        className="w-16 h-16 sm:w-20 sm:h-20 object-contain shrink-0 drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] group-hover:scale-110 transition-transform"
+                      />
+                    ) : null;
+                  })()}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
@@ -462,7 +517,7 @@ function TeamPage() {
         return (
           <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
             <div className="flex items-end justify-between flex-wrap gap-4">
-              <SectionTitle kicker="vs The Field" title="Head to Head" />
+              <SectionTitle kicker={`${currentTeamName} · vs The Field`} title="Head to Head" />
               <div className="flex items-center gap-2">
                 <span className="text-xs uppercase tracking-[0.25em] text-muted-foreground mr-2 hidden sm:inline">
                   {page + 1} / {pageCount}
@@ -548,6 +603,7 @@ function TeamPage() {
 
       {/* Highs and Lows */}
       <RecordsSection
+        teamName={currentTeamName}
         topPlayers={top5Players}
         bottomPlayers={bottom5Players}
         allPlayersSorted={sortedPlayers}
@@ -573,14 +629,14 @@ function TeamPage() {
           <div>
             <div className="flex items-baseline justify-between flex-wrap gap-2 mb-4">
               <div>
-                <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">All-Time XI</div>
+                <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">{currentTeamName} · All-Time XI</div>
                 <h3 className="font-display text-2xl md:text-3xl">Best Eleven · {bestFormation.join("-")}</h3>
               </div>
               <div className="text-sm text-muted-foreground">
                 Combined Points · <span className="text-gold font-display text-lg">{bestXISum.toFixed(0)}</span>
               </div>
             </div>
-            <FormationPitch players={bestXIForPitch} managerId={managerId} />
+            <FormationPitch players={bestXIWithSeason} />
 
             {/* Subs bench - next-highest scorer per position */}
             {subsByPos && (
@@ -865,72 +921,85 @@ function H2HCard({
     r === "W" ? "bg-emerald-600/80 text-white" : r === "L" ? "bg-red-600/80 text-white" : "bg-yellow-500/80 text-black";
 
   return (
-    <div className={`relative shrink-0 snap-start premium-card rounded-lg overflow-hidden transition-all w-full ${open ? "sm:w-[520px]" : "sm:w-[300px]"}`}>
-      {/* Top tint accent */}
-      <div className="h-1 w-full" style={{ background: tint }} />
-      <button onClick={() => setOpen((o) => !o)} className="w-full text-left">
-        <div className="p-4 flex items-center gap-3 border-b border-border/40">
-          {opponentBadge && (
-            <img src={opponentBadge} alt="" className="w-12 h-12 shrink-0 drop-shadow" />
-          )}
-          <div className="min-w-0 flex-1">
-            <div className="text-[10px] uppercase tracking-[0.25em] text-silver/60">Opponent</div>
-            <div className="font-display text-lg uppercase truncate">{opponentName}</div>
+    <>
+      <div className="relative premium-card rounded-lg overflow-hidden w-full">
+        <div className="h-1 w-full" style={{ background: tint }} />
+        <button onClick={() => setOpen(true)} className="w-full text-left">
+          <div className="p-4 flex items-center gap-3 border-b border-border/40">
+            {opponentBadge && (
+              <img src={opponentBadge} alt="" className="w-12 h-12 shrink-0 drop-shadow" />
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="text-[10px] uppercase tracking-[0.25em] text-silver/60">Opponent</div>
+              <div className="font-display text-lg uppercase truncate">{opponentName}</div>
+            </div>
+            <div className="text-right">
+              <div className="text-[10px] uppercase tracking-wider text-silver/60">Win %</div>
+              <div className="font-display text-2xl" style={{ color: tint }}>{wp}%</div>
+            </div>
           </div>
-          <div className="text-right">
-            <div className="text-[10px] uppercase tracking-wider text-silver/60">Win %</div>
-            <div className="font-display text-2xl" style={{ color: tint }}>{wp}%</div>
+          <div className="grid grid-cols-3 divide-x divide-border/40 text-center">
+            <div className="py-3">
+              <div className="text-[10px] uppercase tracking-wider text-silver/60">W</div>
+              <div className="font-display text-xl text-emerald-400">{wins}</div>
+            </div>
+            <div className="py-3">
+              <div className="text-[10px] uppercase tracking-wider text-silver/60">D</div>
+              <div className="font-display text-xl text-yellow-400">{draws}</div>
+            </div>
+            <div className="py-3">
+              <div className="text-[10px] uppercase tracking-wider text-silver/60">L</div>
+              <div className="font-display text-xl text-red-400">{losses}</div>
+            </div>
           </div>
-        </div>
-        <div className="grid grid-cols-3 divide-x divide-border/40 text-center">
-          <div className="py-3">
-            <div className="text-[10px] uppercase tracking-wider text-silver/60">W</div>
-            <div className="font-display text-xl text-emerald-400">{wins}</div>
+          <div className="px-4 pb-3 grid grid-cols-2 gap-2 text-xs">
+            <div className="text-muted-foreground">PF <span className="text-foreground font-display ml-1">{pf.toFixed(0)}</span></div>
+            <div className="text-muted-foreground text-right">PA <span className="text-foreground font-display ml-1">{pa.toFixed(0)}</span></div>
           </div>
-          <div className="py-3">
-            <div className="text-[10px] uppercase tracking-wider text-silver/60">D</div>
-            <div className="font-display text-xl text-yellow-400">{draws}</div>
+          <div className="px-4 pb-4">
+            <div className="text-[10px] uppercase tracking-[0.25em] text-silver/60 mb-2">Recent Form</div>
+            <div className="flex gap-1.5">
+              {recent.length === 0 && <span className="text-xs text-muted-foreground">No fixtures yet</span>}
+              {recent.map((f, i) => {
+                const r = resultLetter(f.my, f.op);
+                return (
+                  <span key={i} className={`w-7 h-7 rounded text-[11px] font-display flex items-center justify-center ${resultClass(r)}`} title={`${f.seasonName} GW${f.gameweek}: ${f.my}-${f.op}`}>
+                    {r}
+                  </span>
+                );
+              })}
+            </div>
+            <div className="mt-3 text-[10px] uppercase tracking-wider text-silver/50">Tap for every result</div>
           </div>
-          <div className="py-3">
-            <div className="text-[10px] uppercase tracking-wider text-silver/60">L</div>
-            <div className="font-display text-xl text-red-400">{losses}</div>
-          </div>
-        </div>
-        <div className="px-4 pb-3 grid grid-cols-2 gap-2 text-xs">
-          <div className="text-muted-foreground">PF <span className="text-foreground font-display ml-1">{pf.toFixed(0)}</span></div>
-          <div className="text-muted-foreground text-right">PA <span className="text-foreground font-display ml-1">{pa.toFixed(0)}</span></div>
-        </div>
-        <div className="px-4 pb-4">
-          <div className="text-[10px] uppercase tracking-[0.25em] text-silver/60 mb-2">Recent Form</div>
-          <div className="flex gap-1.5">
-            {recent.length === 0 && <span className="text-xs text-muted-foreground">No fixtures yet</span>}
-            {recent.map((f, i) => {
-              const r = resultLetter(f.my, f.op);
-              return (
-                <span key={i} className={`w-7 h-7 rounded text-[11px] font-display flex items-center justify-center ${resultClass(r)}`} title={`${f.seasonName} GW${f.gameweek}: ${f.my}-${f.op}`}>
-                  {r}
-                </span>
-              );
-            })}
-          </div>
-          <div className="mt-3 text-[10px] uppercase tracking-wider text-silver/50 flex items-center gap-1">
-            {open ? "Hide all results" : "Tap for every result"}
-            <span className="ml-auto" style={{ color: tint }}>{open ? "−" : "+"}</span>
-          </div>
-        </div>
-      </button>
-      {open && (
-        <div className="border-t border-border/40 bg-black/20 max-h-72 overflow-y-auto">
-          <table className="w-full text-xs">
+        </button>
+      </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              {opponentBadge && <img src={opponentBadge} alt="" className="w-10 h-10" />}
+              <div>
+                <DialogTitle className="font-display text-2xl uppercase">vs {opponentName}</DialogTitle>
+                <DialogDescription>
+                  {wins}W · {draws}D · {losses}L · {wp}% win rate
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+          <table className="w-full text-sm mt-2">
             <thead className="bg-card/60 text-[10px] uppercase tracking-wider text-muted-foreground sticky top-0">
               <tr>
                 <th className="p-2 text-left">Season</th>
                 <th className="p-2 text-center">GW</th>
                 <th className="p-2 text-right">Score</th>
-                <th className="p-2 text-center w-8">R</th>
+                <th className="p-2 text-center w-10">R</th>
               </tr>
             </thead>
             <tbody>
+              {fixtures.length === 0 && (
+                <tr><td colSpan={4} className="p-6 text-center text-muted-foreground">No fixtures yet</td></tr>
+              )}
               {fixtures.map((f, i) => {
                 const r = resultLetter(f.my, f.op);
                 return (
@@ -945,16 +1014,110 @@ function H2HCard({
                       <span className="text-muted-foreground">{Number(f.op).toFixed(0)}</span>
                     </td>
                     <td className="p-2 text-center">
-                      <span className={`inline-flex w-5 h-5 rounded text-[10px] font-display items-center justify-center ${resultClass(r)}`}>{r}</span>
+                      <span className={`inline-flex w-6 h-6 rounded text-[10px] font-display items-center justify-center ${resultClass(r)}`}>{r}</span>
                     </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-        </div>
-      )}
-    </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+function ArchiveButtons({
+  badgeArchive,
+  kitArchive,
+  teamName,
+}: {
+  badgeArchive: { seasonId: string | number; seasonName?: string; badge: string | null; teamName: string }[];
+  kitArchive: { seasonId: string | number; seasonName?: string; kit: any; teamName: string }[];
+  teamName: string;
+}) {
+  const [open, setOpen] = useState<"badge" | "kit" | null>(null);
+  return (
+    <>
+      <div className="flex gap-3 flex-wrap">
+        <button
+          type="button"
+          onClick={() => setOpen("badge")}
+          className="text-[10px] uppercase tracking-[0.3em] text-gold/90 hover:text-gold border-b border-gold/40 hover:border-gold pb-0.5 transition"
+        >
+          Badge Archive →
+        </button>
+        <button
+          type="button"
+          onClick={() => setOpen("kit")}
+          className="text-[10px] uppercase tracking-[0.3em] text-gold/90 hover:text-gold border-b border-gold/40 hover:border-gold pb-0.5 transition"
+        >
+          Kit Archive →
+        </button>
+      </div>
+      <Dialog open={open === "badge"} onOpenChange={(o) => { if (!o) setOpen(null); }}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl uppercase">{teamName} · Badge Archive</DialogTitle>
+            <DialogDescription>Crests worn through the seasons.</DialogDescription>
+          </DialogHeader>
+          <ArchiveTimeline
+            items={badgeArchive.map((b) => ({
+              seasonName: b.seasonName,
+              teamName: b.teamName,
+              image: b.badge ?? "",
+              imageClass: "w-24 h-24 sm:w-28 sm:h-28 object-contain",
+            }))}
+          />
+        </DialogContent>
+      </Dialog>
+      <Dialog open={open === "kit"} onOpenChange={(o) => { if (!o) setOpen(null); }}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl uppercase">{teamName} · Kit Archive</DialogTitle>
+            <DialogDescription>Home kits worn through the seasons.</DialogDescription>
+          </DialogHeader>
+          <ArchiveTimeline
+            items={kitArchive.map((k) => ({
+              seasonName: k.seasonName,
+              teamName: k.teamName,
+              image: k.kit?.home ?? "",
+              imageClass: "w-24 h-24 sm:w-28 sm:h-28 object-contain",
+            }))}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+function ArchiveTimeline({
+  items,
+}: {
+  items: { seasonName?: string; teamName: string; image: string; imageClass: string }[];
+}) {
+  if (!items.length) return <div className="text-sm text-muted-foreground p-6 text-center">No archive entries yet.</div>;
+  return (
+    <ol className="relative mt-4 border-l border-gold/30 ml-4">
+      {items.map((it, i) => (
+        <li key={i} className="relative pl-8 pb-8 last:pb-2">
+          <span className="absolute -left-[7px] top-2 w-3 h-3 rounded-full bg-gold shadow-[0_0_0_4px_rgba(0,0,0,0.6)]" />
+          <div className="flex items-center gap-5">
+            <div className="shrink-0 bg-black/30 rounded-lg p-3 border border-border/40">
+              {it.image ? (
+                <img src={it.image} alt="" loading="lazy" className={it.imageClass} />
+              ) : (
+                <div className="w-24 h-24 grid place-items-center text-xs text-muted-foreground">No asset</div>
+              )}
+            </div>
+            <div className="min-w-0">
+              <div className="text-[10px] uppercase tracking-[0.3em] text-silver/60">{it.seasonName}</div>
+              <div className="font-display text-xl uppercase truncate">{it.teamName}</div>
+            </div>
+          </div>
+        </li>
+      ))}
+    </ol>
   );
 }
 
@@ -1071,12 +1234,14 @@ type RecordsSectionProps = {
   bestUnbeatenRun?: StreakRow;
   worstWinlessRun?: StreakRow;
   worstLosingRun?: StreakRow;
+  teamName: string;
 };
 
 function RecordsSection({
   topPlayers, bottomPlayers, allPlayersSorted, seasonsForPlayer,
   topClubs, bottomClubs, allClubsRanked,
   allStreaks, bestWinRun, bestUnbeatenRun, worstWinlessRun, worstLosingRun,
+  teamName,
 }: RecordsSectionProps) {
   type DialogKey =
     | { kind: "players"; accent: "good" | "bad"; title: string }
@@ -1088,7 +1253,7 @@ function RecordsSection({
 
   return (
     <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-      <SectionTitle kicker="The Highs and Lows" title="Records and Statistics" />
+      <SectionTitle kicker={`${teamName} · The Highs and Lows`} title="Records and Statistics" />
 
       <div className="grid lg:grid-cols-2 gap-6 mt-8">
         <div onClick={() => setDialog({ kind: "players", accent: "good", title: "All Players · Best to Worst" })} className="cursor-pointer">
