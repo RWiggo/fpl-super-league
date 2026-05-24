@@ -591,10 +591,10 @@ function Home() {
             <div className="hidden sm:grid grid-cols-[42px_1fr_36px_36px_36px_64px_64px] gap-2 px-4 py-3 bg-card/60 text-[10px] uppercase tracking-widest text-muted-foreground">
               <div>#</div><div>Team</div>
               <div className="text-center">W</div><div className="text-center">D</div><div className="text-center">L</div>
-              <div className="text-right">PF</div><div className="text-right">Pts</div>
+              <div className="text-right">PD</div><div className="text-right">Pts</div>
             </div>
-            <div className="sm:hidden grid grid-cols-[28px_1fr_44px_52px] gap-2 px-3 py-2 bg-card/60 text-[10px] uppercase tracking-widest text-muted-foreground">
-              <div>#</div><div>Team</div><div className="text-center">W-D-L</div><div className="text-right">Pts</div>
+            <div className="sm:hidden grid grid-cols-[24px_1fr_40px_44px_44px] gap-1.5 px-2 py-2 bg-card/60 text-[10px] uppercase tracking-widest text-muted-foreground">
+              <div>#</div><div>Team</div><div className="text-center">W-D-L</div><div className="text-right">PD</div><div className="text-right">Pts</div>
             </div>
 
             {currentStandings.map((row: any) => {
@@ -603,6 +603,9 @@ function Home() {
               const tint = b?.primary ?? "#508cff";
               const display = currentTeamName(row.manager_id, m?.team_name ?? m?.name ?? "-");
               const rankCls = rankColor(row.position, currentStandings.length);
+              const pd = Number(row.points_for ?? 0) - Number(row.points_against ?? 0);
+              const pdStr = `${pd > 0 ? "+" : ""}${pd.toFixed(0)}`;
+              const pdCls = pd > 0 ? "text-emerald-400" : pd < 0 ? "text-red-400" : "text-muted-foreground";
               return (
                 <Link
                   key={row.id}
@@ -627,12 +630,12 @@ function Home() {
                     <div className="text-center text-sm tabular-nums">{row.wins}</div>
                     <div className="text-center text-sm tabular-nums">{row.draws}</div>
                     <div className="text-center text-sm tabular-nums">{row.losses}</div>
-                    <div className="text-right text-sm tabular-nums">{Number(row.points_for ?? 0).toFixed(0)}</div>
+                    <div className={`text-right text-sm tabular-nums ${pdCls}`}>{pdStr}</div>
                     <div className="text-right font-display text-lg text-gold tabular-nums">{row.total_points}</div>
                   </div>
 
                   {/* Mobile */}
-                  <div className="sm:hidden grid grid-cols-[28px_1fr_44px_52px] gap-2 px-3 py-3 items-center">
+                  <div className="sm:hidden grid grid-cols-[24px_1fr_40px_44px_44px] gap-1.5 px-2 py-3 items-center">
                     <div className={`font-display text-base leading-none ${rankCls}`}>{row.position}</div>
                     <div className="flex items-center gap-2 min-w-0">
                       {b?.badge ? (
@@ -646,7 +649,8 @@ function Home() {
                       </div>
                     </div>
                     <div className="text-center text-[11px] tabular-nums text-muted-foreground">{row.wins}-{row.draws}-{row.losses}</div>
-                    <div className="text-right font-display text-lg text-gold tabular-nums leading-none">{row.total_points}</div>
+                    <div className={`text-right text-[11px] tabular-nums ${pdCls}`}>{pdStr}</div>
+                    <div className="text-right font-display text-base text-gold tabular-nums leading-none">{row.total_points}</div>
                   </div>
                 </Link>
               );
