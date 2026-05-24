@@ -514,7 +514,7 @@ function TeamPage() {
                       <div className={`shrink-0 rounded-md border px-2 py-1 text-center ${posBg}`}>
                         <div className="text-[8px] uppercase tracking-widest text-muted-foreground leading-none">Pos</div>
                         <div className={`font-display text-lg leading-tight flex items-center gap-1 ${posClass}`}>
-                          {pos === 1 && <Trophy className="w-3.5 h-3.5 text-gold" />}
+                          {pos === 1 && seasonComplete && <Trophy className="w-3.5 h-3.5 text-gold" />}
                           {pos}
                           <span className="text-[9px] text-muted-foreground">/{seasonSize || "-"}</span>
                         </div>
