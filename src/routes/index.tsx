@@ -463,11 +463,8 @@ function Home() {
           <TeamConstellation managers={data.managers} logoSrc={logo} />
 
           <div className="flex flex-wrap gap-3 justify-center mt-12">
-            <Link to="/records" className="px-6 py-3 bg-primary text-primary-foreground font-semibold uppercase tracking-[0.18em] text-xs rounded hover:opacity-90 transition primary-glow">
-              Enter The Archive
-            </Link>
             {currentSeason && (
-              <Link to="/season/$seasonId" params={{ seasonId: currentSeason.id }} className="px-6 py-3 border border-silver/50 hover:border-primary hover:text-primary font-semibold uppercase tracking-[0.18em] text-xs rounded transition">
+              <Link to="/season/$seasonId" params={{ seasonId: currentSeason.id }} className="px-6 py-3 bg-primary text-primary-foreground font-semibold uppercase tracking-[0.18em] text-xs rounded hover:opacity-90 transition primary-glow">
                 Live Season →
               </Link>
             )}
@@ -644,7 +641,7 @@ function Home() {
                         <div className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[9px] font-bold text-white" style={{ background: tint }}>{display.charAt(0)}</div>
                       )}
                       <div className="min-w-0">
-                        <div className="text-[12px] font-medium capitalize truncate leading-tight">{display}</div>
+                        <div className="text-[12px] font-medium capitalize leading-tight break-words">{display}</div>
                         <div className="text-[9px] uppercase tracking-wider text-muted-foreground capitalize truncate">{m?.name}</div>
                       </div>
                     </div>
