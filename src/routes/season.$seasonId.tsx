@@ -157,27 +157,30 @@ function SeasonPage() {
       <SeasonHero
         season={d.season}
         champ={champConfirmed ? champ : null}
-        topGoals={mostGoals ? { name: mByName(mostGoals.manager_name)?.team_name ?? mostGoals.team_name, value: mostGoals.out_goals } : null}
+        topGoals={mostGoals ? { name: mByName(mostGoals.manager_name)?.team_name ?? mostGoals.team_name, value: mostGoals.out_goals, managerId: mByName(mostGoals.manager_name)?.id } : null}
         longestWin={longestWin}
         longestLose={longestLose}
-        mostCS={mostCS ? { name: mostCS.manager_name, value: mostCS.combined_clean_sheets } : null}
+        longestWinManagerId={longestWin ? (d.managers.find((m: any) => m.team_name === longestWin.team_name)?.id) : null}
+        longestLoseManagerId={longestLose ? (d.managers.find((m: any) => m.team_name === longestLose.team_name)?.id) : null}
+        mostCS={mostCS ? { name: mostCS.manager_name, value: mostCS.combined_clean_sheets, managerId: mByName(mostCS.manager_name)?.id } : null}
         wooden={spoonConfirmed ? (last ? mById(last.manager_id) : null) : null}
       />
 
-      <ParticipantsCarousel participants={participants} />
+      <ParticipantsCarousel participants={participants} seasonId={d.season.id} />
 
       {/* League Table */}
       <section className="max-w-7xl mx-auto px-4 py-12">
         <SectionTitle kicker="Standings" title="The League Table" />
-        <LeagueTable standings={d.standings} managers={d.managers} mst={d.mst} gwTable={d.gwTable} maxGW={maxGW} />
-        <PositionChart gwTable={d.gwTable} managers={d.managers} maxGW={maxGW} />
+        <LeagueTable standings={d.standings} managers={d.managers} mst={d.mst} gwTable={d.gwTable} maxGW={maxGW} seasonId={d.season.id} />
+        <PositionChart gwTable={d.gwTable} managers={d.managers} maxGW={maxGW} seasonId={d.season.id} />
       </section>
 
       {/* Fixtures */}
       <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
         <SectionTitle kicker="Match Centre" title="Fixtures & Results" />
-        <FixturesPanel fixtures={d.fixtures} managers={d.managers} maxGW={maxGW} />
+        <FixturesPanel fixtures={d.fixtures} managers={d.managers} maxGW={maxGW} seasonId={d.season.id} />
       </section>
+
 
       {/* Records */}
       <RecordsSection
