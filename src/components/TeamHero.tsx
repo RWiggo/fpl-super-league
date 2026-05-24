@@ -55,10 +55,11 @@ export function TeamHero({
       <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: `linear-gradient(90deg, ${tint}, transparent 70%)` }} />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-0 md:pt-20">
-        <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.4em] text-silver/80 mb-6">
+        <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.4em] text-silver/80 mb-3">
           <span className="inline-block w-6 h-px bg-silver/60" />
           The FPL Super League · Club
         </div>
+        {extras && <div className="mb-6">{extras}</div>}
 
         <div className="grid md:grid-cols-[auto_1fr] gap-6 md:gap-10 items-center">
           {badge && (
