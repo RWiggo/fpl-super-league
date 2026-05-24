@@ -6,7 +6,7 @@ import { FormationPitch } from "@/components/FormationPitch";
 import { getBranding } from "@/lib/managerBranding";
 import { currentTeamName } from "@/lib/currentTeamNames";
 import { getSeasonBadge } from "@/lib/seasonBadges";
-import { Trophy, Crown, Flame, Target, Zap, Skull, Shield, TrendingUp, TrendingDown, Users, Swords, Star, Goal, HandHelping, ArrowDown, ArrowUp, AlertOctagon, Info, ChevronRight } from "lucide-react";
+import { Trophy, Crown, Flame, Target, Zap, Skull, Shield, TrendingUp, TrendingDown, Users, Swords, Star, ArrowDown, ArrowUp, AlertOctagon, Info, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/season/$seasonId")({
   component: SeasonPage,
@@ -157,27 +157,30 @@ function SeasonPage() {
       <SeasonHero
         season={d.season}
         champ={champConfirmed ? champ : null}
-        topGoals={mostGoals ? { name: mByName(mostGoals.manager_name)?.team_name ?? mostGoals.team_name, value: mostGoals.out_goals } : null}
+        topGoals={mostGoals ? { name: mByName(mostGoals.manager_name)?.team_name ?? mostGoals.team_name, value: mostGoals.out_goals, managerId: mByName(mostGoals.manager_name)?.id } : null}
         longestWin={longestWin}
         longestLose={longestLose}
-        mostCS={mostCS ? { name: mostCS.manager_name, value: mostCS.combined_clean_sheets } : null}
+        longestWinManagerId={longestWin ? (d.managers.find((m: any) => m.team_name === longestWin.team_name)?.id) : null}
+        longestLoseManagerId={longestLose ? (d.managers.find((m: any) => m.team_name === longestLose.team_name)?.id) : null}
+        mostCS={mostCS ? { name: mostCS.manager_name, value: mostCS.combined_clean_sheets, managerId: mByName(mostCS.manager_name)?.id } : null}
         wooden={spoonConfirmed ? (last ? mById(last.manager_id) : null) : null}
       />
 
-      <ParticipantsCarousel participants={participants} />
+      <ParticipantsCarousel participants={participants} seasonId={d.season.id} />
 
       {/* League Table */}
       <section className="max-w-7xl mx-auto px-4 py-12">
         <SectionTitle kicker="Standings" title="The League Table" />
-        <LeagueTable standings={d.standings} managers={d.managers} mst={d.mst} gwTable={d.gwTable} maxGW={maxGW} />
-        <PositionChart gwTable={d.gwTable} managers={d.managers} maxGW={maxGW} />
+        <LeagueTable standings={d.standings} managers={d.managers} mst={d.mst} gwTable={d.gwTable} maxGW={maxGW} seasonId={d.season.id} />
+        <PositionChart gwTable={d.gwTable} managers={d.managers} maxGW={maxGW} seasonId={d.season.id} />
       </section>
 
       {/* Fixtures */}
       <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
         <SectionTitle kicker="Match Centre" title="Fixtures & Results" />
-        <FixturesPanel fixtures={d.fixtures} managers={d.managers} maxGW={maxGW} />
+        <FixturesPanel fixtures={d.fixtures} managers={d.managers} maxGW={maxGW} seasonId={d.season.id} />
       </section>
+
 
       {/* Records */}
       <RecordsSection
@@ -242,10 +245,10 @@ function SeasonPage() {
                 <div className="text-[10px] uppercase tracking-[0.3em] text-gold/80 mb-3">On the bench</div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {subs.map((s, i) => {
-                    const branding = s.manager_id ? getBranding(s.manager_id) : null;
+                    const benchBadge = s.manager_id ? (getSeasonBadge(s.manager_id, d.season.id) ?? getBranding(s.manager_id)?.badge) : null;
                     return (
                       <div key={i} className="premium-card rounded-lg p-3 flex items-center gap-3">
-                        {branding?.badge && <img src={branding.badge} alt="" className="w-10 h-10 object-contain shrink-0" />}
+                        {benchBadge && <img src={benchBadge} alt="" className="w-10 h-10 object-contain shrink-0" />}
                         <div className="min-w-0">
                           <div className="text-[9px] uppercase tracking-widest text-muted-foreground">{s.position}</div>
                           <div className="font-medium text-sm leading-tight break-words">{s.player_name}</div>
@@ -572,7 +575,7 @@ function RecordsSection({
           label="Most Goals"
           value={mostGoals?.out_goals ?? "-"}
           sub={mostGoals?.team_name}
-          icon={<Goal className="w-5 h-5" />}
+          icon={<span className="text-lg leading-none" aria-hidden>⚽</span>}
           badge={badgeByManager(mostGoals?.manager_name)}
           tint={tintByManager(mostGoals?.manager_name)}
           dialogTitle="Top 5 · Most Goals"
@@ -583,7 +586,7 @@ function RecordsSection({
           label="Most Assists"
           value={mostAssists?.out_assists ?? "-"}
           sub={mostAssists?.team_name}
-          icon={<HandHelping className="w-5 h-5" />}
+          icon={<span className="text-lg leading-none" aria-hidden>🥾</span>}
           badge={badgeByManager(mostAssists?.manager_name)}
           tint={tintByManager(mostAssists?.manager_name)}
           dialogTitle="Top 5 · Most Assists"
@@ -789,7 +792,7 @@ function StatExplorer({ teamStats, managers }: { teamStats: any[]; managers: any
 
 /* ======================= Hero ======================= */
 
-function SeasonHero({ season, champ, topGoals, longestWin, longestLose, mostCS, wooden }: any) {
+function SeasonHero({ season, champ, topGoals, longestWin, longestLose, longestWinManagerId, longestLoseManagerId, mostCS, wooden }: any) {
   const [yA, yB] = season.name.split("/");
   const champBadge = champ ? (getSeasonBadge(champ.id, season.id) ?? getBranding(champ.id)?.badge) : null;
   const woodenBadge = wooden ? (getSeasonBadge(wooden.id, season.id) ?? getBranding(wooden.id)?.badge) : null;
@@ -894,10 +897,10 @@ function SeasonHero({ season, champ, topGoals, longestWin, longestLose, mostCS, 
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
-              <Mini label="Best Win Run" value={longestWin?.streak_length ?? "-"} sub={longestWin?.team_name} />
-              <Mini label="Worst Losing Run" value={longestLose?.streak_length ?? "-"} sub={longestLose?.team_name} />
-              <Mini label="Top Scorers" value={topGoals?.value ?? "-"} sub={topGoals?.name} />
-              <Mini label="Most Clean Sheets" value={mostCS?.value ?? "-"} sub={mostCS?.name} />
+              <Mini label="Best Win Run" value={longestWin?.streak_length ?? "-"} sub={longestWin?.team_name} badge={longestWinManagerId ? (getSeasonBadge(longestWinManagerId, season.id) ?? getBranding(longestWinManagerId)?.badge) : null} />
+              <Mini label="Worst Losing Run" value={longestLose?.streak_length ?? "-"} sub={longestLose?.team_name} badge={longestLoseManagerId ? (getSeasonBadge(longestLoseManagerId, season.id) ?? getBranding(longestLoseManagerId)?.badge) : null} />
+              <Mini label="Top Scorers" value={topGoals?.value ?? "-"} sub={topGoals?.name} badge={topGoals?.managerId ? (getSeasonBadge(topGoals.managerId, season.id) ?? getBranding(topGoals.managerId)?.badge) : null} />
+              <Mini label="Most Clean Sheets" value={mostCS?.value ?? "-"} sub={mostCS?.name} badge={mostCS?.managerId ? (getSeasonBadge(mostCS.managerId, season.id) ?? getBranding(mostCS.managerId)?.badge) : null} />
             </div>
           </div>
         </div>
@@ -908,7 +911,7 @@ function SeasonHero({ season, champ, topGoals, longestWin, longestLose, mostCS, 
 
 /* ======================= Participants Carousel ======================= */
 
-function ParticipantsCarousel({ participants }: { participants: any[] }) {
+function ParticipantsCarousel({ participants, seasonId }: { participants: any[]; seasonId: string | number }) {
   if (!participants.length) return null;
   // Duplicate the list so the marquee loops seamlessly
   const items = [...participants, ...participants];
@@ -920,12 +923,12 @@ function ParticipantsCarousel({ participants }: { participants: any[] }) {
       <div className="relative">
         <div className="flex gap-12 marquee w-max items-center">
           {items.map((m, i) => {
-            const branding = getBranding(m.id);
+            const badge = getSeasonBadge(m.id, seasonId) ?? getBranding(m.id)?.badge;
             return (
               <Link key={i} to="/team/$managerId" params={{ managerId: String(m.id) }}
                     className="flex flex-col items-center gap-2 min-w-[110px] group">
-                {branding?.badge ? (
-                  <img src={branding.badge} alt={m.team_name}
+                {badge ? (
+                  <img src={badge} alt={m.team_name}
                        className="w-20 h-20 object-contain drop-shadow-lg group-hover:scale-110 transition-transform" />
                 ) : (
                   <div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center text-2xl">{m.name?.[0]}</div>
@@ -944,7 +947,7 @@ function ParticipantsCarousel({ participants }: { participants: any[] }) {
 
 /* ======================= League Table ======================= */
 
-function LeagueTable({ standings, managers, mst, gwTable, maxGW }: any) {
+function LeagueTable({ standings, managers, mst, gwTable, maxGW, seasonId }: any) {
   const mById = (id: any) => managers.find((m: any) => String(m.id) === String(id));
   const teamNameFor = (mid: any) => mst.find((r: any) => String(r.manager_id) === String(mid))?.team_name ?? mById(mid)?.team_name;
 
@@ -1026,10 +1029,10 @@ function LeagueTable({ standings, managers, mst, gwTable, maxGW }: any) {
 
   return (
     <div className="premium-card rounded-lg mt-6 overflow-hidden">
-      <table className="w-full text-[10px] sm:text-sm table-fixed">
+      <table className="w-full text-[10px] sm:text-sm table-fixed sm:table-auto">
         <colgroup>
           <col className="w-6 sm:w-auto" />
-          <col />
+          <col className="sm:w-[34%]" />
           <col className="w-7 sm:w-auto" />
           <col className="w-7 sm:w-auto" />
           <col className="w-7 sm:w-auto" />
@@ -1058,7 +1061,7 @@ function LeagueTable({ standings, managers, mst, gwTable, maxGW }: any) {
         <tbody>
           {sortedRows.map((row: any) => {
             const m = mById(row.manager_id);
-            const branding = getBranding(row.manager_id);
+            const badge = getSeasonBadge(row.manager_id, seasonId) ?? getBranding(row.manager_id)?.badge;
             const games = (row.wins ?? 0) + (row.draws ?? 0) + (row.losses ?? 0);
             const isChamp = row.position === 1;
             const form = formByManager[String(row.manager_id)] ?? [];
@@ -1067,7 +1070,7 @@ function LeagueTable({ standings, managers, mst, gwTable, maxGW }: any) {
                 <td className="px-1 py-2 sm:p-3 text-center font-display text-sm sm:text-lg text-gold">{row.position}</td>
                 <td className="px-1 py-2 sm:p-3">
                   <Link to="/team/$managerId" params={{ managerId: String(row.manager_id) }} className="flex items-center gap-1.5 sm:gap-3 hover:text-gold min-w-0">
-                    {branding?.badge && <img src={branding.badge} alt="" className="w-5 h-5 sm:w-8 sm:h-8 object-contain shrink-0" />}
+                    {badge && <img src={badge} alt="" className="w-5 h-5 sm:w-8 sm:h-8 object-contain shrink-0" />}
                     {isChamp && <Trophy className="hidden sm:inline w-4 h-4 text-gold shrink-0" />}
                     <div className="min-w-0">
                       <div className="font-medium truncate leading-tight">{teamNameFor(row.manager_id)}</div>
@@ -1103,7 +1106,7 @@ function LeagueTable({ standings, managers, mst, gwTable, maxGW }: any) {
 
 /* ======================= Position Chart ======================= */
 
-function PositionChart({ gwTable, managers, maxGW }: any) {
+function PositionChart({ gwTable, managers, maxGW, seasonId }: any) {
   const [hover, setHover] = useState<string | null>(null);
   const W = 800;
   const H = 320;
@@ -1165,7 +1168,7 @@ function PositionChart({ gwTable, managers, maxGW }: any) {
         {/* Final position end-caps with team badges */}
         {lines.map((l: any) => {
           const m = managers.find((x: any) => String(x.id) === l.id);
-          const badge = m ? getBranding(m.id)?.badge : null;
+          const badge = m ? (getSeasonBadge(m.id, seasonId) ?? getBranding(m.id)?.badge) : null;
           const cx = xFor(l.final.gameweek);
           const cy = yFor(l.final.position);
           const size = hover === l.id ? 18 : 14;
@@ -1187,7 +1190,7 @@ function PositionChart({ gwTable, managers, maxGW }: any) {
 
 /* ======================= Fixtures ======================= */
 
-function FixturesPanel({ fixtures, managers, maxGW }: any) {
+function FixturesPanel({ fixtures, managers, maxGW, seasonId }: any) {
   const completedGWs = [...new Set(fixtures.filter((f: any) => f.home_score != null).map((f: any) => f.gameweek))] as number[];
   const latestGW = completedGWs.length ? Math.max(...completedGWs) : maxGW;
   const [gw, setGw] = useState<number>(latestGW);
@@ -1229,8 +1232,8 @@ function FixturesPanel({ fixtures, managers, maxGW }: any) {
         {list.map((f: any) => {
           const homeM = mByName(f.home_manager);
           const awayM = mByName(f.away_manager);
-          const hb = homeM ? getBranding(homeM.id) : null;
-          const ab = awayM ? getBranding(awayM.id) : null;
+          const hb = homeM ? { badge: getSeasonBadge(homeM.id, seasonId) ?? getBranding(homeM.id)?.badge } : null;
+          const ab = awayM ? { badge: getSeasonBadge(awayM.id, seasonId) ?? getBranding(awayM.id)?.badge } : null;
           const homeWon = f.home_score > f.away_score;
           const awayWon = f.away_score > f.home_score;
           const isDraw = f.home_score != null && f.home_score === f.away_score;
@@ -1298,15 +1301,21 @@ function FixturesPanel({ fixtures, managers, maxGW }: any) {
 
 /* ======================= Helpers ======================= */
 
-function Mini({ label, value, sub }: { label: string; value: any; sub?: any }) {
+function Mini({ label, value, sub, badge }: { label: string; value: any; sub?: any; badge?: string | null }) {
   return (
     <div className="border-l-0 sm:border-l-2 border-gold sm:pl-3 text-center sm:text-left">
       <div className="font-display text-2xl md:text-3xl text-gold leading-none">{value}</div>
       <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">{label}</div>
-      {sub && <div className="text-[10px] text-muted-foreground/80 truncate">{sub}</div>}
+      {sub && (
+        <div className="flex items-center gap-1 justify-center sm:justify-start">
+          {badge && <img src={badge} alt="" className="w-4 h-4 object-contain shrink-0" />}
+          <div className="text-[10px] text-muted-foreground/80 truncate">{sub}</div>
+        </div>
+      )}
     </div>
   );
 }
+
 
 function SectionTitle({ kicker, title }: { kicker: string; title: string }) {
   return (
