@@ -1190,7 +1190,7 @@ function PositionChart({ gwTable, managers, maxGW, seasonId }: any) {
 
 /* ======================= Fixtures ======================= */
 
-function FixturesPanel({ fixtures, managers, maxGW }: any) {
+function FixturesPanel({ fixtures, managers, maxGW, seasonId }: any) {
   const completedGWs = [...new Set(fixtures.filter((f: any) => f.home_score != null).map((f: any) => f.gameweek))] as number[];
   const latestGW = completedGWs.length ? Math.max(...completedGWs) : maxGW;
   const [gw, setGw] = useState<number>(latestGW);
