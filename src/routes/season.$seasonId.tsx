@@ -5,7 +5,8 @@ import { Skeleton } from "@/components/StatCard";
 import { FormationPitch } from "@/components/FormationPitch";
 import { getBranding } from "@/lib/managerBranding";
 import { currentTeamName } from "@/lib/currentTeamNames";
-import { Trophy, Crown, Flame, Target, Zap, Skull, Shield, TrendingUp, TrendingDown, Users, Swords, Star, Goal, HandHelping, ArrowDown, AlertOctagon, Info, ChevronRight } from "lucide-react";
+import { getSeasonBadge } from "@/lib/seasonBadges";
+import { Trophy, Crown, Flame, Target, Zap, Skull, Shield, TrendingUp, TrendingDown, Users, Swords, Star, Goal, HandHelping, ArrowDown, ArrowUp, AlertOctagon, Info, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/season/$seasonId")({
   component: SeasonPage,
@@ -135,19 +136,32 @@ function SeasonPage() {
     return arr.sort((a, b) => (b.wins - b.losses) - (a.wins - a.losses))[0];
   })();
 
+  // Live-season guard: only show champion / wooden spoon when mathematically
+  // confirmed (standard 3/1/0, 38-GW season). For completed seasons, always show.
+  const seasonComplete = !!d.season.season_complete;
+  const GAMES_PER_TEAM = 38;
+  const maxPossibleFor = (row: any) => {
+    const played = (row.wins ?? 0) + (row.draws ?? 0) + (row.losses ?? 0);
+    const remaining = Math.max(0, GAMES_PER_TEAM - played);
+    return (row.total_points ?? 0) + remaining * 3;
+  };
+  const leader = d.standings[0];
+  const second = d.standings[1];
+  const last = d.standings[d.standings.length - 1];
+  const secondLast = d.standings[d.standings.length - 2];
+  const champConfirmed = seasonComplete || (leader && second && (leader.total_points ?? 0) > maxPossibleFor(second));
+  const spoonConfirmed = seasonComplete || (last && secondLast && maxPossibleFor(last) < (secondLast.total_points ?? 0));
+
   return (
     <div>
       <SeasonHero
         season={d.season}
-        champ={champ}
+        champ={champConfirmed ? champ : null}
         topGoals={mostGoals ? { name: mByName(mostGoals.manager_name)?.team_name ?? mostGoals.team_name, value: mostGoals.out_goals } : null}
         longestWin={longestWin}
         longestLose={longestLose}
         mostCS={mostCS ? { name: mostCS.manager_name, value: mostCS.combined_clean_sheets } : null}
-        wooden={(() => {
-          const last = d.standings[d.standings.length - 1];
-          return last ? mById(last.manager_id) : null;
-        })()}
+        wooden={spoonConfirmed ? (last ? mById(last.manager_id) : null) : null}
       />
 
       <ParticipantsCarousel participants={participants} />
