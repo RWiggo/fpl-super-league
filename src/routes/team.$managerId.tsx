@@ -321,9 +321,54 @@ function TeamPage() {
     : null;
 
   const kit = getKit(managerId);
+  useSeasonAssets();
+
+  // Per-season badge + kit archive (sorted oldest -> newest)
+  const seasonsChrono = [...d.standings].sort((a: any, b: any) => {
+    const sa = d.seasons.find((s: any) => s.id === a.season_id)?.year_start ?? 0;
+    const sb = d.seasons.find((s: any) => s.id === b.season_id)?.year_start ?? 0;
+    return sa - sb;
+  });
+  const badgeArchive = seasonsChrono
+    .map((s: any) => {
+      const season = sById(s.season_id);
+      return {
+        seasonId: s.season_id,
+        seasonName: season?.name,
+        badge: getSeasonBadge(managerId, s.season_id),
+        teamName: getSeasonTeamName(managerId, s.season_id, d.mst.find((t: any) => t.season_id === s.season_id)?.team_name),
+      };
+    })
+    .filter((r) => r.badge);
+  const kitArchive = seasonsChrono
+    .map((s: any) => {
+      const season = sById(s.season_id);
+      return {
+        seasonId: s.season_id,
+        seasonName: season?.name,
+        kit: getSeasonKit(managerId, s.season_id),
+        teamName: getSeasonTeamName(managerId, s.season_id, d.mst.find((t: any) => t.season_id === s.season_id)?.team_name),
+      };
+    })
+    .filter((r) => r.kit?.home);
+
+  // Per-player most recent season for Best XI kit display
+  const playerLastSeason = new Map<string, string | number>();
+  for (const r of d.history as any[]) {
+    if (!r.player_name || r.season_id == null) continue;
+    const prev = playerLastSeason.get(r.player_name);
+    const prevYear = prev ? (d.seasons.find((s: any) => s.id === prev)?.year_start ?? 0) : -1;
+    const thisYear = d.seasons.find((s: any) => s.id === r.season_id)?.year_start ?? 0;
+    if (thisYear > prevYear) playerLastSeason.set(r.player_name, r.season_id);
+  }
+  const bestXIWithSeason = bestXIForPitch.map((p: any) => ({
+    ...p,
+    season_id: playerLastSeason.get(p.player_name) ?? p.season_id,
+  }));
 
   return (
     <div style={brandStyle}>
+
       <TeamHero
         managerName={d.manager.name}
         teamName={currentTeamName}
