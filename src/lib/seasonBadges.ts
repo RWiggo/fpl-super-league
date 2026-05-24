@@ -1,8 +1,9 @@
-// Per-season badge + team-name overrides. Falls back to the manager's current
-// (season 4) badge/name from managerBranding / currentTeamNames when no override
-// is defined for that season.
+// Per-season badge + team-name overrides. Prefers the Supabase-hosted asset
+// from `team_badges_resolved` (loaded by `seasonAssets.ts`); falls back to
+// any bundled per-season override, then the manager's current branding.
 import { getBranding } from "@/lib/managerBranding";
 import { currentTeamName } from "@/lib/currentTeamNames";
+import { getDbSeasonBadge } from "@/lib/seasonAssets";
 
 import s1_1 from "@/assets/badges/season1/1.png";
 import s1_2 from "@/assets/badges/season1/2.png";
@@ -18,12 +19,8 @@ import s2_8 from "@/assets/badges/season2/8.png";
 
 type Override = { badge?: string; teamName?: string };
 
-// Keyed by `${managerId}|${seasonId}`.
-// Note: the original imported `@/assets/badges/<id>.svg` set represents the
-// Season 3 & 4 badges (badges did not change between those seasons), so we
-// only override here where a season-specific asset differs.
+// Local bundled fallbacks (used only if the Supabase asset cache misses).
 const OVERRIDES: Record<string, Override> = {
-  // Season 1
   "1|1": { badge: s1_1, teamName: "El Changusto" },
   "2|1": { badge: s1_2, teamName: "Charleston Athletic" },
   "3|1": { badge: s1_3, teamName: "Wiggo Wanderers" },
@@ -32,7 +29,6 @@ const OVERRIDES: Record<string, Override> = {
   "6|1": { badge: s1_6, teamName: "Jeffery Schlupp The Bum FC" },
   "7|1": { badge: s1_7, teamName: "Ryan's Lions" },
   "8|1": { badge: s1_8, teamName: "Adam All Stars" },
-  // Season 2 (only badges supplied so far; others fall back to S3/4)
   "4|2": { badge: s2_4 },
   "8|2": { badge: s2_8 },
 };
@@ -43,6 +39,8 @@ export function getSeasonBadge(
   seasonId: string | number | null | undefined,
 ): string | null {
   if (managerId == null) return null;
+  const db = getDbSeasonBadge(managerId, seasonId);
+  if (db) return db;
   const key = `${managerId}|${seasonId}`;
   const override = OVERRIDES[key]?.badge;
   if (override) return override;

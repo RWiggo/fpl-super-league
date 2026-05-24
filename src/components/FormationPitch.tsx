@@ -1,4 +1,4 @@
-import { getKit } from "@/lib/managerKits";
+import { getSeasonKit } from "@/lib/seasonKits";
 import { GoalkeeperKit } from "./GoalkeeperKit";
 
 type Player = {
@@ -11,17 +11,22 @@ type Player = {
   avg_points_per_game?: number;
   ppg?: number;
   manager_id?: string;
+  /** Season id for this player's appearance; lets us pick the correct kit. */
+  season_id?: string | number;
 };
 
 export function FormationPitch({
   players,
   getManagerName,
   managerId,
+  seasonId,
 }: {
   players: Player[];
   getManagerName?: (id: string) => string;
   /** When set, every player on this pitch wears this manager's kit (used for a single-team Best XI). */
   managerId?: string | number;
+  /** When set (e.g. on a season page), every kit defaults to this season. */
+  seasonId?: string | number;
 }) {
   const gks = players.filter((p) => p.position === "GK" || p.position === "GKP");
   const defs = players.filter((p) => p.position === "DEF");
@@ -64,6 +69,7 @@ export function FormationPitch({
                 player={p}
                 managerName={p.manager_id && getManagerName ? getManagerName(p.manager_id) : undefined}
                 kitManagerId={managerId ?? p.manager_id}
+                kitSeasonId={seasonId ?? p.season_id}
               />
             ))}
           </div>
@@ -77,15 +83,17 @@ function PlayerChip({
   player,
   managerName,
   kitManagerId,
+  kitSeasonId,
 }: {
   player: Player;
   managerName?: string;
   kitManagerId?: string | number;
+  kitSeasonId?: string | number;
 }) {
   const points = player.total_fantasy_points ?? player.fantasy_points ?? 0;
   const ppg = player.ppg ?? player.avg_points_per_game;
   const isGK = player.position === "GK" || player.position === "GKP";
-  const kit = getKit(kitManagerId);
+  const kit = getSeasonKit(kitManagerId, kitSeasonId);
 
   return (
     <div className="flex flex-col items-center w-[58px] sm:w-[92px]">
