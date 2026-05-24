@@ -866,8 +866,8 @@ function SeasonHero({ season, champ, topGoals, longestWin, longestLose, mostCS, 
               {champ ? (
                 <Link to="/team/$managerId" params={{ managerId: String(champ.id) }}
                       className="group flex items-center gap-2 sm:gap-3 premium-card rounded-lg p-2 sm:p-3 hover:border-gold/60 transition min-w-0">
-                  {champBranding?.badge && (
-                    <img src={champBranding.badge} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain shrink-0" />
+                  {champBadge && (
+                    <img src={champBadge} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain shrink-0" />
                   )}
                   <div className="min-w-0 text-left flex-1">
                     <div className="text-[8px] sm:text-[10px] uppercase tracking-widest text-muted-foreground">Champion</div>
@@ -880,8 +880,8 @@ function SeasonHero({ season, champ, topGoals, longestWin, longestLose, mostCS, 
               {wooden ? (
                 <Link to="/team/$managerId" params={{ managerId: String(wooden.id) }}
                       className="group flex items-center gap-2 sm:gap-3 premium-card rounded-lg p-2 sm:p-3 hover:border-amber-700/60 transition min-w-0">
-                  {woodenBranding?.badge && (
-                    <img src={woodenBranding.badge} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain opacity-80 shrink-0" />
+                  {woodenBadge && (
+                    <img src={woodenBadge} alt="" className="w-9 h-9 sm:w-12 sm:h-12 object-contain opacity-80 shrink-0" />
                   )}
                   <div className="min-w-0 text-left flex-1">
                     <div className="text-[8px] sm:text-[10px] uppercase tracking-widest text-muted-foreground">Wooden Spoon</div>
