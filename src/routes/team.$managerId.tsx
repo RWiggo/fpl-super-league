@@ -401,22 +401,25 @@ function TeamPage() {
       .filter((r) => r.kit?.home),
   );
 
-  // Per-player most recent season for Best XI kit display
-  const playerLastSeason = new Map<string, string | number>();
+  // Per-player best-scoring season at this club for Best XI kit display
+  const playerBestSeason = new Map<string, { seasonId: string | number; points: number }>();
   for (const r of d.history as any[]) {
     if (!r.player_name) continue;
     const season = r.season_id
       ? d.seasons.find((s: any) => s.id === r.season_id)
       : d.seasons.find((s: any) => s.name === r.season_name);
     if (!season) continue;
-    const prev = playerLastSeason.get(r.player_name);
-    const prevYear = prev ? (d.seasons.find((s: any) => s.id === prev)?.year_start ?? -1) : -1;
-    if ((season.year_start ?? 0) > prevYear) playerLastSeason.set(r.player_name, season.id);
+    const pts = Number(r.fantasy_points ?? 0);
+    const prev = playerBestSeason.get(r.player_name);
+    if (!prev || pts > prev.points) {
+      playerBestSeason.set(r.player_name, { seasonId: season.id, points: pts });
+    }
   }
+
   const bestXIWithSeason = bestXIForPitch.map((p: any) => ({
     ...p,
     manager_id: managerId,
-    season_id: playerLastSeason.get(p.player_name) ?? p.season_id,
+    season_id: playerBestSeason.get(p.player_name)?.seasonId ?? p.season_id,
   }));
 
   return (
