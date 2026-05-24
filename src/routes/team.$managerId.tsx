@@ -397,7 +397,7 @@ function TeamPage() {
 
       {/* Season Hist - eye-catching kit-driven cards */}
       <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
-        <SectionTitle kicker="Season History" title="The Journey so far" />
+        <SectionTitle kicker={`${currentTeamName} · Season History`} title="The Journey so far" />
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
           {d.standings.map((s: any) => {
             const teamName = d.mst.find((t: any) => t.season_id === s.season_id)?.team_name;
