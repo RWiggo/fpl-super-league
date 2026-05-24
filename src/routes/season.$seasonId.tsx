@@ -235,7 +235,7 @@ function SeasonPage() {
                 Combined Points · <span className="text-gold font-display text-lg">{totalPts.toFixed(0)}</span>
               </div>
             </div>
-            <FormationPitch players={totsForPitch} getManagerName={(id) => mById(id)?.name ?? ""} />
+            <FormationPitch players={totsForPitch} getManagerName={(id) => mById(id)?.name ?? ""} seasonId={d.season.id} />
 
             {subs.length > 0 && (
               <div className="mt-8">
@@ -791,8 +791,8 @@ function StatExplorer({ teamStats, managers }: { teamStats: any[]; managers: any
 
 function SeasonHero({ season, champ, topGoals, longestWin, longestLose, mostCS, wooden }: any) {
   const [yA, yB] = season.name.split("/");
-  const champBranding = champ ? getBranding(champ.id) : null;
-  const woodenBranding = wooden ? getBranding(wooden.id) : null;
+  const champBadge = champ ? (getSeasonBadge(champ.id, season.id) ?? getBranding(champ.id)?.badge) : null;
+  const woodenBadge = wooden ? (getSeasonBadge(wooden.id, season.id) ?? getBranding(wooden.id)?.badge) : null;
 
   // Season-unique accent: each season gets a deliberately distinct hue from a
   // curated, well-spaced palette so consecutive seasons never look alike.
