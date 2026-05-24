@@ -143,8 +143,12 @@ function TeamPage() {
   const sById = (id: string) => d.seasons.find((s: any) => s.id === id);
   const mById = (id: string) => d.allManagers.find((m: any) => m.id === id);
 
-  // titles
-  const titles = d.standings.filter((s: any) => s.position === 1).length;
+  // titles (exclude active/incomplete seasons - not won until season is complete)
+  const titles = d.standings.filter((s: any) => {
+    if (s.position !== 1) return false;
+    const season = d.seasons.find((x: any) => x.id === s.season_id);
+    return season?.season_complete !== false;
+  }).length;
   const bestFinish = d.standings.length ? Math.min(...d.standings.map((s: any) => s.position)) : null;
   const worstFinish = d.standings.length ? Math.max(...d.standings.map((s: any) => s.position)) : null;
   const totalGames = d.standings.reduce((acc: number, s: any) => acc + (s.wins ?? 0) + (s.draws ?? 0) + (s.losses ?? 0), 0);
