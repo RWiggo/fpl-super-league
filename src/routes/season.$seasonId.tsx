@@ -395,8 +395,9 @@ function RecordsSection({
   const mByName = (name?: string) => name ? d.managers.find((m: any) => m.name === name) : null;
   const mByTeam = (team?: string) => team ? d.managers.find((m: any) => m.team_name === team)
     ?? (() => { const r = d.mst.find((x: any) => x.team_name === team); return r ? mById(r.manager_id) : null; })() : null;
-  const badgeByManager = (name?: string) => { const m = mByName(name); return m ? getBranding(m.id)?.badge ?? null : null; };
-  const badgeByTeam = (team?: string) => { const m = mByTeam(team); return m ? getBranding(m.id)?.badge ?? null : null; };
+  const sid = d.season.id;
+  const badgeByManager = (name?: string) => { const m = mByName(name); return m ? (getSeasonBadge(m.id, sid) ?? getBranding(m.id)?.badge ?? null) : null; };
+  const badgeByTeam = (team?: string) => { const m = mByTeam(team); return m ? (getSeasonBadge(m.id, sid) ?? getBranding(m.id)?.badge ?? null) : null; };
   const tintByManager = (name?: string) => { const m = mByName(name); return m ? getBranding(m.id)?.primary ?? null : null; };
   const tintByTeam = (team?: string) => { const m = mByTeam(team); return m ? getBranding(m.id)?.primary ?? null : null; };
   const tintById = (id?: string) => id ? getBranding(id)?.primary ?? null : null;
