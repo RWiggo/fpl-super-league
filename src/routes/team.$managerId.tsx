@@ -85,6 +85,7 @@ function TeamPage() {
   const [totsSeason, setTotsSeason] = useState<string>("");
   const [h2hPage, setH2hPage] = useState(0);
   const isMobile = useIsMobile();
+  useSeasonAssets();
   useEffect(() => { if (d?.tots?.length && !totsSeason) setTotsSeason(d.tots[0].season_name); }, [d]);
 
   // Player search: club -> players from history; selected player aggregated stats
