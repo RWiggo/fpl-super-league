@@ -1070,7 +1070,7 @@ function LeagueTable({ standings, managers, mst, gwTable, maxGW, seasonId }: any
                 <td className="px-1 py-2 sm:p-3 text-center font-display text-sm sm:text-lg text-gold">{row.position}</td>
                 <td className="px-1 py-2 sm:p-3">
                   <Link to="/team/$managerId" params={{ managerId: String(row.manager_id) }} className="flex items-center gap-1.5 sm:gap-3 hover:text-gold min-w-0">
-                    {branding?.badge && <img src={branding.badge} alt="" className="w-5 h-5 sm:w-8 sm:h-8 object-contain shrink-0" />}
+                    {badge && <img src={badge} alt="" className="w-5 h-5 sm:w-8 sm:h-8 object-contain shrink-0" />}
                     {isChamp && <Trophy className="hidden sm:inline w-4 h-4 text-gold shrink-0" />}
                     <div className="min-w-0">
                       <div className="font-medium truncate leading-tight">{teamNameFor(row.manager_id)}</div>
