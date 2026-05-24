@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/StatCard";
 import { getBranding } from "@/lib/managerBranding";
+import { currentTeamName } from "@/lib/currentTeamNames";
 import { Trophy, Crown, Medal, ArrowUp, ArrowDown, ChevronsUpDown, X, Star } from "lucide-react";
 
 
@@ -79,6 +80,15 @@ function TablePage() {
 
   const enriched = useMemo(() => {
     if (!d) return [];
+    // Only count titles for seasons that are flagged complete (don't award the
+    // current live season's title until it's actually done).
+    const completedChampions = new Map<string, number>();
+    for (const s of d.seasons) {
+      if (s.champion_manager_id && s.season_complete !== false) {
+        const k = String(s.champion_manager_id);
+        completedChampions.set(k, (completedChampions.get(k) ?? 0) + 1);
+      }
+    }
     const mapped = [...d.alltime].map((r) => {
         const w = r.total_wins ?? 0;
         const dr = r.total_draws ?? 0;
@@ -97,7 +107,7 @@ function TablePage() {
           _winpct: r.win_percentage != null ? Number(r.win_percentage) : (games ? (w / games) * 100 : 0),
           _pts: r.total_league_points ?? 0,
           _best: r.best_finish ?? null,
-          _titles: r.titles_won ?? 0,
+          _titles: completedChampions.get(String(r.manager_id)) ?? 0,
           _spoons: spoonsByMgr.get(String(r.manager_id)) ?? 0,
         };
       });
@@ -272,10 +282,10 @@ function TablePage() {
                     <img src={b.badge} alt="" className="w-7 h-7 object-contain flex-shrink-0" />
                   ) : (
                     <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: tint }}>
-                      {(m?.team_name ?? m?.name ?? r.manager_name ?? "?").charAt(0).toUpperCase()}
+                      {currentTeamName(r.manager_id, m?.team_name).charAt(0).toUpperCase()}
                     </div>
                   )}
-                  <span className="capitalize font-bold text-sm truncate">{m?.team_name ?? m?.name ?? r.manager_name}</span>
+                  <span className="capitalize font-bold text-sm flex-1 min-w-0 break-words leading-tight">{currentTeamName(r.manager_id, m?.team_name)}</span>
                   {r._titles > 0 && <TitleStars count={r._titles} />}
                   <span className="ml-auto font-display text-gold text-base tabular-nums">{r._ppg.toFixed(1)}</span>
                 </div>
@@ -299,12 +309,12 @@ function TablePage() {
           })}
         </div>
 
-        <div className="hidden md:block premium-card rounded-lg overflow-hidden">
-          <table className="w-full table-fixed text-[7px] min-[390px]:text-[8px] sm:text-sm leading-tight">
-            <thead className="bg-card/80 text-[7px] min-[390px]:text-[8px] sm:text-xs uppercase tracking-normal sm:tracking-wider text-muted-foreground sticky top-0 z-10">
+        <div className="hidden md:block premium-card rounded-lg overflow-x-auto">
+          <table className="w-full text-sm leading-tight">
+            <thead className="bg-card/80 text-xs uppercase tracking-wider text-muted-foreground sticky top-0 z-10">
               <tr>
                 <SortTh col={COLS[0]} active={sortKey === "rank"} dir={sortDir} onClick={() => setSort("rank")} />
-                <th className="px-0.5 py-1 sm:p-3 text-left w-[7%]">Mgr</th>
+                <th className="px-2 py-2 text-left">Mgr</th>
                 {COLS.slice(1).map((c) => (
                   <SortTh key={c.key} col={c} active={sortKey === c.key} dir={sortDir} onClick={() => setSort(c.key)} />
                 ))}
@@ -319,49 +329,49 @@ function TablePage() {
                 const pdZero = r._pd === 0;
                 return (
                   <tr key={r.manager_id} className="border-t border-border/40 hover:bg-gold/5 transition">
-                    <td className="px-0.5 py-1 sm:p-3">
-                      <div className="flex items-center justify-center sm:justify-start gap-0.5 sm:gap-2">
-                        <span className="hidden sm:block w-1 h-8 rounded" style={{ background: tint }} />
-                        <span className={`font-display text-[9px] min-[390px]:text-[10px] sm:text-lg ${rankColor(r._rank, enriched.length)}`}>{r._rank}</span>
+                    <td className="px-2 py-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-1 h-8 rounded" style={{ background: tint }} />
+                        <span className={`font-display text-lg ${rankColor(r._rank, enriched.length)}`}>{r._rank}</span>
                       </div>
                     </td>
-                    <td className="px-0.5 py-1 sm:p-3 capitalize">
+                    <td className="px-2 py-2 capitalize">
                       <Link to="/team/$managerId" params={{ managerId: String(r.manager_id) }}
-                        className="hover:text-gold flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2.5">
+                        className="hover:text-gold flex items-center gap-2 min-w-[180px]">
                         {b?.badge ? (
-                          <img src={b.badge} alt="" className="w-4 h-4 min-[390px]:w-5 min-[390px]:h-5 sm:w-8 sm:h-8 object-contain flex-shrink-0" />
+                          <img src={b.badge} alt="" className="w-8 h-8 object-contain flex-shrink-0" />
                         ) : (
-                          <div className="w-4 h-4 min-[390px]:w-5 min-[390px]:h-5 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[7px] min-[390px]:text-[9px] sm:text-xs font-bold text-white flex-shrink-0" style={{ background: tint }}>
-                            {(m?.team_name ?? m?.name ?? r.manager_name ?? "?").charAt(0).toUpperCase()}
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: tint }}>
+                            {currentTeamName(r.manager_id, m?.team_name).charAt(0).toUpperCase()}
                           </div>
                         )}
-                        <span className="hidden sm:inline whitespace-nowrap font-medium">{m?.team_name ?? m?.name ?? r.manager_name}</span>
-                        {r._titles > 0 && <TitleStars count={r._titles} className="hidden sm:inline-flex" />}
+                        <span className="whitespace-nowrap font-medium">{currentTeamName(r.manager_id, m?.team_name)}</span>
+                        {r._titles > 0 && <TitleStars count={r._titles} />}
                       </Link>
                     </td>
-                    <td className="text-center px-0.5 py-1 sm:p-3">{r.seasons_played ?? "-"}</td>
-                    <td className="text-center px-0.5 py-1 sm:p-3">{r._played}</td>
-                    <td className="text-center px-0.5 py-1 sm:p-3 text-emerald-400">{r._wins}</td>
-                    <td className="text-center px-0.5 py-1 sm:p-3 text-muted-foreground">{r._draws}</td>
-                    <td className="text-center px-0.5 py-1 sm:p-3 text-red-400/90">{r._losses}</td>
-                    <td className="text-right px-0.5 py-1 sm:p-3 tabular-nums">{compactNumber(r._pf)}</td>
-                    <td className="text-right px-0.5 py-1 sm:p-3 tabular-nums text-muted-foreground">{compactNumber(r._pa)}</td>
-                    <td className={`text-right px-0.5 py-1 sm:p-3 tabular-nums font-medium ${pdPositive ? "text-emerald-400" : pdZero ? "text-muted-foreground" : "text-red-400"}`}>
+                    <td className="text-center px-2 py-2 whitespace-nowrap">{r.seasons_played ?? "-"}</td>
+                    <td className="text-center px-2 py-2 whitespace-nowrap">{r._played}</td>
+                    <td className="text-center px-2 py-2 whitespace-nowrap text-emerald-400">{r._wins}</td>
+                    <td className="text-center px-2 py-2 whitespace-nowrap text-muted-foreground">{r._draws}</td>
+                    <td className="text-center px-2 py-2 whitespace-nowrap text-red-400/90">{r._losses}</td>
+                    <td className="text-right px-2 py-2 tabular-nums whitespace-nowrap">{compactNumber(r._pf)}</td>
+                    <td className="text-right px-2 py-2 tabular-nums whitespace-nowrap text-muted-foreground">{compactNumber(r._pa)}</td>
+                    <td className={`text-right px-2 py-2 tabular-nums whitespace-nowrap font-medium ${pdPositive ? "text-emerald-400" : pdZero ? "text-muted-foreground" : "text-red-400"}`}>
                       {pdPositive ? "+" : ""}{compactNumber(r._pd)}
                     </td>
-                    <td className="text-right px-0.5 py-1 sm:p-3 tabular-nums font-bold">{r._ppg.toFixed(1)}</td>
-                    <td className="text-right px-0.5 py-1 sm:p-3 tabular-nums">{r._winpct.toFixed(0)}%</td>
-                    <td className="text-center px-0.5 py-1 sm:p-3">
+                    <td className="text-right px-2 py-2 tabular-nums whitespace-nowrap font-bold">{r._ppg.toFixed(1)}</td>
+                    <td className="text-right px-2 py-2 tabular-nums whitespace-nowrap">{r._winpct.toFixed(0)}%</td>
+                    <td className="text-center px-2 py-2 whitespace-nowrap">
                       {r._best ? <span className={r._best === 1 ? "text-gold font-display" : ""}>{ord(r._best)}</span> : "-"}
                     </td>
-                    <td className="text-center px-0.5 py-1 sm:p-3">
+                    <td className="text-center px-2 py-2 whitespace-nowrap">
                       {r._titles > 0 ? (
-                        <span className="inline-flex items-center justify-center gap-0.5 sm:gap-1 text-gold font-display">
-                          <Trophy className="hidden sm:block w-3.5 h-3.5" />{r._titles}
+                        <span className="inline-flex items-center justify-center gap-1 text-gold font-display">
+                          <Trophy className="w-3.5 h-3.5" />{r._titles}
                         </span>
                       ) : "-"}
                     </td>
-                    <td className="text-right px-0.5 py-1 sm:p-3 font-display text-gold text-[8px] min-[390px]:text-[9px] sm:text-base tabular-nums">{r._pts}</td>
+                    <td className="text-right px-2 py-2 font-display text-gold tabular-nums whitespace-nowrap">{r._pts}</td>
                   </tr>
                 );
               })}
@@ -415,10 +425,10 @@ function TablePage() {
                       <img src={b.badge} alt="" className="w-7 h-7 object-contain" />
                     ) : (
                       <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ background: tint }}>
-                        {(m?.team_name ?? m?.name ?? leader.manager_name ?? "?").charAt(0).toUpperCase()}
+                        {currentTeamName(leader.manager_id, m?.team_name).charAt(0).toUpperCase()}
                       </div>
                     )}
-                    <span className="text-sm font-bold capitalize text-white truncate">{m?.team_name ?? m?.name ?? leader.manager_name}</span>
+                    <span className="text-sm font-bold capitalize text-white truncate">{currentTeamName(leader.manager_id, m?.team_name)}</span>
                   </div>
                   <div className="text-[10px] uppercase tracking-widest mt-3 opacity-70" style={{ color: tint }}>
                     Tap for top 5 →
@@ -490,10 +500,10 @@ function TablePage() {
                         <img src={b.badge} alt="" className="w-9 h-9 object-contain" />
                       ) : (
                         <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ background: tint }}>
-                          {(m?.team_name ?? m?.name ?? r.manager_name ?? "?").charAt(0).toUpperCase()}
+                          {currentTeamName(r.manager_id, m?.team_name).charAt(0).toUpperCase()}
                         </div>
                       )}
-                      <span className="flex-1 capitalize font-medium truncate">{m?.team_name ?? m?.name ?? r.manager_name}</span>
+                      <span className="flex-1 capitalize font-medium truncate">{currentTeamName(r.manager_id, m?.team_name)}</span>
                       <span className="font-display text-lg text-gold tabular-nums">{openAwardDef.format(r)}</span>
                     </Link>
                   </li>
@@ -510,15 +520,15 @@ function TablePage() {
 function SortTh({ col, active, dir, onClick }: { col: typeof COLS[number]; active: boolean; dir: "asc" | "desc"; onClick: () => void }) {
   return (
     <th
-      className={`px-0.5 py-1 sm:p-3 cursor-pointer select-none hover:text-white transition text-${col.align} ${active ? "text-gold" : ""}`}
+      className={`px-2 py-2 cursor-pointer select-none hover:text-white transition whitespace-nowrap text-${col.align} ${active ? "text-gold" : ""}`}
       onClick={onClick}
       title={col.tip}
     >
-      <span className={`inline-flex items-center gap-0.5 sm:gap-1 ${col.align === "right" ? "justify-end w-full" : col.align === "center" ? "justify-center w-full" : ""}`}>
+      <span className={`inline-flex items-center gap-1 ${col.align === "right" ? "justify-end w-full" : col.align === "center" ? "justify-center w-full" : ""}`}>
         {col.label}
         {active
-          ? (dir === "asc" ? <ArrowUp className="hidden sm:block w-3 h-3" /> : <ArrowDown className="hidden sm:block w-3 h-3" />)
-          : <ChevronsUpDown className="hidden sm:block w-3 h-3 opacity-40" />}
+          ? (dir === "asc" ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)
+          : <ChevronsUpDown className="w-3 h-3 opacity-40" />}
       </span>
     </th>
   );
