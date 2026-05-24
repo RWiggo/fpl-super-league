@@ -553,9 +553,7 @@ function RecordsSection({
           sub={highestFixture ? `${highestFixture.home_team} vs ${highestFixture.away_team} · GW${highestFixture.gameweek}` : ""}
           icon={<Flame className="w-5 h-5" />}
           badges={highestFixture ? [badgeByTeam(highestFixture.home_team), badgeByTeam(highestFixture.away_team)] : undefined}
-          tint={highestFixture ? (((highestFixture.home_score ?? 0) >= (highestFixture.away_score ?? 0))
-            ? tintByTeam(highestFixture.home_team)
-            : tintByTeam(highestFixture.away_team)) : null}
+          tints={highestFixture ? [tintByTeam(highestFixture.home_team), tintByTeam(highestFixture.away_team)] : undefined}
           dialogTitle="Top 5 Highest Scoring Fixtures"
           valueHeader="Total"
           rows={top5HighFixtures.map((f: any, i: number) => ({
@@ -646,8 +644,8 @@ function RecordsSection({
           label="Most GWs at #1"
           value={positionCounts.topId?.[1] ?? "-"}
           sub={positionCounts.topId ? mById(positionCounts.topId[0])?.team_name : ""}
-          icon={<Trophy className="w-5 h-5" />}
-          badge={positionCounts.topId ? getBranding(positionCounts.topId[0])?.badge : null}
+          icon={<ArrowUp className="w-5 h-5" />}
+          badge={positionCounts.topId ? (getSeasonBadge(positionCounts.topId[0], sid) ?? getBranding(positionCounts.topId[0])?.badge) : null}
           tint={positionCounts.topId ? tintById(positionCounts.topId[0]) : null}
           dialogTitle="Top 5 · Most Gameweeks in 1st"
           valueHeader="Gameweeks"
@@ -658,7 +656,7 @@ function RecordsSection({
           value={positionCounts.botId?.[1] ?? "-"}
           sub={positionCounts.botId ? mById(positionCounts.botId[0])?.team_name : ""}
           icon={<ArrowDown className="w-5 h-5" />}
-          badge={positionCounts.botId ? getBranding(positionCounts.botId[0])?.badge : null}
+          badge={positionCounts.botId ? (getSeasonBadge(positionCounts.botId[0], sid) ?? getBranding(positionCounts.botId[0])?.badge) : null}
           tint={positionCounts.botId ? tintById(positionCounts.botId[0]) : null}
           dialogTitle="Top 5 · Most Gameweeks in Last"
           valueHeader="Gameweeks"
