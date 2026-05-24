@@ -1298,15 +1298,21 @@ function FixturesPanel({ fixtures, managers, maxGW }: any) {
 
 /* ======================= Helpers ======================= */
 
-function Mini({ label, value, sub }: { label: string; value: any; sub?: any }) {
+function Mini({ label, value, sub, badge }: { label: string; value: any; sub?: any; badge?: string | null }) {
   return (
     <div className="border-l-0 sm:border-l-2 border-gold sm:pl-3 text-center sm:text-left">
       <div className="font-display text-2xl md:text-3xl text-gold leading-none">{value}</div>
       <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">{label}</div>
-      {sub && <div className="text-[10px] text-muted-foreground/80 truncate">{sub}</div>}
+      {sub && (
+        <div className="flex items-center gap-1 justify-center sm:justify-start">
+          {badge && <img src={badge} alt="" className="w-4 h-4 object-contain shrink-0" />}
+          <div className="text-[10px] text-muted-foreground/80 truncate">{sub}</div>
+        </div>
+      )}
     </div>
   );
 }
+
 
 function SectionTitle({ kicker, title }: { kicker: string; title: string }) {
   return (
