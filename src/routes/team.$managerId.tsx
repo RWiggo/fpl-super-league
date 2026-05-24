@@ -1078,11 +1078,13 @@ function ArchiveButtons({
   kitArchive,
   teamName,
 }: {
-  badgeArchive: { seasonId: string | number; seasonName?: string; badge: string | null; teamName: string }[];
-  kitArchive: { seasonId: string | number; seasonName?: string; kit: any; teamName: string }[];
+  badgeArchive: { seasonId: string | number; seasonName?: string; badge: string | null; teamName: string; spanLabels: string[] }[];
+  kitArchive: { seasonId: string | number; seasonName?: string; kit: any; teamName: string; spanLabels: string[] }[];
   teamName: string;
 }) {
   const [open, setOpen] = useState<"badge" | "kit" | null>(null);
+  const spanLabel = (labels: string[]) =>
+    labels.length <= 1 ? labels[0] ?? "" : `${labels[0]} – ${labels[labels.length - 1]}`;
   return (
     <>
       <div className="flex gap-3 flex-wrap">
@@ -1109,7 +1111,7 @@ function ArchiveButtons({
           </DialogHeader>
           <ArchiveTimeline
             items={badgeArchive.map((b) => ({
-              seasonName: b.seasonName,
+              seasonLabel: spanLabel(b.spanLabels),
               teamName: b.teamName,
               image: b.badge ?? "",
               imageClass: "w-24 h-24 sm:w-28 sm:h-28 object-contain",
@@ -1125,7 +1127,7 @@ function ArchiveButtons({
           </DialogHeader>
           <ArchiveTimeline
             items={kitArchive.map((k) => ({
-              seasonName: k.seasonName,
+              seasonLabel: spanLabel(k.spanLabels),
               teamName: k.teamName,
               image: k.kit?.home ?? "",
               imageClass: "w-24 h-24 sm:w-28 sm:h-28 object-contain",
@@ -1140,7 +1142,7 @@ function ArchiveButtons({
 function ArchiveTimeline({
   items,
 }: {
-  items: { seasonName?: string; teamName: string; image: string; imageClass: string }[];
+  items: { seasonLabel: string; teamName: string; image: string; imageClass: string }[];
 }) {
   if (!items.length) return <div className="text-sm text-muted-foreground p-6 text-center">No archive entries yet.</div>;
   return (
@@ -1157,7 +1159,7 @@ function ArchiveTimeline({
               )}
             </div>
             <div className="min-w-0">
-              <div className="text-[10px] uppercase tracking-[0.3em] text-silver/60">{it.seasonName}</div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-silver/60">{it.seasonLabel}</div>
               <div className="font-display text-xl uppercase truncate">{it.teamName}</div>
             </div>
           </div>
