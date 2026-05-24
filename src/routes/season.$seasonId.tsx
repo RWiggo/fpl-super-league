@@ -278,6 +278,7 @@ function RecordCard({
   badge,
   badges,
   tint,
+  tints,
   dialogTitle,
   rows,
   valueHeader = "Value",
@@ -291,14 +292,22 @@ function RecordCard({
   badges?: (string | null | undefined)[];
   /** Team primary colour applied as a soft gradient backdrop to the card. */
   tint?: string | null;
+  /** When a record is shared by two teams, blend both primary colours. */
+  tints?: (string | null | undefined)[];
   dialogTitle: string;
   rows: RankRow[];
   valueHeader?: string;
 }) {
-  const tintStyle = tint
+  const tintList = (tints?.filter(Boolean) as string[] | undefined) ?? (tint ? [tint] : []);
+  const tintStyle = tintList.length === 1
     ? {
-        backgroundImage: `linear-gradient(135deg, color-mix(in oklab, ${tint} 28%, transparent) 0%, color-mix(in oklab, ${tint} 10%, transparent) 55%, transparent 100%)`,
-        borderColor: `color-mix(in oklab, ${tint} 55%, transparent)`,
+        backgroundImage: `linear-gradient(135deg, color-mix(in oklab, ${tintList[0]} 28%, transparent) 0%, color-mix(in oklab, ${tintList[0]} 10%, transparent) 55%, transparent 100%)`,
+        borderColor: `color-mix(in oklab, ${tintList[0]} 55%, transparent)`,
+      }
+    : tintList.length >= 2
+    ? {
+        backgroundImage: `linear-gradient(135deg, color-mix(in oklab, ${tintList[0]} 32%, transparent) 0%, color-mix(in oklab, ${tintList[0]} 14%, transparent) 38%, color-mix(in oklab, ${tintList[1]} 14%, transparent) 62%, color-mix(in oklab, ${tintList[1]} 32%, transparent) 100%)`,
+        borderColor: `color-mix(in oklab, ${tintList[0]} 45%, transparent)`,
       }
     : undefined;
   return (
@@ -323,9 +332,9 @@ function RecordCard({
               ) : badge ? (
                 <img src={badge} alt="" className="w-10 h-10 sm:w-12 sm:h-12 object-contain shrink-0" />
               ) : null}
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="font-display text-3xl sm:text-4xl gold-gradient leading-none">{value}</div>
-                {sub && <div className="text-[11px] sm:text-xs text-muted-foreground mt-1.5 truncate">{sub}</div>}
+                {sub && <div className="text-[11px] sm:text-xs text-muted-foreground mt-1.5 leading-tight break-words whitespace-normal">{sub}</div>}
               </div>
             </div>
             <div className="mt-3 pt-3 border-t border-border/40 flex items-center justify-center sm:justify-start gap-1.5 text-[10px] uppercase tracking-[0.2em] text-gold/70 group-hover:text-gold transition relative">
