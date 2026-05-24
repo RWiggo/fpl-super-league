@@ -516,7 +516,7 @@ function TeamPage() {
         return (
           <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
             <div className="flex items-end justify-between flex-wrap gap-4">
-              <SectionTitle kicker="vs The Field" title="Head to Head" />
+              <SectionTitle kicker={`${currentTeamName} · vs The Field`} title="Head to Head" />
               <div className="flex items-center gap-2">
                 <span className="text-xs uppercase tracking-[0.25em] text-muted-foreground mr-2 hidden sm:inline">
                   {page + 1} / {pageCount}
