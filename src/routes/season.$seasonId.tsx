@@ -154,17 +154,25 @@ function SeasonPage() {
 
   return (
     <div>
+      {(() => {
+        const lwM = longestWin ? mByName(longestWin.manager_name) : null;
+        const llM = longestLose ? mByName(longestLose.manager_name) : null;
+        const tgM = mostGoals ? mByName(mostGoals.manager_name) : null;
+        const csM = mostCS ? mByName(mostCS.manager_name) : null;
+        return (
       <SeasonHero
         season={d.season}
         champ={champConfirmed ? champ : null}
-        topGoals={mostGoals ? { name: mByName(mostGoals.manager_name)?.team_name ?? mostGoals.team_name, value: mostGoals.out_goals, managerId: mByName(mostGoals.manager_name)?.id } : null}
-        longestWin={longestWin}
-        longestLose={longestLose}
-        longestWinManagerId={longestWin ? (d.managers.find((m: any) => m.team_name === longestWin.team_name)?.id) : null}
-        longestLoseManagerId={longestLose ? (d.managers.find((m: any) => m.team_name === longestLose.team_name)?.id) : null}
-        mostCS={mostCS ? { name: mostCS.manager_name, value: mostCS.combined_clean_sheets, managerId: mByName(mostCS.manager_name)?.id } : null}
+        topGoals={mostGoals ? { name: currentTeamName(tgM?.id, tgM?.team_name ?? mostGoals.team_name), value: mostGoals.out_goals, managerId: tgM?.id } : null}
+        longestWin={longestWin ? { ...longestWin, team_name: currentTeamName(lwM?.id, lwM?.team_name ?? longestWin.team_name) } : null}
+        longestLose={longestLose ? { ...longestLose, team_name: currentTeamName(llM?.id, llM?.team_name ?? longestLose.team_name) } : null}
+        longestWinManagerId={lwM?.id ?? null}
+        longestLoseManagerId={llM?.id ?? null}
+        mostCS={mostCS ? { name: currentTeamName(csM?.id, csM?.team_name ?? mostCS.team_name), value: mostCS.combined_clean_sheets, managerId: csM?.id } : null}
         wooden={spoonConfirmed ? (last ? mById(last.manager_id) : null) : null}
       />
+        );
+      })()}
 
       <ParticipantsCarousel participants={participants} seasonId={d.season.id} />
 
