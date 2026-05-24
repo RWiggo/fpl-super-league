@@ -216,3 +216,19 @@
     animation: pulse 4s ease-in-out infinite;
   }
 }
+
+/* Team-branded header tint: visible only when body has .team-branded */
+.app-header__team-tint {
+  opacity: 0;
+  transition: opacity 300ms ease;
+  background:
+    linear-gradient(110deg,
+      color-mix(in oklab, var(--team-primary, transparent) 55%, transparent) 0%,
+      color-mix(in oklab, var(--team-primary, transparent) 30%, transparent) 45%,
+      transparent 100%),
+    radial-gradient(ellipse 600px 220px at 50% 50%,
+      color-mix(in oklab, var(--team-primary, transparent) 25%, transparent),
+      transparent 70%);
+}
+body.team-branded .app-header__team-tint { opacity: 1; }
+body.team-branded .app-header { border-bottom-color: color-mix(in oklab, var(--team-primary, #22d3ee) 50%, transparent); }
