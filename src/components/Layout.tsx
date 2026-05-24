@@ -4,6 +4,8 @@ import { supabase, type Manager, type Season } from "@/lib/supabase";
 import { Menu, X, ChevronDown } from "lucide-react";
 import logo from "@/assets/fpl-super-league-logo.png";
 import { getBranding } from "@/lib/managerBranding";
+import { useSeasonAssets } from "@/lib/seasonAssets";
+import { getSeasonBadge } from "@/lib/seasonBadges";
 
 // Same palette used on the season hero so menu tiles match each season's crest.
 const SEASON_HUES = [220, 0, 145, 35, 285, 175, 50, 320, 110, 260, 15, 195];
@@ -37,6 +39,8 @@ function SeasonCrest({ id, size = 36 }: { id: any; size?: number }) {
 }
 
 export function Layout() {
+  // Load badges + kits once so synchronous lookups across the app work.
+  useSeasonAssets();
   const [managers, setManagers] = useState<Manager[]>([]);
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [mst, setMst] = useState<any[]>([]);
@@ -335,7 +339,7 @@ export function Layout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-silver/20 mt-20 pt-12 pb-10 text-sm text-muted-foreground">
+      <footer className="border-t border-silver/20 mt-0 pt-10 pb-6 text-sm text-muted-foreground">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
             <div>
