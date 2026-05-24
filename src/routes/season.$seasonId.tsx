@@ -1029,10 +1029,10 @@ function LeagueTable({ standings, managers, mst, gwTable, maxGW, seasonId }: any
 
   return (
     <div className="premium-card rounded-lg mt-6 overflow-hidden">
-      <table className="w-full text-[10px] sm:text-sm table-fixed">
+      <table className="w-full text-[10px] sm:text-sm table-fixed sm:table-auto">
         <colgroup>
           <col className="w-6 sm:w-auto" />
-          <col />
+          <col className="sm:w-[34%]" />
           <col className="w-7 sm:w-auto" />
           <col className="w-7 sm:w-auto" />
           <col className="w-7 sm:w-auto" />
