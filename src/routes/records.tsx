@@ -65,7 +65,8 @@ function RecordsPage() {
       supabase.from("winless_streaks").select("*"),
       supabase.from("losing_streaks").select("*"),
       supabase.from("team_season_stats_full").select("*"),
-    ]).then(([s, m, a, f, st, sd, tots, pth, ub, wl, ls, tss]) =>
+      supabase.from("player_season_stats").select("manager_id,player_id,club,fantasy_points").range(0, 9999),
+    ]).then(([s, m, a, f, st, sd, tots, pth, ub, wl, ls, tss, pss]) =>
       setD({
         seasons: s.data ?? [],
         managers: m.data ?? [],
@@ -79,6 +80,7 @@ function RecordsPage() {
         winless: wl.data ?? [],
         losing: ls.data ?? [],
         teamSeasonStats: tss.data ?? [],
+        playerSeasonStats: pss.data ?? [],
       })
     );
   }, []);
