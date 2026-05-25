@@ -1,0 +1,11 @@
+import { createClient } from "@supabase/supabase-js";
+const s = createClient("https://ckqfiwcixkzkmdxqyxqq.supabase.co","sb_publishable_iPNkQlWTSlkyCeTC5NFqIg_AYJP_xBV");
+const r = await s.from("player_season_stats").select("*").limit(2);
+console.log("pss cols:", Object.keys(r.data[0]||{}));
+console.log(JSON.stringify(r.data,null,2));
+const h = await s.from("player_team_history").select("*").limit(2);
+console.log("pth cols:", Object.keys(h.data[0]||{}));
+console.log(JSON.stringify(h.data,null,2));
+const a = await s.from("player_team_alltime").select("*").limit(2);
+console.log("pta cols:", Object.keys(a.data[0]||{}));
+console.log(JSON.stringify(a.data,null,2));
