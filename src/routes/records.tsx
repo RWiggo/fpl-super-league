@@ -832,7 +832,6 @@ function AllTimeStatExplorer({
 
 /* ======================= Players Used ======================= */
 function PlayersUsedSection({ rows, managers }: { rows: any[]; managers: any[] }) {
-  const { getPlClubBadge } = require("@/lib/plClubBadges") as typeof import("@/lib/plClubBadges");
   const mById = (id: any) => managers.find((m: any) => String(m.id) === String(id));
 
   // Distinct players per manager
