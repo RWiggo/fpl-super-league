@@ -465,7 +465,7 @@ function Home() {
           <div className="flex flex-wrap gap-3 justify-center mt-12">
             {currentSeason && (
               <Link to="/season/$seasonId" params={{ seasonId: currentSeason.id }} className="px-6 py-3 bg-primary text-primary-foreground font-semibold uppercase tracking-[0.18em] text-xs rounded hover:opacity-90 transition primary-glow">
-                Live Season →
+                {currentSeason.season_complete ? "Latest Season" : "Live Season"} →
               </Link>
             )}
           </div>
