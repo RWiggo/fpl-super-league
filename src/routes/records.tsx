@@ -829,3 +829,93 @@ function AllTimeStatExplorer({
   );
 }
 
+/* ======================= Players Used ======================= */
+function PlayersUsedSection({ rows, managers }: { rows: any[]; managers: any[] }) {
+  const { getPlClubBadge } = require("@/lib/plClubBadges") as typeof import("@/lib/plClubBadges");
+  const mById = (id: any) => managers.find((m: any) => String(m.id) === String(id));
+
+  // Distinct players per manager
+  const playersByMgr = new Map<string, Set<string>>();
+  const ptsByMgrClub = new Map<string, number>(); // key: mgrId|club
+  const clubs = new Set<string>();
+  for (const r of rows) {
+    const mid = String(r.manager_id);
+    if (!playersByMgr.has(mid)) playersByMgr.set(mid, new Set());
+    playersByMgr.get(mid)!.add(String(r.player_id));
+    if (r.club) {
+      clubs.add(r.club);
+      const k = `${mid}|${r.club}`;
+      ptsByMgrClub.set(k, (ptsByMgrClub.get(k) ?? 0) + Number(r.fantasy_points ?? 0));
+    }
+  }
+
+  const usageRanked = [...playersByMgr.entries()]
+    .map(([mid, set]) => ({ managerId: mid, count: set.size, manager: mById(mid) }))
+    .filter((x) => x.manager)
+    .sort((a, b) => b.count - a.count);
+  const most = usageRanked[0];
+  const least = usageRanked[usageRanked.length - 1];
+
+  const clubLeaders = [...clubs].sort().map((club) => {
+    let bestId: string | null = null;
+    let bestPts = -1;
+    for (const m of managers) {
+      const p = ptsByMgrClub.get(`${m.id}|${club}`) ?? 0;
+      if (p > bestPts) { bestPts = p; bestId = String(m.id); }
+    }
+    return { club, managerId: bestId, points: bestPts, manager: bestId ? mById(bestId) : null };
+  }).filter((x) => x.points > 0)
+    .sort((a, b) => b.points - a.points);
+
+  return (
+    <div className="mt-6 space-y-8">
+      <div className="grid sm:grid-cols-2 gap-4">
+        <UsageCard label="Most Players Used" entry={most} accent="hsl(45 90% 60%)" />
+        <UsageCard label="Fewest Players Used" entry={least} accent="hsl(190 80% 55%)" />
+      </div>
+
+      <div>
+        <div className="text-[10px] uppercase tracking-[0.3em] text-gold/80 mb-3">Most Points by Premier League Club</div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {clubLeaders.map(({ club, manager, managerId, points }) => {
+            const badge = getPlClubBadge(club);
+            const b = managerId ? getBranding(managerId) : null;
+            const teamName = manager ? currentTeamName(managerId, manager?.team_name) : "-";
+            return (
+              <div key={club} className="premium-card rounded-lg p-3 flex items-center gap-3">
+                {badge && <img src={badge} alt="" className="w-10 h-10 object-contain shrink-0" />}
+                <div className="min-w-0 flex-1">
+                  <div className="text-[9px] uppercase tracking-widest text-muted-foreground">{club}</div>
+                  <div className="text-gold tabular-nums text-sm font-semibold">{points.toLocaleString()} pts</div>
+                  <div className="flex items-center gap-1.5 mt-1 min-w-0">
+                    {b?.badge && <img src={b.badge} alt="" className="w-4 h-4 object-contain shrink-0" />}
+                    <div className="text-[10px] uppercase tracking-wider text-white/80 break-words leading-tight">{teamName}</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UsageCard({ label, entry, accent }: { label: string; entry: any; accent: string }) {
+  if (!entry) return null;
+  const b = getBranding(String(entry.managerId));
+  const teamName = currentTeamName(entry.managerId, entry.manager?.team_name);
+  return (
+    <div className="premium-card rounded-xl p-5 flex items-center gap-4 relative overflow-hidden">
+      <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl opacity-40" style={{ background: accent }} />
+      {b?.badge && <img src={b.badge} alt="" className="relative w-14 h-14 object-contain shrink-0" />}
+      <div className="relative min-w-0">
+        <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">{label}</div>
+        <div className="font-display text-3xl tabular-nums" style={{ color: accent }}>{entry.count}</div>
+        <div className="text-xs uppercase tracking-wider text-white/80 break-words">{teamName}</div>
+        <div className="text-[10px] text-muted-foreground">{entry.manager?.name}</div>
+      </div>
+    </div>
+  );
+}
+
