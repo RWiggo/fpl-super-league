@@ -188,6 +188,17 @@ function RecordsPage() {
         )}
       </section>
 
+      {/* Players Used */}
+      <section className="max-w-7xl mx-auto px-4 py-16 border-t border-border/50">
+        <SectionTitle kicker="Squad Habits" title="Players Used" />
+        <p className="text-sm text-muted-foreground mt-3 max-w-2xl">
+          Who churns through the entire Premier League and who sticks loyally to a tight squad — plus the manager who has banked the most fantasy points from each top-flight club over the last 4 seasons.
+        </p>
+        <PlayersUsedSection rows={d.playerSeasonStats ?? []} managers={d.managers} />
+      </section>
+
+
+
 
       {open && <RecordModal def={open} mById={mById} onClose={() => setOpen(null)} />}
     </div>
