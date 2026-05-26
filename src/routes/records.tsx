@@ -53,6 +53,20 @@ function RecordsPage() {
   const [open, setOpen] = useState<RecordDef | null>(null);
 
   useEffect(() => {
+    async function fetchAllPss() {
+      const all: any[] = [];
+      const size = 1000;
+      for (let from = 0; ; from += size) {
+        const { data } = await supabase
+          .from("player_season_stats")
+          .select("manager_id,player_id,player_name,position,club,fantasy_points,season_id")
+          .range(from, from + size - 1);
+        if (!data || data.length === 0) break;
+        all.push(...data);
+        if (data.length < size) break;
+      }
+      return all;
+    }
     Promise.all([
       supabase.from("seasons").select("*").order("year_start"),
       supabase.from("managers").select("*"),
@@ -66,7 +80,7 @@ function RecordsPage() {
       supabase.from("winless_streaks").select("*"),
       supabase.from("losing_streaks").select("*"),
       supabase.from("team_season_stats_full").select("*"),
-      supabase.from("player_season_stats").select("manager_id,player_id,club,fantasy_points").range(0, 9999),
+      fetchAllPss(),
     ]).then(([s, m, a, f, st, sd, tots, pth, ub, wl, ls, tss, pss]) =>
       setD({
         seasons: s.data ?? [],
@@ -81,10 +95,11 @@ function RecordsPage() {
         winless: wl.data ?? [],
         losing: ls.data ?? [],
         teamSeasonStats: tss.data ?? [],
-        playerSeasonStats: pss.data ?? [],
+        playerSeasonStats: pss as any[],
       })
     );
   }, []);
+
 
 
   const records = useMemo(() => buildRecords(d), [d]);
