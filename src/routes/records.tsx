@@ -53,6 +53,20 @@ function RecordsPage() {
   const [open, setOpen] = useState<RecordDef | null>(null);
 
   useEffect(() => {
+    async function fetchAllPss() {
+      const all: any[] = [];
+      const size = 1000;
+      for (let from = 0; ; from += size) {
+        const { data } = await supabase
+          .from("player_season_stats")
+          .select("manager_id,player_id,player_name,position,club,fantasy_points,season_id")
+          .range(from, from + size - 1);
+        if (!data || data.length === 0) break;
+        all.push(...data);
+        if (data.length < size) break;
+      }
+      return all;
+    }
     Promise.all([
       supabase.from("seasons").select("*").order("year_start"),
       supabase.from("managers").select("*"),
@@ -66,7 +80,7 @@ function RecordsPage() {
       supabase.from("winless_streaks").select("*"),
       supabase.from("losing_streaks").select("*"),
       supabase.from("team_season_stats_full").select("*"),
-      supabase.from("player_season_stats").select("manager_id,player_id,club,fantasy_points").range(0, 9999),
+      fetchAllPss(),
     ]).then(([s, m, a, f, st, sd, tots, pth, ub, wl, ls, tss, pss]) =>
       setD({
         seasons: s.data ?? [],
@@ -81,10 +95,11 @@ function RecordsPage() {
         winless: wl.data ?? [],
         losing: ls.data ?? [],
         teamSeasonStats: tss.data ?? [],
-        playerSeasonStats: pss.data ?? [],
+        playerSeasonStats: pss as any[],
       })
     );
   }, []);
+
 
 
   const records = useMemo(() => buildRecords(d), [d]);
@@ -831,13 +846,19 @@ function AllTimeStatExplorer({
 }
 
 /* ======================= Players Used ======================= */
+type UsageModal =
+  | { kind: "usage"; title: string; rows: { managerId: string; manager: any; count: number }[] }
+  | { kind: "club"; title: string; club: string; rows: { managerId: string; manager: any; points: number }[]; topPlayers: { name: string; club: string; points: number; managerId: string; manager: any }[] };
+
 function PlayersUsedSection({ rows, managers }: { rows: any[]; managers: any[] }) {
+  const [modal, setModal] = useState<UsageModal | null>(null);
   const mById = (id: any) => managers.find((m: any) => String(m.id) === String(id));
 
-  // Distinct players per manager
+  // Distinct players per manager + points per manager+club + top players per club
   const playersByMgr = new Map<string, Set<string>>();
-  const ptsByMgrClub = new Map<string, number>(); // key: mgrId|club
+  const ptsByMgrClub = new Map<string, number>();
   const clubs = new Set<string>();
+  const playerAgg = new Map<string, { name: string; club: string; managerId: string; points: number }>();
   for (const r of rows) {
     const mid = String(r.manager_id);
     if (!playersByMgr.has(mid)) playersByMgr.set(mid, new Set());
@@ -846,6 +867,18 @@ function PlayersUsedSection({ rows, managers }: { rows: any[]; managers: any[] }
       clubs.add(r.club);
       const k = `${mid}|${r.club}`;
       ptsByMgrClub.set(k, (ptsByMgrClub.get(k) ?? 0) + Number(r.fantasy_points ?? 0));
+      // Track per (player_id × manager × club) so the same player picked by
+      // different managers across seasons shows up separately.
+      const pk = `${mid}|${r.player_id}|${r.club}`;
+      const prev = playerAgg.get(pk);
+      if (prev) prev.points += Number(r.fantasy_points ?? 0);
+      else
+        playerAgg.set(pk, {
+          name: r.player_name ?? r.player_id,
+          club: r.club,
+          managerId: mid,
+          points: Number(r.fantasy_points ?? 0),
+        });
     }
   }
 
@@ -853,60 +886,109 @@ function PlayersUsedSection({ rows, managers }: { rows: any[]; managers: any[] }
     .map(([mid, set]) => ({ managerId: mid, count: set.size, manager: mById(mid) }))
     .filter((x) => x.manager)
     .sort((a, b) => b.count - a.count);
-  const most = usageRanked[0];
-  const least = usageRanked[usageRanked.length - 1];
+  const mostList = usageRanked.slice(0, 5);
+  const leastList = [...usageRanked].sort((a, b) => a.count - b.count).slice(0, 5);
+  const most = mostList[0];
+  const least = leastList[0];
 
   const clubLeaders = [...clubs].sort().map((club) => {
-    let bestId: string | null = null;
-    let bestPts = -1;
-    for (const m of managers) {
-      const p = ptsByMgrClub.get(`${m.id}|${club}`) ?? 0;
-      if (p > bestPts) { bestPts = p; bestId = String(m.id); }
-    }
-    return { club, managerId: bestId, points: bestPts, manager: bestId ? mById(bestId) : null };
-  }).filter((x) => x.points > 0)
-    .sort((a, b) => b.points - a.points);
+    const ranked = managers
+      .map((m: any) => ({
+        managerId: String(m.id),
+        manager: m,
+        points: ptsByMgrClub.get(`${m.id}|${club}`) ?? 0,
+      }))
+      .filter((x) => x.points > 0)
+      .sort((a, b) => b.points - a.points);
+    return { club, ranked };
+  }).filter((x) => x.ranked.length > 0)
+    .sort((a, b) => (b.ranked[0]?.points ?? 0) - (a.ranked[0]?.points ?? 0));
 
   return (
     <div className="mt-6 space-y-8">
       <div className="grid sm:grid-cols-2 gap-4">
-        <UsageCard label="Most Players Used" entry={most} accent="hsl(45 90% 60%)" />
-        <UsageCard label="Fewest Players Used" entry={least} accent="hsl(190 80% 55%)" />
+        <UsageCard
+          label="Most Players Used"
+          entry={most}
+          accent="hsl(45 90% 60%)"
+          onClick={() => setModal({ kind: "usage", title: "Top 5 · Most Players Used", rows: mostList })}
+        />
+        <UsageCard
+          label="Fewest Players Used"
+          entry={least}
+          accent="hsl(190 80% 55%)"
+          onClick={() => setModal({ kind: "usage", title: "Top 5 · Fewest Players Used", rows: leastList })}
+        />
       </div>
 
       <div>
         <div className="text-[10px] uppercase tracking-[0.3em] text-gold/80 mb-3">Most Points by Premier League Club</div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {clubLeaders.map(({ club, manager, managerId, points }) => {
+          {clubLeaders.map(({ club, ranked }) => {
             const badge = getPlClubBadge(club);
-            const b = managerId ? getBranding(managerId) : null;
-            const teamName = manager ? currentTeamName(managerId, manager?.team_name) : "-";
+            const top = ranked[0];
+            const b = getBranding(top.managerId);
+            const teamName = currentTeamName(top.managerId, top.manager?.team_name);
+            const topPlayers = [...playerAgg.values()]
+              .filter((p) => p.club === club)
+              .sort((a, b) => b.points - a.points)
+              .slice(0, 5)
+              .map((p) => ({ ...p, manager: mById(p.managerId) }));
             return (
-              <div key={club} className="premium-card rounded-lg p-3 flex items-center gap-3">
+              <button
+                key={club}
+                type="button"
+                onClick={() =>
+                  setModal({
+                    kind: "club",
+                    title: `Top 5 · ${club}`,
+                    club,
+                    rows: ranked.slice(0, 5),
+                    topPlayers,
+                  })
+                }
+                className="premium-card rounded-lg p-3 flex items-center gap-3 text-left hover:border-gold/40 transition"
+              >
                 {badge && <img src={badge} alt="" className="w-10 h-10 object-contain shrink-0" />}
                 <div className="min-w-0 flex-1">
                   <div className="text-[9px] uppercase tracking-widest text-muted-foreground">{club}</div>
-                  <div className="text-gold tabular-nums text-sm font-semibold">{points.toLocaleString()} pts</div>
+                  <div className="text-gold tabular-nums text-sm font-semibold">{top.points.toLocaleString()} pts</div>
                   <div className="flex items-center gap-1.5 mt-1 min-w-0">
                     {b?.badge && <img src={b.badge} alt="" className="w-4 h-4 object-contain shrink-0" />}
                     <div className="text-[10px] uppercase tracking-wider text-white/80 break-words leading-tight">{teamName}</div>
                   </div>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
       </div>
+
+      {modal && <UsageModal modal={modal} onClose={() => setModal(null)} />}
     </div>
   );
 }
 
-function UsageCard({ label, entry, accent }: { label: string; entry: any; accent: string }) {
+function UsageCard({
+  label,
+  entry,
+  accent,
+  onClick,
+}: {
+  label: string;
+  entry: any;
+  accent: string;
+  onClick?: () => void;
+}) {
   if (!entry) return null;
   const b = getBranding(String(entry.managerId));
   const teamName = currentTeamName(entry.managerId, entry.manager?.team_name);
   return (
-    <div className="premium-card rounded-xl p-5 flex items-center gap-4 relative overflow-hidden">
+    <button
+      type="button"
+      onClick={onClick}
+      className="premium-card rounded-xl p-5 flex items-center gap-4 relative overflow-hidden text-left hover:border-gold/40 transition w-full"
+    >
       <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl opacity-40" style={{ background: accent }} />
       {b?.badge && <img src={b.badge} alt="" className="relative w-14 h-14 object-contain shrink-0" />}
       <div className="relative min-w-0">
@@ -915,7 +997,96 @@ function UsageCard({ label, entry, accent }: { label: string; entry: any; accent
         <div className="text-xs uppercase tracking-wider text-white/80 break-words">{teamName}</div>
         <div className="text-[10px] text-muted-foreground">{entry.manager?.name}</div>
       </div>
+    </button>
+  );
+}
+
+function UsageModal({ modal, onClose }: { modal: UsageModal; onClose: () => void }) {
+  const clubBadge = modal.kind === "club" ? getPlClubBadge(modal.club) : null;
+  return (
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div
+        className="bg-card border border-border rounded-xl max-w-md w-full p-6 relative max-h-[85vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-white transition" aria-label="Close">
+          <X className="w-5 h-5" />
+        </button>
+        <div className="flex items-center gap-3 mb-5">
+          {clubBadge && <img src={clubBadge} alt="" className="w-10 h-10 object-contain" />}
+          <div>
+            <div className="text-xs uppercase tracking-[0.3em] text-gold">Leaderboard</div>
+            <h3 className="font-display text-2xl">{modal.title}</h3>
+          </div>
+        </div>
+
+        <ol className="space-y-2">
+          {modal.rows.map((e: any, i: number) => {
+            const b = getBranding(String(e.managerId));
+            const tint = b?.primary ?? "hsl(45 80% 55%)";
+            const teamName = currentTeamName(e.managerId, e.manager?.team_name);
+            const val = modal.kind === "usage" ? e.count : e.points;
+            const unit = modal.kind === "usage" ? "players" : "pts";
+            return (
+              <li key={i}>
+                <Link
+                  to="/team/$managerId"
+                  params={{ managerId: String(e.managerId) }}
+                  onClick={onClose}
+                  className="flex items-center gap-3 p-3 rounded-lg border border-white/10 hover:border-white/40 transition"
+                  style={{ background: `linear-gradient(90deg, ${tint}25 0%, transparent 80%)` }}
+                >
+                  <span className={`font-display text-xl w-6 text-center ${i === 0 ? "text-gold" : "text-muted-foreground"}`}>{i + 1}</span>
+                  {b?.badge ? (
+                    <img src={b.badge} alt="" className="w-9 h-9 object-contain" />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full" style={{ background: tint }} />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{teamName}</div>
+                    <div className="text-[11px] text-muted-foreground truncate">{e.manager?.name}</div>
+                  </div>
+                  <span className="font-display text-lg text-gold tabular-nums">
+                    {Number(val).toLocaleString()}
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground ml-1">{unit}</span>
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ol>
+
+        {modal.kind === "club" && modal.topPlayers.length > 0 && (
+          <>
+            <div className="text-[10px] uppercase tracking-[0.3em] text-gold/80 mt-6 mb-2">Top {modal.club} Players</div>
+            <ol className="space-y-2">
+              {modal.topPlayers.map((p, i) => {
+                const b = getBranding(p.managerId);
+                const teamName = currentTeamName(p.managerId, p.manager?.team_name);
+                return (
+                  <li
+                    key={i}
+                    className="flex items-center gap-3 p-2.5 rounded-lg border border-white/10"
+                    style={{ background: `linear-gradient(90deg, ${(b?.primary ?? "hsl(45 80% 55%)")}1f 0%, transparent 80%)` }}
+                  >
+                    <span className="font-display text-sm w-5 text-center text-muted-foreground">{i + 1}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate">{p.name}</div>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        {b?.badge && <img src={b.badge} alt="" className="w-3.5 h-3.5 object-contain shrink-0" />}
+                        <div className="text-[10px] uppercase tracking-wider text-white/70 truncate">{teamName}</div>
+                      </div>
+                    </div>
+                    <span className="font-display text-base text-gold tabular-nums">{p.points.toLocaleString()}</span>
+                  </li>
+                );
+              })}
+            </ol>
+          </>
+        )}
+      </div>
     </div>
   );
 }
+
 
