@@ -57,11 +57,11 @@ function RecordsPage() {
       const all: any[] = [];
       const size = 1000;
       for (let from = 0; ; from += size) {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("player_season_stats")
-          .select("manager_id,player_id,player_name,position,club,fantasy_points,season_id")
+          .select("manager_id,player_id,position,club,fantasy_points,season_id")
           .range(from, from + size - 1);
-        if (!data || data.length === 0) break;
+        if (error || !data || data.length === 0) break;
         all.push(...data);
         if (data.length < size) break;
       }
