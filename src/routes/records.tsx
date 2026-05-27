@@ -850,9 +850,28 @@ type UsageModal =
   | { kind: "usage"; title: string; rows: { managerId: string; manager: any; count: number }[] }
   | { kind: "club"; title: string; club: string; rows: { managerId: string; manager: any; points: number }[]; topPlayers: { name: string; club: string; points: number; managerId: string; manager: any }[] };
 
-function PlayersUsedSection({ rows, managers }: { rows: any[]; managers: any[] }) {
+function PlayersUsedSection({ rows, managers, playerHistory, seasons }: { rows: any[]; managers: any[]; playerHistory: any[]; seasons: any[] }) {
   const [modal, setModal] = useState<UsageModal | null>(null);
   const mById = (id: any) => managers.find((m: any) => String(m.id) === String(id));
+
+  // Build player_id -> player_name lookup by joining pss to player_team_history
+  // on (manager, season, club, position, fantasy_points).
+  const mgrNameById = new Map<string, string>();
+  managers.forEach((m: any) => mgrNameById.set(String(m.id), String(m.name)));
+  const seasonNameById = new Map<string, string>();
+  seasons.forEach((s: any) => seasonNameById.set(String(s.id), String(s.name)));
+  const pthIndex = new Map<string, string>(); // composite key -> player_name
+  for (const p of playerHistory) {
+    const key = `${p.manager_name}|${p.season_name}|${p.club}|${p.position}|${p.fantasy_points}`;
+    if (!pthIndex.has(key)) pthIndex.set(key, p.player_name);
+  }
+  const nameByPlayerId = new Map<string, string>();
+  for (const r of rows) {
+    if (nameByPlayerId.has(String(r.player_id))) continue;
+    const key = `${mgrNameById.get(String(r.manager_id))}|${seasonNameById.get(String(r.season_id))}|${r.club}|${r.position}|${r.fantasy_points}`;
+    const name = pthIndex.get(key);
+    if (name) nameByPlayerId.set(String(r.player_id), name);
+  }
 
   // Distinct players per manager + points per manager+club + top players per club
   const playersByMgr = new Map<string, Set<string>>();
@@ -867,14 +886,12 @@ function PlayersUsedSection({ rows, managers }: { rows: any[]; managers: any[] }
       clubs.add(r.club);
       const k = `${mid}|${r.club}`;
       ptsByMgrClub.set(k, (ptsByMgrClub.get(k) ?? 0) + Number(r.fantasy_points ?? 0));
-      // Track per (player_id × manager × club) so the same player picked by
-      // different managers across seasons shows up separately.
       const pk = `${mid}|${r.player_id}|${r.club}`;
       const prev = playerAgg.get(pk);
       if (prev) prev.points += Number(r.fantasy_points ?? 0);
       else
         playerAgg.set(pk, {
-          name: r.player_name ?? r.player_id,
+          name: nameByPlayerId.get(String(r.player_id)) ?? String(r.player_id),
           club: r.club,
           managerId: mid,
           points: Number(r.fantasy_points ?? 0),
