@@ -107,3 +107,50 @@ export function getPlClubBadge(clubName?: string | null, size: 25 | 50 | 70 | 10
   if (!id) return null;
   return `https://resources.premierleague.com/premierleague/badges/${size}/t${id}.png`;
 }
+
+// Primary brand colours for Premier League clubs, keyed by Opta ID so we
+// can reuse the same normalisation as the badge lookup. Values picked to
+// match the dominant kit colour each club is most associated with.
+const PL_CLUB_COLOR_BY_ID: Record<number, string> = {
+  3: "#EF0107",   // Arsenal
+  7: "#7A003C",   // Aston Villa
+  91: "#DA291C",  // Bournemouth
+  94: "#E30613",  // Brentford
+  36: "#0057B8",  // Brighton
+  90: "#6C1D45",  // Burnley
+  97: "#0070B5",  // Cardiff
+  8: "#034694",   // Chelsea
+  31: "#1B458F",  // Crystal Palace
+  11: "#003399",  // Everton
+  54: "#000000",  // Fulham
+  38: "#0E63AD",  // Huddersfield
+  88: "#F18A01",  // Hull
+  40: "#3764A3",  // Ipswich
+  2: "#FFCD00",   // Leeds
+  13: "#003090",  // Leicester
+  14: "#C8102E",  // Liverpool
+  102: "#F78F1E", // Luton
+  43: "#6CABDD",  // Man City
+  1: "#DA291C",   // Man Utd
+  25: "#E11B22",  // Middlesbrough
+  4: "#241F20",   // Newcastle
+  45: "#FFF200",  // Norwich
+  17: "#DD0000",  // Nottingham Forest
+  49: "#EE2737",  // Sheffield United
+  20: "#D71920",  // Southampton
+  110: "#E03A3E", // Stoke
+  56: "#EB172B",  // Sunderland
+  80: "#000000",  // Swansea
+  6: "#132257",   // Tottenham
+  57: "#FBEE23",  // Watford
+  35: "#122F67",  // West Brom
+  21: "#7A263A",  // West Ham
+  39: "#FDB913",  // Wolves
+};
+
+export function getPlClubColor(clubName?: string | null): string | null {
+  if (!clubName) return null;
+  const id = PL_CLUB_OPTA_ID[normalize(clubName)];
+  if (!id) return null;
+  return PL_CLUB_COLOR_BY_ID[id] ?? null;
+}
