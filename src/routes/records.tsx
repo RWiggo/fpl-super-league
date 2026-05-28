@@ -8,7 +8,7 @@ import { currentTeamName } from "@/lib/currentTeamNames";
 import { getSeasonKit } from "@/lib/seasonKits";
 import { GoalkeeperKit } from "@/components/GoalkeeperKit";
 import { Flame, Trophy, Crown, Target, Zap, Shield, TrendingDown, X, Award } from "lucide-react";
-import { getPlClubBadge } from "@/lib/plClubBadges";
+import { getPlClubBadge, getPlClubColor } from "@/lib/plClubBadges";
 
 export const Route = createFileRoute("/records")({
   component: RecordsPage,
@@ -67,6 +67,20 @@ function RecordsPage() {
       }
       return all;
     }
+    async function fetchAllPth() {
+      const all: any[] = [];
+      const size = 1000;
+      for (let from = 0; ; from += size) {
+        const { data, error } = await supabase
+          .from("player_team_history")
+          .select("*")
+          .range(from, from + size - 1);
+        if (error || !data || data.length === 0) break;
+        all.push(...data);
+        if (data.length < size) break;
+      }
+      return all;
+    }
     Promise.all([
       supabase.from("seasons").select("*").order("year_start"),
       supabase.from("managers").select("*"),
@@ -75,7 +89,7 @@ function RecordsPage() {
       supabase.from("win_streaks").select("*"),
       supabase.from("season_standings").select("*"),
       supabase.from("team_of_the_season").select("*"),
-      supabase.from("player_team_history").select("*"),
+      fetchAllPth(),
       supabase.from("unbeaten_streaks").select("*"),
       supabase.from("winless_streaks").select("*"),
       supabase.from("losing_streaks").select("*"),
@@ -90,7 +104,7 @@ function RecordsPage() {
         streaks: st.data ?? [],
         standings: sd.data ?? [],
         tots: tots.data ?? [],
-        playerHistory: pth.data ?? [],
+        playerHistory: pth as any[],
         unbeaten: ub.data ?? [],
         winless: wl.data ?? [],
         losing: ls.data ?? [],
@@ -951,6 +965,7 @@ function PlayersUsedSection({ rows, managers, playerHistory, seasons }: { rows: 
               .sort((a, b) => b.points - a.points)
               .slice(0, 5)
               .map((p) => ({ ...p, manager: mById(p.managerId) }));
+            const clubColor = getPlClubColor(club) ?? "hsl(45 80% 55%)";
             return (
               <button
                 key={club}
@@ -964,15 +979,19 @@ function PlayersUsedSection({ rows, managers, playerHistory, seasons }: { rows: 
                     topPlayers,
                   })
                 }
-                className="premium-card rounded-lg p-3 flex items-center gap-3 text-left hover:border-gold/40 transition"
+                className="premium-card rounded-lg p-3 flex items-center gap-3 text-left transition relative overflow-hidden hover:brightness-110"
+                style={{
+                  background: `linear-gradient(135deg, ${clubColor}55 0%, ${clubColor}10 70%, transparent 100%)`,
+                  borderColor: `${clubColor}80`,
+                }}
               >
-                {badge && <img src={badge} alt="" className="w-10 h-10 object-contain shrink-0" />}
-                <div className="min-w-0 flex-1">
-                  <div className="text-[9px] uppercase tracking-widest text-muted-foreground">{club}</div>
-                  <div className="text-gold tabular-nums text-sm font-semibold">{top.points.toLocaleString()} pts</div>
+                {badge && <img src={badge} alt="" className="w-10 h-10 object-contain shrink-0 relative" />}
+                <div className="min-w-0 flex-1 relative">
+                  <div className="text-[9px] uppercase tracking-widest text-white/70">{club}</div>
+                  <div className="tabular-nums text-sm font-semibold text-white drop-shadow">{top.points.toLocaleString()} pts</div>
                   <div className="flex items-center gap-1.5 mt-1 min-w-0">
                     {b?.badge && <img src={b.badge} alt="" className="w-4 h-4 object-contain shrink-0" />}
-                    <div className="text-[10px] uppercase tracking-wider text-white/80 break-words leading-tight">{teamName}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-white/90 break-words leading-tight">{teamName}</div>
                   </div>
                 </div>
               </button>
