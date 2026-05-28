@@ -8,7 +8,7 @@ import { currentTeamName } from "@/lib/currentTeamNames";
 import { getSeasonKit } from "@/lib/seasonKits";
 import { GoalkeeperKit } from "@/components/GoalkeeperKit";
 import { Flame, Trophy, Crown, Target, Zap, Shield, TrendingDown, X, Award } from "lucide-react";
-import { getPlClubBadge } from "@/lib/plClubBadges";
+import { getPlClubBadge, getPlClubColor } from "@/lib/plClubBadges";
 
 export const Route = createFileRoute("/records")({
   component: RecordsPage,
