@@ -415,7 +415,7 @@ function Home() {
   };
 
   const definingStat = (id: string): { label: string; value: string } | null => {
-    // Average Team's calling card is its mission statement — always show it.
+    // Average Team's calling card is its mission statement - always show it.
     if (id === "12") return { label: "Mission Statement", value: "Just here to fill the numbers" };
     // Prefer a stat the manager actually leads.
     for (const def of leaderDefs) {

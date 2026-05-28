@@ -208,7 +208,7 @@ function RecordsPage() {
       <section className="max-w-7xl mx-auto px-4 py-16 border-t border-border/50">
         <SectionTitle kicker="Squad Habits" title="Players Used" />
         <p className="text-sm text-muted-foreground mt-3 max-w-2xl">
-          Who churns through the entire Premier League and who sticks loyally to a tight squad — plus the manager who has banked the most fantasy points from each top-flight club over the last 4 seasons.
+          Who churns through the entire Premier League and who sticks loyally to a tight squad - plus the manager who has banked the most fantasy points from each top-flight club over the last 4 seasons.
         </p>
         <PlayersUsedSection rows={d.playerSeasonStats ?? []} managers={d.managers} playerHistory={d.playerHistory ?? []} seasons={d.seasons ?? []} />
       </section>
@@ -744,7 +744,7 @@ function AllTimeStatExplorer({
 }) {
   const [stat, setStat] = useState<string>("out_goals");
 
-  // team_season_stats_full has no manager_id column — resolve via manager_name to managers list.
+  // team_season_stats_full has no manager_id column - resolve via manager_name to managers list.
   const ranked = useMemo(() => {
     const nameToId = new Map<string, any>();
     for (const m of managers) {
