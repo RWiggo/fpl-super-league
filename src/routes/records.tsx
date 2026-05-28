@@ -67,6 +67,20 @@ function RecordsPage() {
       }
       return all;
     }
+    async function fetchAllPth() {
+      const all: any[] = [];
+      const size = 1000;
+      for (let from = 0; ; from += size) {
+        const { data, error } = await supabase
+          .from("player_team_history")
+          .select("*")
+          .range(from, from + size - 1);
+        if (error || !data || data.length === 0) break;
+        all.push(...data);
+        if (data.length < size) break;
+      }
+      return all;
+    }
     Promise.all([
       supabase.from("seasons").select("*").order("year_start"),
       supabase.from("managers").select("*"),
@@ -75,7 +89,7 @@ function RecordsPage() {
       supabase.from("win_streaks").select("*"),
       supabase.from("season_standings").select("*"),
       supabase.from("team_of_the_season").select("*"),
-      supabase.from("player_team_history").select("*"),
+      fetchAllPth(),
       supabase.from("unbeaten_streaks").select("*"),
       supabase.from("winless_streaks").select("*"),
       supabase.from("losing_streaks").select("*"),
