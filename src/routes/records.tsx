@@ -104,7 +104,7 @@ function RecordsPage() {
         streaks: st.data ?? [],
         standings: sd.data ?? [],
         tots: tots.data ?? [],
-        playerHistory: pth.data ?? [],
+        playerHistory: pth as any[],
         unbeaten: ub.data ?? [],
         winless: wl.data ?? [],
         losing: ls.data ?? [],
