@@ -965,6 +965,7 @@ function PlayersUsedSection({ rows, managers, playerHistory, seasons }: { rows: 
               .sort((a, b) => b.points - a.points)
               .slice(0, 5)
               .map((p) => ({ ...p, manager: mById(p.managerId) }));
+            const clubColor = getPlClubColor(club) ?? "hsl(45 80% 55%)";
             return (
               <button
                 key={club}
@@ -978,15 +979,19 @@ function PlayersUsedSection({ rows, managers, playerHistory, seasons }: { rows: 
                     topPlayers,
                   })
                 }
-                className="premium-card rounded-lg p-3 flex items-center gap-3 text-left hover:border-gold/40 transition"
+                className="premium-card rounded-lg p-3 flex items-center gap-3 text-left transition relative overflow-hidden hover:brightness-110"
+                style={{
+                  background: `linear-gradient(135deg, ${clubColor}55 0%, ${clubColor}10 70%, transparent 100%)`,
+                  borderColor: `${clubColor}80`,
+                }}
               >
-                {badge && <img src={badge} alt="" className="w-10 h-10 object-contain shrink-0" />}
-                <div className="min-w-0 flex-1">
-                  <div className="text-[9px] uppercase tracking-widest text-muted-foreground">{club}</div>
-                  <div className="text-gold tabular-nums text-sm font-semibold">{top.points.toLocaleString()} pts</div>
+                {badge && <img src={badge} alt="" className="w-10 h-10 object-contain shrink-0 relative" />}
+                <div className="min-w-0 flex-1 relative">
+                  <div className="text-[9px] uppercase tracking-widest text-white/70">{club}</div>
+                  <div className="tabular-nums text-sm font-semibold text-white drop-shadow">{top.points.toLocaleString()} pts</div>
                   <div className="flex items-center gap-1.5 mt-1 min-w-0">
                     {b?.badge && <img src={b.badge} alt="" className="w-4 h-4 object-contain shrink-0" />}
-                    <div className="text-[10px] uppercase tracking-wider text-white/80 break-words leading-tight">{teamName}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-white/90 break-words leading-tight">{teamName}</div>
                   </div>
                 </div>
               </button>
