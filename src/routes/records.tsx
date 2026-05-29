@@ -490,14 +490,16 @@ function buildRecords(d: any) {
   ];
 
   // ---- All-Time XI from single-season performances ----
-  const bestXI = buildBestXI(d.playerHistory, mgrByName);
+  const bestXI = buildBestXI(d.playerHistory, mgrByName, d.seasons);
 
   return { competition, gameweek, season, streaks, bestXI };
 }
 
 // Build an All-Time XI from the best single-season performances per player,
 // trying every legal formation and picking the one with the highest total.
-function buildBestXI(history: any[], mgrByName: Record<string, any>) {
+function buildBestXI(history: any[], mgrByName: Record<string, any>, seasons: any[]) {
+  const seasonIdByName: Record<string, string | number> = {};
+  for (const s of seasons ?? []) seasonIdByName[s.name] = s.id;
   // Best single season per player (by player_name, since player_id may collide across managers)
   const bestPerPlayer: Record<string, any> = {};
   for (const r of history) {
@@ -538,7 +540,8 @@ function buildBestXI(history: any[], mgrByName: Record<string, any>) {
     const total = all.reduce((s, p) => s + (p.fantasy_points ?? 0), 0);
     if (total > best.total) best = { total, formation: f, players: all };
   }
-  // Normalise for FormationPitch (carry manager_id so each player wears their kit)
+  // Normalise for FormationPitch (carry manager_id + season_id so each player wears the kit
+  // from the actual season they put up that performance)
   const mapPlayer = (p: any) => ({
     player_name: p.player_name,
     position: ({ G: "GK", D: "DEF", M: "MID", F: "FWD" } as any)[p.position] ?? p.position,
@@ -546,6 +549,7 @@ function buildBestXI(history: any[], mgrByName: Record<string, any>) {
     total_fantasy_points: p.fantasy_points,
     avg_points_per_game: p.avg_points_per_game,
     manager_id: p.manager_id ?? mgrByName[p.manager_name]?.id,
+    season_id: p.season_id ?? seasonIdByName[p.season_name],
   });
   const mapped = best.players.map(mapPlayer);
   // Subs: next-highest scorer per position not in the starting XI
