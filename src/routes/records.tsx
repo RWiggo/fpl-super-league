@@ -95,7 +95,8 @@ function RecordsPage() {
       supabase.from("losing_streaks").select("*"),
       supabase.from("team_season_stats_full").select("*"),
       fetchAllPss(),
-    ]).then(([s, m, a, f, st, sd, tots, pth, ub, wl, ls, tss, pss]) =>
+      supabase.from("manager_adjusted_fpl_points").select("*"),
+    ]).then(([s, m, a, f, st, sd, tots, pth, ub, wl, ls, tss, pss, adj]) =>
       setD({
         seasons: s.data ?? [],
         managers: m.data ?? [],
@@ -110,6 +111,7 @@ function RecordsPage() {
         losing: ls.data ?? [],
         teamSeasonStats: tss.data ?? [],
         playerSeasonStats: pss as any[],
+        adjusted: adj.data ?? [],
       })
     );
   }, []);
