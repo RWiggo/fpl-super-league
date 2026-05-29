@@ -276,7 +276,23 @@ function buildRecords(d: any) {
         managerName: r.manager_name,
         value: Number(r[key] ?? 0),
         formatted: String(r[key] ?? 0),
+        context: `${r.seasons_played} season${r.seasons_played === 1 ? "" : "s"}`,
       }))
+      .sort((a, b) => b.value - a.value);
+
+  const pctEntry = (key: "total_wins" | "total_draws" | "total_losses"): Entry[] =>
+    [...d.alltime]
+      .map((r: any) => {
+        const games = Number(r.total_wins ?? 0) + Number(r.total_draws ?? 0) + Number(r.total_losses ?? 0);
+        const pct = games > 0 ? (Number(r[key] ?? 0) / games) * 100 : 0;
+        return {
+          managerId: r.manager_id,
+          managerName: r.manager_name,
+          value: pct,
+          formatted: `${pct.toFixed(1)}%`,
+          context: `${r[key]} in ${games} games · ${r.seasons_played} season${r.seasons_played === 1 ? "" : "s"}`,
+        };
+      })
       .sort((a, b) => b.value - a.value);
 
   const fplCareer = (asc = false): Entry[] =>
@@ -286,16 +302,36 @@ function buildRecords(d: any) {
         managerName: r.manager_name,
         value: Number(r.total_points_for ?? 0),
         formatted: Number(r.total_points_for ?? 0).toLocaleString(),
+        context: `${r.seasons_played} season${r.seasons_played === 1 ? "" : "s"}`,
       }))
       .sort((a, b) => (asc ? a.value - b.value : b.value - a.value));
+
+  const fplAvg = (): Entry[] =>
+    [...d.alltime]
+      .map((r: any) => {
+        const seasons = Number(r.seasons_played ?? 0);
+        const avg = seasons > 0 ? Number(r.total_points_for ?? 0) / seasons : 0;
+        return {
+          managerId: r.manager_id,
+          managerName: r.manager_name,
+          value: avg,
+          formatted: Math.round(avg).toLocaleString(),
+          context: `${Number(r.total_points_for ?? 0).toLocaleString()} pts over ${seasons} season${seasons === 1 ? "" : "s"}`,
+        };
+      })
+      .sort((a, b) => b.value - a.value);
 
   const competition: RecordDef[] = [
     { key: "titles", label: "Most Titles", icon: <Crown />, tint: "hsl(45 90% 55%)", entries: titlesEntries, unit: "titles" },
     { key: "career-wins", label: "Most Wins", icon: <LetterIcon ch="W" />, tint: "hsl(145 70% 50%)", entries: careerEntry("total_wins"), unit: "wins" },
     { key: "career-draws", label: "Most Draws", icon: <LetterIcon ch="D" />, tint: "hsl(45 60% 60%)", entries: careerEntry("total_draws"), unit: "draws" },
     { key: "career-losses", label: "Most Losses", icon: <LetterIcon ch="L" />, tint: "hsl(0 70% 55%)", entries: careerEntry("total_losses"), unit: "losses" },
+    { key: "career-win-pct", label: "Best Win %", icon: <LetterIcon ch="W" />, tint: "hsl(145 70% 50%)", entries: pctEntry("total_wins"), unit: "win rate" },
+    { key: "career-draw-pct", label: "Highest Draw %", icon: <LetterIcon ch="D" />, tint: "hsl(45 60% 60%)", entries: pctEntry("total_draws"), unit: "draw rate" },
+    { key: "career-loss-pct", label: "Highest Loss %", icon: <LetterIcon ch="L" />, tint: "hsl(0 70% 55%)", entries: pctEntry("total_losses"), unit: "loss rate" },
     { key: "career-fpl-high", label: "Most FPL Points", icon: <Flame />, tint: "hsl(15 85% 55%)", entries: fplCareer(false), unit: "pts" },
     { key: "career-fpl-low", label: "Fewest FPL Points", icon: <TrendingDown />, tint: "hsl(200 40% 55%)", entries: fplCareer(true), unit: "pts" },
+    { key: "career-fpl-avg", label: "Best FPL Avg / Season", icon: <Flame />, tint: "hsl(15 85% 55%)", entries: fplAvg(), unit: "pts/season" },
   ];
 
   // ---- Gameweek (per fixture / per side) ----
