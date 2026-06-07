@@ -9,6 +9,8 @@ import { getSeasonBadge, getSeasonTeamName } from "@/lib/seasonBadges";
 import { getSeasonKit } from "@/lib/seasonKits";
 import { getNickname } from "@/lib/managerNicknames";
 import { currentTeamName } from "@/lib/currentTeamNames";
+import { WorldCupLiveTable } from "@/components/WorldCupLiveTable";
+
 
 function rankColor(pos: number, total: number) {
   if (pos === 1) return "text-emerald-500 font-bold";
