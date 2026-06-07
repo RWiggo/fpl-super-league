@@ -9,6 +9,8 @@ import { getSeasonBadge, getSeasonTeamName } from "@/lib/seasonBadges";
 import { getSeasonKit } from "@/lib/seasonKits";
 import { getNickname } from "@/lib/managerNicknames";
 import { currentTeamName } from "@/lib/currentTeamNames";
+import { WorldCupLiveTable } from "@/components/WorldCupLiveTable";
+
 
 function rankColor(pos: number, total: number) {
   if (pos === 1) return "text-emerald-500 font-bold";
@@ -570,91 +572,25 @@ function Home() {
       )}
 
 
-      {/* CURRENT SEASON - LIVE TABLE (mobile-first) */}
-      {currentSeason && currentStandings.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 border-t border-border/50">
-          <div className="flex items-end justify-between flex-wrap gap-4 mb-8">
-            <div>
-              <div className="text-[11px] uppercase tracking-[0.3em] text-gold mb-2 flex items-center gap-2">
-                <span className="inline-block w-2 h-2 rounded-full bg-destructive animate-pulse" /> Live Now
-              </div>
-              <h2 className="font-display text-3xl sm:text-4xl md:text-5xl">{currentSeason.name} Table</h2>
+      {/* WORLD CUP - LIVE TABLE (replaces the season table during the tournament) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 border-t border-border/50">
+        <div className="flex items-end justify-between flex-wrap gap-4 mb-8">
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.3em] text-gold mb-2 flex items-center gap-2">
+              <span className="inline-block w-2 h-2 rounded-full bg-destructive animate-pulse" /> Live Now
             </div>
-            <Link to="/season/$seasonId" params={{ seasonId: currentSeason.id }} className="text-xs sm:text-sm uppercase tracking-wider text-gold hover:underline">View Season →</Link>
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl">World Cup Special</h2>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-2 max-w-xl">
+              Standalone tournament - pure FPL points, no head to head. Records, squads, and team of the tournament on the World Cup page.
+            </p>
           </div>
+          <Link to="/world-cup" className="text-xs sm:text-sm uppercase tracking-wider text-gold hover:underline">
+            Open World Cup →
+          </Link>
+        </div>
+        <WorldCupLiveTable />
+      </section>
 
-          <div className="premium-card rounded-xl overflow-hidden">
-            {/* Header row */}
-            <div className="hidden sm:grid grid-cols-[42px_1fr_36px_36px_36px_64px_64px] gap-2 px-4 py-3 bg-card/60 text-[10px] uppercase tracking-widest text-muted-foreground">
-              <div>#</div><div>Team</div>
-              <div className="text-center">W</div><div className="text-center">D</div><div className="text-center">L</div>
-              <div className="text-right">PD</div><div className="text-right">Pts</div>
-            </div>
-            <div className="sm:hidden grid grid-cols-[24px_1fr_40px_44px_44px] gap-1.5 px-2 py-2 bg-card/60 text-[10px] uppercase tracking-widest text-muted-foreground">
-              <div>#</div><div>Team</div><div className="text-center">W-D-L</div><div className="text-right">PD</div><div className="text-right">Pts</div>
-            </div>
-
-            {currentStandings.map((row: any) => {
-              const m = managerById(row.manager_id);
-              const b = getBranding(String(row.manager_id));
-              const tint = b?.primary ?? "#508cff";
-              const display = currentTeamName(row.manager_id, m?.team_name ?? m?.name ?? "-");
-              const rankCls = rankColor(row.position, currentStandings.length);
-              const pd = Number(row.points_for ?? 0) - Number(row.points_against ?? 0);
-              const pdStr = `${pd > 0 ? "+" : ""}${pd.toFixed(0)}`;
-              const pdCls = pd > 0 ? "text-emerald-400" : pd < 0 ? "text-red-400" : "text-muted-foreground";
-              return (
-                <Link
-                  key={row.id}
-                  to="/team/$managerId"
-                  params={{ managerId: String(row.manager_id) }}
-                  className="block border-t border-border/40 hover:bg-gold/5 transition"
-                >
-                  {/* Desktop / tablet */}
-                  <div className="hidden sm:grid grid-cols-[42px_1fr_36px_36px_36px_64px_64px] gap-2 px-4 py-3 items-center">
-                    <div className={`font-display text-lg ${rankCls}`}>{row.position}</div>
-                    <div className="flex items-center gap-3 min-w-0">
-                      {b?.badge ? (
-                        <img src={b.badge} alt="" className="w-7 h-7 object-contain shrink-0" />
-                      ) : (
-                        <div className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold text-white" style={{ background: tint }}>{display.charAt(0)}</div>
-                      )}
-                      <div className="min-w-0">
-                        <div className="font-medium capitalize truncate">{display}</div>
-                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground capitalize truncate">{m?.name}</div>
-                      </div>
-                    </div>
-                    <div className="text-center text-sm tabular-nums">{row.wins}</div>
-                    <div className="text-center text-sm tabular-nums">{row.draws}</div>
-                    <div className="text-center text-sm tabular-nums">{row.losses}</div>
-                    <div className={`text-right text-sm tabular-nums ${pdCls}`}>{pdStr}</div>
-                    <div className="text-right font-display text-lg text-gold tabular-nums">{row.total_points}</div>
-                  </div>
-
-                  {/* Mobile */}
-                  <div className="sm:hidden grid grid-cols-[24px_1fr_40px_44px_44px] gap-1.5 px-2 py-3 items-center">
-                    <div className={`font-display text-base leading-none ${rankCls}`}>{row.position}</div>
-                    <div className="flex items-center gap-2 min-w-0">
-                      {b?.badge ? (
-                        <img src={b.badge} alt="" className="w-6 h-6 object-contain shrink-0" />
-                      ) : (
-                        <div className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[9px] font-bold text-white" style={{ background: tint }}>{display.charAt(0)}</div>
-                      )}
-                      <div className="min-w-0">
-                        <div className="text-[12px] font-medium capitalize leading-tight break-words">{display}</div>
-                        <div className="text-[9px] uppercase tracking-wider text-muted-foreground capitalize truncate">{m?.name}</div>
-                      </div>
-                    </div>
-                    <div className="text-center text-[11px] tabular-nums text-muted-foreground">{row.wins}-{row.draws}-{row.losses}</div>
-                    <div className={`text-right text-[11px] tabular-nums ${pdCls}`}>{pdStr}</div>
-                    <div className="text-right font-display text-base text-gold tabular-nums leading-none">{row.total_points}</div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-      )}
 
       {/* THE ENCYCLOPAEDIA OF TEAMS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-border/50">

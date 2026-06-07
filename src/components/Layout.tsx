@@ -123,6 +123,16 @@ export function Layout() {
               Home
             </Link>
 
+            <Link
+              to="/world-cup"
+              className={`${navItemBase} ${underline} ${underlineHover} gap-1.5`}
+              activeProps={{ className: `${navItemBase} ${underline} ${activeUnderline} gap-1.5` }}
+              style={{ color: "#F2D472" }}
+            >
+              <span aria-hidden>🏆</span> World Cup
+            </Link>
+
+
             <div
               className="relative h-full flex items-stretch"
               onMouseEnter={() => setTeamsOpen(true)}
@@ -269,6 +279,15 @@ export function Layout() {
               >
                 Home
               </Link>
+              <Link
+                to="/world-cup"
+                onClick={() => setOpen(false)}
+                className="block py-2.5 text-xs font-bold uppercase tracking-[0.18em] hover:text-amber-200 border-l-2 border-transparent pl-3 transition-all"
+                style={{ color: "#F2D472" }}
+              >
+                🏆 World Cup
+              </Link>
+
               <details className="border-t border-cyan-500/15 pt-2">
                 <summary className="py-2 text-xs font-bold uppercase tracking-[0.18em] cursor-pointer text-white/85">Teams</summary>
                 <div className="grid grid-cols-2 gap-2 pt-2 pb-1">
