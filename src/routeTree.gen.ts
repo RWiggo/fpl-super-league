@@ -9,13 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WorldCupRouteImport } from './routes/world-cup'
 import { Route as TableRouteImport } from './routes/table'
 import { Route as RecordsRouteImport } from './routes/records'
 import { Route as H2hRouteImport } from './routes/h2h'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WorldCupManagerIdRouteImport } from './routes/world-cup.$managerId'
 import { Route as TeamManagerIdRouteImport } from './routes/team.$managerId'
 import { Route as SeasonSeasonIdRouteImport } from './routes/season.$seasonId'
 
+const WorldCupRoute = WorldCupRouteImport.update({
+  id: '/world-cup',
+  path: '/world-cup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TableRoute = TableRouteImport.update({
   id: '/table',
   path: '/table',
@@ -36,6 +43,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorldCupManagerIdRoute = WorldCupManagerIdRouteImport.update({
+  id: '/$managerId',
+  path: '/$managerId',
+  getParentRoute: () => WorldCupRoute,
+} as any)
 const TeamManagerIdRoute = TeamManagerIdRouteImport.update({
   id: '/team/$managerId',
   path: '/team/$managerId',
@@ -52,16 +64,20 @@ export interface FileRoutesByFullPath {
   '/h2h': typeof H2hRoute
   '/records': typeof RecordsRoute
   '/table': typeof TableRoute
+  '/world-cup': typeof WorldCupRouteWithChildren
   '/season/$seasonId': typeof SeasonSeasonIdRoute
   '/team/$managerId': typeof TeamManagerIdRoute
+  '/world-cup/$managerId': typeof WorldCupManagerIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/h2h': typeof H2hRoute
   '/records': typeof RecordsRoute
   '/table': typeof TableRoute
+  '/world-cup': typeof WorldCupRouteWithChildren
   '/season/$seasonId': typeof SeasonSeasonIdRoute
   '/team/$managerId': typeof TeamManagerIdRoute
+  '/world-cup/$managerId': typeof WorldCupManagerIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -69,8 +85,10 @@ export interface FileRoutesById {
   '/h2h': typeof H2hRoute
   '/records': typeof RecordsRoute
   '/table': typeof TableRoute
+  '/world-cup': typeof WorldCupRouteWithChildren
   '/season/$seasonId': typeof SeasonSeasonIdRoute
   '/team/$managerId': typeof TeamManagerIdRoute
+  '/world-cup/$managerId': typeof WorldCupManagerIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -79,24 +97,30 @@ export interface FileRouteTypes {
     | '/h2h'
     | '/records'
     | '/table'
+    | '/world-cup'
     | '/season/$seasonId'
     | '/team/$managerId'
+    | '/world-cup/$managerId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/h2h'
     | '/records'
     | '/table'
+    | '/world-cup'
     | '/season/$seasonId'
     | '/team/$managerId'
+    | '/world-cup/$managerId'
   id:
     | '__root__'
     | '/'
     | '/h2h'
     | '/records'
     | '/table'
+    | '/world-cup'
     | '/season/$seasonId'
     | '/team/$managerId'
+    | '/world-cup/$managerId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -104,12 +128,20 @@ export interface RootRouteChildren {
   H2hRoute: typeof H2hRoute
   RecordsRoute: typeof RecordsRoute
   TableRoute: typeof TableRoute
+  WorldCupRoute: typeof WorldCupRouteWithChildren
   SeasonSeasonIdRoute: typeof SeasonSeasonIdRoute
   TeamManagerIdRoute: typeof TeamManagerIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/world-cup': {
+      id: '/world-cup'
+      path: '/world-cup'
+      fullPath: '/world-cup'
+      preLoaderRoute: typeof WorldCupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/table': {
       id: '/table'
       path: '/table'
@@ -138,6 +170,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/world-cup/$managerId': {
+      id: '/world-cup/$managerId'
+      path: '/$managerId'
+      fullPath: '/world-cup/$managerId'
+      preLoaderRoute: typeof WorldCupManagerIdRouteImport
+      parentRoute: typeof WorldCupRoute
+    }
     '/team/$managerId': {
       id: '/team/$managerId'
       path: '/team/$managerId'
@@ -155,11 +194,24 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface WorldCupRouteChildren {
+  WorldCupManagerIdRoute: typeof WorldCupManagerIdRoute
+}
+
+const WorldCupRouteChildren: WorldCupRouteChildren = {
+  WorldCupManagerIdRoute: WorldCupManagerIdRoute,
+}
+
+const WorldCupRouteWithChildren = WorldCupRoute._addFileChildren(
+  WorldCupRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   H2hRoute: H2hRoute,
   RecordsRoute: RecordsRoute,
   TableRoute: TableRoute,
+  WorldCupRoute: WorldCupRouteWithChildren,
   SeasonSeasonIdRoute: SeasonSeasonIdRoute,
   TeamManagerIdRoute: TeamManagerIdRoute,
 }
