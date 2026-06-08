@@ -12,7 +12,7 @@ export const WC_PARTICIPANT_FALLBACK: Array<{
   group_name: string;
 }> = [
   { manager_id: 1,  nation_name: "El Changusto",        flag_emoji: "🇧🇷", primary_color: "#FFDF00", secondary_color: "#009C3B", group_name: "A" },
-  { manager_id: 2,  nation_name: "Charleston Athletic", flag_emoji: "🏴",  primary_color: "#1B458F", secondary_color: "#FFFFFF", group_name: "A" },
+  { manager_id: 2,  nation_name: "Charleston Athletic", flag_emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", primary_color: "#1B458F", secondary_color: "#FFFFFF", group_name: "A" },
   { manager_id: 3,  nation_name: "Wiggo Wanderers",     flag_emoji: "🇦🇷", primary_color: "#75AADB", secondary_color: "#FFFFFF", group_name: "A" },
   { manager_id: 4,  nation_name: "ALS Ajax",            flag_emoji: "🇮🇪", primary_color: "#169B62", secondary_color: "#FF883E", group_name: "B" },
   { manager_id: 5,  nation_name: "Padleys Piranhas",    flag_emoji: "🇨🇴", primary_color: "#FCD116", secondary_color: "#003893", group_name: "B" },
