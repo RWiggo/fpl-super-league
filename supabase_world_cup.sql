@@ -77,7 +77,7 @@ create policy "wc_player_stats_read" on public.wc_player_stats for select using 
 -- Everyone except Jake Toyer (9) and Average Team (12).
 insert into public.wc_participants (manager_id, nation_name, flag_emoji, primary_color, secondary_color, group_name) values
   (1,  'El Changusto',         '🇧🇷', '#FFDF00', '#009C3B', 'A'),
-  (2,  'Charleston Athletic',  '🏴', '#1B458F', '#FFFFFF', 'A'),
+  (2,  'Charleston Athletic',  '🏴󠁧󠁢󠁥󠁮󠁧󠁿', '#1B458F', '#FFFFFF', 'A'),
   (3,  'Wiggo Wanderers',      '🇦🇷', '#75AADB', '#FFFFFF', 'A'),
   (4,  'ALS Ajax',             '🇮🇪', '#169B62', '#FF883E', 'B'),
   (5,  'Padleys Piranhas',     '🇨🇴', '#FCD116', '#003893', 'B'),
