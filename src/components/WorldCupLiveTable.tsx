@@ -104,7 +104,7 @@ export function WorldCupLiveTable({ compact = false }: { compact?: boolean }) {
                 <span className="text-2xl leading-none">{r.flag_emoji}</span>
                 <span
                   className="inline-block w-1.5 h-7 rounded-sm shrink-0"
-                  style={{ background: r.primary_color }}
+                  style={{ background: getBranding(String(r.manager_id))?.primary ?? r.primary_color }}
                 />
                 <div className="min-w-0">
                   <div className="text-sm font-semibold truncate text-white">{r.nation_name}</div>
