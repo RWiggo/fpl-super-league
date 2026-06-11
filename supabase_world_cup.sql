@@ -76,16 +76,16 @@ create policy "wc_player_stats_read" on public.wc_player_stats for select using 
 -- 5. SEED PARTICIPANTS ----------------------------------------
 -- Everyone except Jake Toyer (9) and Average Team (12).
 insert into public.wc_participants (manager_id, nation_name, flag_emoji, primary_color, secondary_color, group_name) values
-  (1,  'El Changusto',         '🇧🇷', '#FFDF00', '#009C3B', 'A'),
+  (1,  'El Changusto',         '🇲🇽', '#006847', '#CE1126', 'A'),
   (2,  'Charleston Athletic',  '🏴󠁧󠁢󠁥󠁮󠁧󠁿', '#1B458F', '#FFFFFF', 'A'),
   (3,  'Wiggo Wanderers',      '🇦🇷', '#75AADB', '#FFFFFF', 'A'),
   (4,  'ALS Ajax',             '🇮🇪', '#169B62', '#FF883E', 'B'),
-  (5,  'Padleys Piranhas',     '🇨🇴', '#FCD116', '#003893', 'B'),
-  (6,  'Fill Her Wycombe FC',  '🇩🇪', '#000000', '#DD0000', 'B'),
-  (7,  'Ryan''s Lions',        '🇫🇷', '#0055A4', '#EF4135', 'C'),
-  (8,  'Adam All Stars',       '🇪🇸', '#AA151B', '#F1BF00', 'C'),
-  (10, 'Send Me Location',     '🇵🇹', '#046A38', '#DA291C', 'C'),
-  (11, 'Not Too Xabi FC',      '🇳🇱', '#FF6900', '#21468B', 'C')
+  (5,  'Padleys Piranhas',     '🇦🇱', '#E41E20', '#000000', 'B'),
+  (6,  'Fill Her Wycombe FC',  '🇯🇵', '#FFFFFF', '#BC002D', 'B'),
+  (7,  'Ryan''s Lions',        '🇷🇸', '#9E1B32', '#0C4076', 'C'),
+  (8,  'Adam All Stars',       '🇸🇪', '#FECC00', '#006AA7', 'C'),
+  (10, 'Send Me Location',     '🇰🇷', '#CD2E3A', '#0047A0', 'C'),
+  (11, 'Not Too Xabi FC',      '🏴󠁧󠁢󠁳󠁣󠁴󠁿', '#0065BF', '#FFFFFF', 'C')
 on conflict (manager_id) do update
   set nation_name = excluded.nation_name,
       flag_emoji = excluded.flag_emoji,
