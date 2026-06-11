@@ -14,13 +14,13 @@ export const WC_PARTICIPANT_FALLBACK: Array<{
   { manager_id: 1,  nation_name: "El Changusto",        flag_emoji: "🇲🇽", primary_color: "#006847", secondary_color: "#CE1126", group_name: "A" },
   { manager_id: 2,  nation_name: "Charleston Athletic", flag_emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", primary_color: "#1B458F", secondary_color: "#FFFFFF", group_name: "A" },
   { manager_id: 3,  nation_name: "Wiggo Wanderers",     flag_emoji: "🇦🇷", primary_color: "#75AADB", secondary_color: "#FFFFFF", group_name: "A" },
-  { manager_id: 4,  nation_name: "ALS Ajax",            flag_emoji: "🇮🇪", primary_color: "#169B62", secondary_color: "#FF883E", group_name: "B" },
-  { manager_id: 5,  nation_name: "Padleys Piranhas",    flag_emoji: "🇦🇱", primary_color: "#E41E20", secondary_color: "#000000", group_name: "B" },
-  { manager_id: 6,  nation_name: "Fill Her Wycombe FC", flag_emoji: "🇯🇵", primary_color: "#FFFFFF", secondary_color: "#BC002D", group_name: "B" },
-  { manager_id: 7,  nation_name: "Ryan's Lions",        flag_emoji: "🇷🇸", primary_color: "#9E1B32", secondary_color: "#0C4076", group_name: "C" },
-  { manager_id: 8,  nation_name: "Adam All Stars",      flag_emoji: "🇸🇪", primary_color: "#FECC00", secondary_color: "#006AA7", group_name: "C" },
-  { manager_id: 10, nation_name: "Send Me Location",    flag_emoji: "🇰🇷", primary_color: "#CD2E3A", secondary_color: "#0047A0", group_name: "C" },
-  { manager_id: 11, nation_name: "Not Too Xabi FC",     flag_emoji: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", primary_color: "#0065BF", secondary_color: "#FFFFFF", group_name: "C" },
+  { manager_id: 4,  nation_name: "ALS Ajax",            flag_emoji: "🇨🇮", primary_color: "#FF8200", secondary_color: "#009E60", group_name: "B" },
+  { manager_id: 5,  nation_name: "Padleys Piranhas",    flag_emoji: "🇩🇪", primary_color: "#FFCE00", secondary_color: "#DD0000", group_name: "B" },
+  { manager_id: 6,  nation_name: "Fill Her Wycombe FC", flag_emoji: "🇧🇪", primary_color: "#FDDA24", secondary_color: "#ED2939", group_name: "B" },
+  { manager_id: 7,  nation_name: "Raybould Eagles",     flag_emoji: "🇺🇸", primary_color: "#B22234", secondary_color: "#3C3B6E", group_name: "C" },
+  { manager_id: 8,  nation_name: "Adam All Stars",      flag_emoji: "🇧🇷", primary_color: "#009C3B", secondary_color: "#FFDF00", group_name: "C" },
+  { manager_id: 10, nation_name: "Send Me Location",    flag_emoji: "🇫🇷", primary_color: "#0055A4", secondary_color: "#EF4135", group_name: "C" },
+  { manager_id: 11, nation_name: "Not Too Xabi FC",     flag_emoji: "🇪🇸", primary_color: "#AA151B", secondary_color: "#F1BF00", group_name: "C" },
 ];
 
 export type WcParticipant = (typeof WC_PARTICIPANT_FALLBACK)[number];
