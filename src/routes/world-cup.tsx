@@ -18,13 +18,6 @@ export const Route = createFileRoute("/world-cup")({
   }),
 });
 
-type SquadPlayer = {
-  manager_id: number;
-  player_name: string;
-  position: "GK" | "DEF" | "MID" | "FWD";
-  club?: string;
-};
-
 type PlayerStat = {
   manager_id: number;
   player_name: string;
@@ -38,20 +31,19 @@ type PlayerStat = {
 };
 
 function WorldCupPage() {
-  const [participants, setParticipants] = useState<WcParticipant[]>(WC_PARTICIPANT_FALLBACK);
-  const [squads, setSquads] = useState<SquadPlayer[]>([]);
-  const [stats, setStats] = useState<PlayerStat[]>([]);
+  const [participants] = useState<WcParticipant[]>(WC_PARTICIPANT_FALLBACK);
+  const [squadCounts, setSquadCounts] = useState<Record<number, number>>({});
+  const [stats] = useState<PlayerStat[]>([]);
 
   useEffect(() => {
     (async () => {
-      const [p, sq, ps] = await Promise.all([
-        supabase.from("wc_participants").select("*"),
-        supabase.from("wc_squad").select("*"),
-        supabase.from("wc_player_stats").select("*"),
-      ]);
-      if (p.data && p.data.length > 0) setParticipants(p.data as any);
-      setSquads((sq.data as any) ?? []);
-      setStats((ps.data as any) ?? []);
+      const { data, error } = await supabase.from("wc_squads").select("manager_id");
+      if (error || !data) return;
+      const counts: Record<number, number> = {};
+      for (const r of data as Array<{ manager_id: number }>) {
+        counts[r.manager_id] = (counts[r.manager_id] ?? 0) + 1;
+      }
+      setSquadCounts(counts);
     })();
   }, []);
 
@@ -65,40 +57,8 @@ function WorldCupPage() {
     .filter((s) => s.clean_sheets > 0)
     .slice(0, 5);
 
-  // Team of the tournament: top 11 by fantasy_points in a 1-4-3-3, plus 5 subs.
-  const pickTop = (pos: "GK" | "DEF" | "MID" | "FWD", n: number, exclude: Set<string>) =>
-    [...stats]
-      .filter((s) => s.position === pos && !exclude.has(s.player_name + "|" + s.manager_id))
-      .sort((a, b) => b.fantasy_points - a.fantasy_points)
-      .slice(0, n);
-
-  const used = new Set<string>();
-  const mark = (p: PlayerStat) => used.add(p.player_name + "|" + p.manager_id);
-  const xi = {
-    GK: pickTop("GK", 1, used),
-    DEF: [] as PlayerStat[],
-    MID: [] as PlayerStat[],
-    FWD: [] as PlayerStat[],
-  };
-  xi.GK.forEach(mark);
-  xi.DEF = pickTop("DEF", 4, used); xi.DEF.forEach(mark);
-  xi.MID = pickTop("MID", 3, used); xi.MID.forEach(mark);
-  xi.FWD = pickTop("FWD", 3, used); xi.FWD.forEach(mark);
-  const subs = [
-    ...pickTop("GK", 1, used),
-    ...pickTop("DEF", 1, new Set([...used, ...pickTop("GK", 1, used).map((p) => p.player_name + "|" + p.manager_id)])),
-    ...pickTop("MID", 1, new Set([...used])),
-    ...pickTop("FWD", 1, new Set([...used])),
-    ...pickTop("MID", 2, new Set([...used])),
-  ].slice(0, 5);
-
-  const totFlat = [...xi.GK, ...xi.DEF, ...xi.MID, ...xi.FWD].map((p) => ({
-    player_name: p.player_name,
-    position: p.position,
-    club: p.club,
-    total_fantasy_points: p.fantasy_points,
-    manager_id: String(p.manager_id),
-  }));
+  const totFlat: Array<{ player_name: string; position: string; club?: string; total_fantasy_points: number; manager_id: string }> = [];
+  const subs: PlayerStat[] = [];
 
   const getManagerName = (id: string) => byManager(Number(id))?.nation_name ?? "-";
 
