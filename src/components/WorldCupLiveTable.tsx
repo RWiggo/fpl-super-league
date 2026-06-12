@@ -11,24 +11,25 @@ export function WorldCupLiveTable({ compact = false }: { compact?: boolean }) {
 
   useEffect(() => {
     (async () => {
-      const [pRes, gwRes] = await Promise.all([
-        supabase.from("wc_participants").select("*"),
-        supabase.from("wc_manager_gameweek").select("manager_id,points"),
+      // Pull manager_id <-> team_name mapping and the live standings view.
+      const [teamsRes, standingsRes] = await Promise.all([
+        supabase.from("wc_teams").select("manager_id, team_name"),
+        supabase.from("wc_standings").select("team_name, total_fpl_points, players_used"),
       ]);
-      const participants: WcParticipant[] =
-        pRes.data && pRes.data.length > 0
-          ? (pRes.data as any)
-          : WC_PARTICIPANT_FALLBACK;
-      const totals: Record<number, { played: number; points: number }> = {};
-      for (const r of gwRes.data ?? []) {
-        const t = totals[r.manager_id] ?? (totals[r.manager_id] = { played: 0, points: 0 });
-        t.played += 1;
-        t.points += Number(r.points ?? 0);
+      const teamToMgr = new Map<string, number>();
+      for (const t of (teamsRes.data ?? []) as Array<{ manager_id: number; team_name: string }>) {
+        teamToMgr.set(t.team_name, t.manager_id);
       }
-      const merged = participants.map((p) => ({
+      const pointsByMgr: Record<number, { points: number; played: number }> = {};
+      for (const s of (standingsRes.data ?? []) as Array<{ team_name: string; total_fpl_points: number; players_used: number }>) {
+        const mgr = teamToMgr.get(s.team_name);
+        if (mgr == null) continue;
+        pointsByMgr[mgr] = { points: Number(s.total_fpl_points ?? 0), played: Number(s.players_used ?? 0) };
+      }
+      const merged = WC_PARTICIPANT_FALLBACK.map((p) => ({
         ...p,
-        played: totals[p.manager_id]?.played ?? 0,
-        points: totals[p.manager_id]?.points ?? 0,
+        played: pointsByMgr[p.manager_id]?.played ?? 0,
+        points: pointsByMgr[p.manager_id]?.points ?? 0,
       }));
       merged.sort((a, b) => b.points - a.points || a.nation_name.localeCompare(b.nation_name));
       setRows(merged);
