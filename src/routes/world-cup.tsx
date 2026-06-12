@@ -135,7 +135,7 @@ function WorldCupPage() {
           <SectionTitle kicker="Competitors" title="Participating Nations" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {participants.map((p) => {
-              const sqCount = squads.filter((s) => s.manager_id === p.manager_id).length;
+              const sqCount = squadCounts[p.manager_id] ?? 0;
               return (
                 <Link
                   key={p.manager_id}
