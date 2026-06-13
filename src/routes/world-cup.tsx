@@ -217,14 +217,15 @@ function SectionTitle({ kicker, title }: { kicker: string; title: string }) {
   );
 }
 
-function RecordCard({
-  icon, title, rows, unit,
+function LeaderboardCard({
+  icon, title, rows, empty,
 }: {
   icon: React.ReactNode;
   title: string;
-  rows: Array<{ name: string; meta: string; value: number; nation: string; flag: string }>;
-  unit: string;
+  rows: LeaderRow[];
+  empty: string;
 }) {
+  const posLabel = (p: LeaderRow["position"]) => p === "G" ? "GK" : p === "D" ? "DEF" : p === "M" ? "MID" : "FWD";
   return (
     <div
       className="rounded-xl overflow-hidden"
@@ -242,11 +243,11 @@ function RecordCard({
         <h3 className="font-display text-base tracking-wide">{title}</h3>
       </div>
       {rows.length === 0 ? (
-        <div className="p-6 text-sm text-white/55 text-center">Awaiting tournament data.</div>
+        <div className="p-6 text-sm text-white/55 text-center">{empty}</div>
       ) : (
         <ul className="divide-y divide-white/5">
           {rows.map((r, i) => (
-            <li key={i} className="flex items-center justify-between px-4 py-3">
+            <li key={`${r.player_name}-${i}`} className="flex items-center justify-between px-4 py-3">
               <div className="flex items-center gap-3 min-w-0">
                 <span
                   className="font-display text-sm w-5 text-center"
@@ -254,19 +255,19 @@ function RecordCard({
                 >
                   {i + 1}
                 </span>
-                <span className="text-lg leading-none">{r.flag}</span>
+                <span className="text-lg leading-none">{COUNTRY_FLAGS[r.country] ?? "🏳️"}</span>
                 <div className="min-w-0">
-                  <div className="text-sm text-white truncate">{r.name}</div>
+                  <div className="text-sm text-white truncate">{r.player_name}</div>
                   <div className="text-[10px] uppercase tracking-wider text-white/45 truncate">
-                    {r.meta}{r.meta && r.nation ? " - " : ""}{r.nation}
+                    {posLabel(r.position)} · {r.country} · {r.manager_name}
                   </div>
                 </div>
               </div>
               <div className="text-right">
                 <div className="font-display text-lg tabular-nums" style={{ color: WC_THEME.goldBright }}>
-                  {r.value}
+                  {r.total_points}
                 </div>
-                <div className="text-[9px] uppercase tracking-widest text-white/45">{unit}</div>
+                <div className="text-[9px] uppercase tracking-widest text-white/45">pts</div>
               </div>
             </li>
           ))}
@@ -276,20 +277,6 @@ function RecordCard({
   );
 }
 
-function EmptyPanel({ message }: { message: string }) {
-  return (
-    <div
-      className="rounded-xl p-10 text-center"
-      style={{
-        background: `linear-gradient(160deg, ${WC_THEME.maroonDeep}, ${WC_THEME.maroonInk})`,
-        border: `1px dashed ${WC_THEME.gold}55`,
-        color: "rgba(255,255,255,0.6)",
-      }}
-    >
-      {message}
-    </div>
-  );
-}
 
 function WCStyles() {
   return (
