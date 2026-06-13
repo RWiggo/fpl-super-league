@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useMatchRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Trophy, Crown, Shield, Swords } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -6,7 +6,7 @@ import { WC_PARTICIPANT_FALLBACK, WC_THEME, type WcParticipant } from "@/lib/wor
 import { WorldCupLiveTable } from "@/components/WorldCupLiveTable";
 
 export const Route = createFileRoute("/world-cup")({
-  component: WorldCupPage,
+  component: WorldCupRoute,
   head: () => ({
     meta: [
       { title: "World Cup Special - FPL Super League" },
@@ -27,13 +27,20 @@ type LeaderRow = {
 };
 
 const COUNTRY_FLAGS: Record<string, string> = {
-  Germany: "🇩🇪", Belgium: "🇧🇪", France: "🇫🇷", Spain: "🇪🇸", England: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+  Germany: "🇩🇪", Belgium: "🇧🇪", France: "🇫🇷", Spain: "🇪🇸", England: "🏴",
   Switzerland: "🇨🇭", Senegal: "🇸🇳", Brazil: "🇧🇷", Argentina: "🇦🇷", Morocco: "🇲🇦",
   Portugal: "🇵🇹", Canada: "🇨🇦", Uruguay: "🇺🇾", Netherlands: "🇳🇱", Ecuador: "🇪🇨",
   Paraguay: "🇵🇾", Austria: "🇦🇹", Turkey: "🇹🇷", USA: "🇺🇸", Norway: "🇳🇴",
-  Colombia: "🇨🇴", Scotland: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", Mexico: "🇲🇽", Japan: "🇯🇵", Egypt: "🇪🇬",
+  Colombia: "🇨🇴", Scotland: "🏴", Mexico: "🇲🇽", Japan: "🇯🇵", Egypt: "🇪🇬",
   Sweden: "🇸🇪", Ghana: "🇬🇭", Croatia: "🇭🇷", "Ivory Coast": "🇨🇮",
 };
+
+function WorldCupRoute() {
+  const matchRoute = useMatchRoute();
+  const isSquadRoute = Boolean(matchRoute({ to: "/world-cup/$managerId", fuzzy: true }));
+
+  return isSquadRoute ? <Outlet /> : <WorldCupPage />;
+}
 
 function WorldCupPage() {
   const [participants] = useState<WcParticipant[]>(WC_PARTICIPANT_FALLBACK);
@@ -74,7 +81,6 @@ function WorldCupPage() {
     >
       <WCStyles />
 
-      {/* ---------- HERO ---------- */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 wc-stars opacity-60" />
         <div
@@ -127,13 +133,11 @@ function WorldCupPage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 space-y-20">
-        {/* ---------- LIVE TABLE ---------- */}
         <section>
           <SectionTitle kicker="Standings" title="Live League Table" />
           <WorldCupLiveTable />
         </section>
 
-        {/* ---------- PARTICIPATING NATIONS ---------- */}
         <section>
           <SectionTitle kicker="Competitors" title="Participating Nations" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -175,7 +179,6 @@ function WorldCupPage() {
           </div>
         </section>
 
-        {/* ---------- LEADERBOARD ---------- */}
         <section>
           <SectionTitle kicker="Player Leaderboard" title="Top FPL Scorers" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -199,7 +202,6 @@ function WorldCupPage() {
             />
           </div>
         </section>
-
       </div>
     </div>
   );
@@ -276,7 +278,6 @@ function LeaderboardCard({
     </div>
   );
 }
-
 
 function WCStyles() {
   return (
