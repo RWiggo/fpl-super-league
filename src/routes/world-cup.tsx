@@ -1,10 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Trophy, Star, Shield, Goal, HandMetal } from "lucide-react";
+import { Trophy, Crown, Shield, Swords } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { WC_PARTICIPANT_FALLBACK, WC_THEME, type WcParticipant } from "@/lib/worldCup";
 import { WorldCupLiveTable } from "@/components/WorldCupLiveTable";
-import { FormationPitch } from "@/components/FormationPitch";
 
 export const Route = createFileRoute("/world-cup")({
   component: WorldCupPage,
@@ -18,49 +17,53 @@ export const Route = createFileRoute("/world-cup")({
   }),
 });
 
-type PlayerStat = {
-  manager_id: number;
+type LeaderRow = {
   player_name: string;
-  position: "GK" | "DEF" | "MID" | "FWD";
-  club?: string;
-  goals: number;
-  assists: number;
-  clean_sheets: number;
-  fantasy_points: number;
-  appearances: number;
+  country: string;
+  position: "G" | "D" | "M" | "F";
+  manager_name: string;
+  total_points: number;
+  rounds_played: number;
+};
+
+const COUNTRY_FLAGS: Record<string, string> = {
+  Germany: "🇩🇪", Belgium: "🇧🇪", France: "🇫🇷", Spain: "🇪🇸", England: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+  Switzerland: "🇨🇭", Senegal: "🇸🇳", Brazil: "🇧🇷", Argentina: "🇦🇷", Morocco: "🇲🇦",
+  Portugal: "🇵🇹", Canada: "🇨🇦", Uruguay: "🇺🇾", Netherlands: "🇳🇱", Ecuador: "🇪🇨",
+  Paraguay: "🇵🇾", Austria: "🇦🇹", Turkey: "🇹🇷", USA: "🇺🇸", Norway: "🇳🇴",
+  Colombia: "🇨🇴", Scotland: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", Mexico: "🇲🇽", Japan: "🇯🇵", Egypt: "🇪🇬",
+  Sweden: "🇸🇪", Ghana: "🇬🇭", Croatia: "🇭🇷", "Ivory Coast": "🇨🇮",
 };
 
 function WorldCupPage() {
   const [participants] = useState<WcParticipant[]>(WC_PARTICIPANT_FALLBACK);
   const [squadCounts, setSquadCounts] = useState<Record<number, number>>({});
-  const [stats] = useState<PlayerStat[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderRow[]>([]);
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase.from("wc_squads").select("manager_id");
-      if (error || !data) return;
-      const counts: Record<number, number> = {};
-      for (const r of data as Array<{ manager_id: number }>) {
-        counts[r.manager_id] = (counts[r.manager_id] ?? 0) + 1;
+      const [squadsRes, lbRes] = await Promise.all([
+        supabase.from("wc_squads").select("manager_id"),
+        supabase.from("wc_player_leaderboard").select("*").order("total_points", { ascending: false }),
+      ]);
+      if (squadsRes.data) {
+        const counts: Record<number, number> = {};
+        for (const r of squadsRes.data as Array<{ manager_id: number }>) {
+          counts[r.manager_id] = (counts[r.manager_id] ?? 0) + 1;
+        }
+        setSquadCounts(counts);
       }
-      setSquadCounts(counts);
+      if (lbRes.data) setLeaderboard(lbRes.data as LeaderRow[]);
     })();
   }, []);
 
-  const byManager = (id: number) => participants.find((x) => x.manager_id === id);
-
-  const topGoals = [...stats].sort((a, b) => b.goals - a.goals).filter((s) => s.goals > 0).slice(0, 5);
-  const topAssists = [...stats].sort((a, b) => b.assists - a.assists).filter((s) => s.assists > 0).slice(0, 5);
-  const topCleans = [...stats]
-    .filter((s) => s.position === "GK" || s.position === "DEF")
-    .sort((a, b) => b.clean_sheets - a.clean_sheets)
-    .filter((s) => s.clean_sheets > 0)
+  const topOverall = leaderboard.filter((p) => p.total_points > 0).slice(0, 5);
+  const topAttack = leaderboard
+    .filter((p) => (p.position === "F" || p.position === "M") && p.total_points > 0)
     .slice(0, 5);
-
-  const totFlat: Array<{ player_name: string; position: string; club?: string; total_fantasy_points: number; manager_id: string }> = [];
-  const subs: PlayerStat[] = [];
-
-  const getManagerName = (id: string) => byManager(Number(id))?.nation_name ?? "-";
+  const topDefence = leaderboard
+    .filter((p) => (p.position === "G" || p.position === "D") && p.total_points > 0)
+    .slice(0, 5);
 
   return (
     <div
