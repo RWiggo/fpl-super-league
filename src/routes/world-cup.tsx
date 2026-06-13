@@ -175,93 +175,31 @@ function WorldCupPage() {
           </div>
         </section>
 
-        {/* ---------- RECORDS ---------- */}
+        {/* ---------- LEADERBOARD ---------- */}
         <section>
-          <SectionTitle kicker="Tournament Records" title="Golden Boots, Playmakers & Walls" />
+          <SectionTitle kicker="Player Leaderboard" title="Top FPL Scorers" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <RecordCard
-              icon={<Goal className="w-4 h-4" />}
-              title="Golden Boot"
-              rows={topGoals.map((s) => ({
-                name: s.player_name,
-                meta: s.club ?? "",
-                value: s.goals,
-                nation: byManager(s.manager_id)?.nation_name ?? "",
-                flag: byManager(s.manager_id)?.flag_emoji ?? "",
-              }))}
-              unit="goals"
+            <LeaderboardCard
+              icon={<Crown className="w-4 h-4" />}
+              title="Overall Top 5"
+              rows={topOverall}
+              empty="Awaiting first round of points."
             />
-            <RecordCard
-              icon={<HandMetal className="w-4 h-4" />}
-              title="Playmaker"
-              rows={topAssists.map((s) => ({
-                name: s.player_name,
-                meta: s.club ?? "",
-                value: s.assists,
-                nation: byManager(s.manager_id)?.nation_name ?? "",
-                flag: byManager(s.manager_id)?.flag_emoji ?? "",
-              }))}
-              unit="assists"
+            <LeaderboardCard
+              icon={<Swords className="w-4 h-4" />}
+              title="Top Attackers"
+              rows={topAttack}
+              empty="No attacking points yet."
             />
-            <RecordCard
+            <LeaderboardCard
               icon={<Shield className="w-4 h-4" />}
-              title="Brick Wall"
-              rows={topCleans.map((s) => ({
-                name: s.player_name,
-                meta: s.club ?? "",
-                value: s.clean_sheets,
-                nation: byManager(s.manager_id)?.nation_name ?? "",
-                flag: byManager(s.manager_id)?.flag_emoji ?? "",
-              }))}
-              unit="clean sheets"
+              title="Top Defence"
+              rows={topDefence}
+              empty="No defensive points yet."
             />
           </div>
         </section>
 
-        {/* ---------- TEAM OF THE TOURNAMENT ---------- */}
-        <section>
-          <SectionTitle kicker="Best XI" title="Team of the Tournament" />
-          {totFlat.length === 0 ? (
-            <EmptyPanel message="Team of the tournament unlocks once player stats are recorded." />
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-6 items-start">
-              <FormationPitch players={totFlat} getManagerName={getManagerName} />
-              <div
-                className="rounded-xl p-5"
-                style={{
-                  background: `linear-gradient(160deg, ${WC_THEME.maroonDeep}, ${WC_THEME.maroonInk})`,
-                  border: `1px solid ${WC_THEME.gold}44`,
-                }}
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <Star className="w-4 h-4" style={{ color: WC_THEME.goldBright }} />
-                  <h3 className="font-display text-lg" style={{ color: WC_THEME.goldBright }}>Substitutes</h3>
-                </div>
-                {subs.length === 0 ? (
-                  <p className="text-sm text-white/55">Subs will appear once more players have minutes.</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {subs.map((s, i) => (
-                      <li key={i} className="flex items-center justify-between py-2 border-b border-white/5">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <span className="text-[10px] uppercase tracking-widest text-white/40 w-7">{s.position}</span>
-                          <span className="text-lg">{byManager(s.manager_id)?.flag_emoji}</span>
-                          <div className="min-w-0">
-                            <div className="text-sm text-white truncate">{s.player_name}</div>
-                            <div className="text-[10px] uppercase tracking-wider text-white/50 truncate">{s.club}</div>
-                          </div>
-                        </div>
-                        <div className="font-display text-base tabular-nums" style={{ color: WC_THEME.goldBright }}>
-                          {s.fantasy_points}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
-          )}
-        </section>
       </div>
     </div>
   );
