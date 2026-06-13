@@ -1,10 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Trophy, Star, Shield, Goal, HandMetal } from "lucide-react";
+import { Trophy, Crown, Shield, Swords } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { WC_PARTICIPANT_FALLBACK, WC_THEME, type WcParticipant } from "@/lib/worldCup";
 import { WorldCupLiveTable } from "@/components/WorldCupLiveTable";
-import { FormationPitch } from "@/components/FormationPitch";
 
 export const Route = createFileRoute("/world-cup")({
   component: WorldCupPage,
@@ -18,49 +17,53 @@ export const Route = createFileRoute("/world-cup")({
   }),
 });
 
-type PlayerStat = {
-  manager_id: number;
+type LeaderRow = {
   player_name: string;
-  position: "GK" | "DEF" | "MID" | "FWD";
-  club?: string;
-  goals: number;
-  assists: number;
-  clean_sheets: number;
-  fantasy_points: number;
-  appearances: number;
+  country: string;
+  position: "G" | "D" | "M" | "F";
+  manager_name: string;
+  total_points: number;
+  rounds_played: number;
+};
+
+const COUNTRY_FLAGS: Record<string, string> = {
+  Germany: "🇩🇪", Belgium: "🇧🇪", France: "🇫🇷", Spain: "🇪🇸", England: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+  Switzerland: "🇨🇭", Senegal: "🇸🇳", Brazil: "🇧🇷", Argentina: "🇦🇷", Morocco: "🇲🇦",
+  Portugal: "🇵🇹", Canada: "🇨🇦", Uruguay: "🇺🇾", Netherlands: "🇳🇱", Ecuador: "🇪🇨",
+  Paraguay: "🇵🇾", Austria: "🇦🇹", Turkey: "🇹🇷", USA: "🇺🇸", Norway: "🇳🇴",
+  Colombia: "🇨🇴", Scotland: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", Mexico: "🇲🇽", Japan: "🇯🇵", Egypt: "🇪🇬",
+  Sweden: "🇸🇪", Ghana: "🇬🇭", Croatia: "🇭🇷", "Ivory Coast": "🇨🇮",
 };
 
 function WorldCupPage() {
   const [participants] = useState<WcParticipant[]>(WC_PARTICIPANT_FALLBACK);
   const [squadCounts, setSquadCounts] = useState<Record<number, number>>({});
-  const [stats] = useState<PlayerStat[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderRow[]>([]);
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase.from("wc_squads").select("manager_id");
-      if (error || !data) return;
-      const counts: Record<number, number> = {};
-      for (const r of data as Array<{ manager_id: number }>) {
-        counts[r.manager_id] = (counts[r.manager_id] ?? 0) + 1;
+      const [squadsRes, lbRes] = await Promise.all([
+        supabase.from("wc_squads").select("manager_id"),
+        supabase.from("wc_player_leaderboard").select("*").order("total_points", { ascending: false }),
+      ]);
+      if (squadsRes.data) {
+        const counts: Record<number, number> = {};
+        for (const r of squadsRes.data as Array<{ manager_id: number }>) {
+          counts[r.manager_id] = (counts[r.manager_id] ?? 0) + 1;
+        }
+        setSquadCounts(counts);
       }
-      setSquadCounts(counts);
+      if (lbRes.data) setLeaderboard(lbRes.data as LeaderRow[]);
     })();
   }, []);
 
-  const byManager = (id: number) => participants.find((x) => x.manager_id === id);
-
-  const topGoals = [...stats].sort((a, b) => b.goals - a.goals).filter((s) => s.goals > 0).slice(0, 5);
-  const topAssists = [...stats].sort((a, b) => b.assists - a.assists).filter((s) => s.assists > 0).slice(0, 5);
-  const topCleans = [...stats]
-    .filter((s) => s.position === "GK" || s.position === "DEF")
-    .sort((a, b) => b.clean_sheets - a.clean_sheets)
-    .filter((s) => s.clean_sheets > 0)
+  const topOverall = leaderboard.filter((p) => p.total_points > 0).slice(0, 5);
+  const topAttack = leaderboard
+    .filter((p) => (p.position === "F" || p.position === "M") && p.total_points > 0)
     .slice(0, 5);
-
-  const totFlat: Array<{ player_name: string; position: string; club?: string; total_fantasy_points: number; manager_id: string }> = [];
-  const subs: PlayerStat[] = [];
-
-  const getManagerName = (id: string) => byManager(Number(id))?.nation_name ?? "-";
+  const topDefence = leaderboard
+    .filter((p) => (p.position === "G" || p.position === "D") && p.total_points > 0)
+    .slice(0, 5);
 
   return (
     <div
@@ -172,93 +175,31 @@ function WorldCupPage() {
           </div>
         </section>
 
-        {/* ---------- RECORDS ---------- */}
+        {/* ---------- LEADERBOARD ---------- */}
         <section>
-          <SectionTitle kicker="Tournament Records" title="Golden Boots, Playmakers & Walls" />
+          <SectionTitle kicker="Player Leaderboard" title="Top FPL Scorers" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <RecordCard
-              icon={<Goal className="w-4 h-4" />}
-              title="Golden Boot"
-              rows={topGoals.map((s) => ({
-                name: s.player_name,
-                meta: s.club ?? "",
-                value: s.goals,
-                nation: byManager(s.manager_id)?.nation_name ?? "",
-                flag: byManager(s.manager_id)?.flag_emoji ?? "",
-              }))}
-              unit="goals"
+            <LeaderboardCard
+              icon={<Crown className="w-4 h-4" />}
+              title="Overall Top 5"
+              rows={topOverall}
+              empty="Awaiting first round of points."
             />
-            <RecordCard
-              icon={<HandMetal className="w-4 h-4" />}
-              title="Playmaker"
-              rows={topAssists.map((s) => ({
-                name: s.player_name,
-                meta: s.club ?? "",
-                value: s.assists,
-                nation: byManager(s.manager_id)?.nation_name ?? "",
-                flag: byManager(s.manager_id)?.flag_emoji ?? "",
-              }))}
-              unit="assists"
+            <LeaderboardCard
+              icon={<Swords className="w-4 h-4" />}
+              title="Top Attackers"
+              rows={topAttack}
+              empty="No attacking points yet."
             />
-            <RecordCard
+            <LeaderboardCard
               icon={<Shield className="w-4 h-4" />}
-              title="Brick Wall"
-              rows={topCleans.map((s) => ({
-                name: s.player_name,
-                meta: s.club ?? "",
-                value: s.clean_sheets,
-                nation: byManager(s.manager_id)?.nation_name ?? "",
-                flag: byManager(s.manager_id)?.flag_emoji ?? "",
-              }))}
-              unit="clean sheets"
+              title="Top Defence"
+              rows={topDefence}
+              empty="No defensive points yet."
             />
           </div>
         </section>
 
-        {/* ---------- TEAM OF THE TOURNAMENT ---------- */}
-        <section>
-          <SectionTitle kicker="Best XI" title="Team of the Tournament" />
-          {totFlat.length === 0 ? (
-            <EmptyPanel message="Team of the tournament unlocks once player stats are recorded." />
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-6 items-start">
-              <FormationPitch players={totFlat} getManagerName={getManagerName} />
-              <div
-                className="rounded-xl p-5"
-                style={{
-                  background: `linear-gradient(160deg, ${WC_THEME.maroonDeep}, ${WC_THEME.maroonInk})`,
-                  border: `1px solid ${WC_THEME.gold}44`,
-                }}
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <Star className="w-4 h-4" style={{ color: WC_THEME.goldBright }} />
-                  <h3 className="font-display text-lg" style={{ color: WC_THEME.goldBright }}>Substitutes</h3>
-                </div>
-                {subs.length === 0 ? (
-                  <p className="text-sm text-white/55">Subs will appear once more players have minutes.</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {subs.map((s, i) => (
-                      <li key={i} className="flex items-center justify-between py-2 border-b border-white/5">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <span className="text-[10px] uppercase tracking-widest text-white/40 w-7">{s.position}</span>
-                          <span className="text-lg">{byManager(s.manager_id)?.flag_emoji}</span>
-                          <div className="min-w-0">
-                            <div className="text-sm text-white truncate">{s.player_name}</div>
-                            <div className="text-[10px] uppercase tracking-wider text-white/50 truncate">{s.club}</div>
-                          </div>
-                        </div>
-                        <div className="font-display text-base tabular-nums" style={{ color: WC_THEME.goldBright }}>
-                          {s.fantasy_points}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
-          )}
-        </section>
       </div>
     </div>
   );
@@ -276,14 +217,15 @@ function SectionTitle({ kicker, title }: { kicker: string; title: string }) {
   );
 }
 
-function RecordCard({
-  icon, title, rows, unit,
+function LeaderboardCard({
+  icon, title, rows, empty,
 }: {
   icon: React.ReactNode;
   title: string;
-  rows: Array<{ name: string; meta: string; value: number; nation: string; flag: string }>;
-  unit: string;
+  rows: LeaderRow[];
+  empty: string;
 }) {
+  const posLabel = (p: LeaderRow["position"]) => p === "G" ? "GK" : p === "D" ? "DEF" : p === "M" ? "MID" : "FWD";
   return (
     <div
       className="rounded-xl overflow-hidden"
@@ -301,11 +243,11 @@ function RecordCard({
         <h3 className="font-display text-base tracking-wide">{title}</h3>
       </div>
       {rows.length === 0 ? (
-        <div className="p-6 text-sm text-white/55 text-center">Awaiting tournament data.</div>
+        <div className="p-6 text-sm text-white/55 text-center">{empty}</div>
       ) : (
         <ul className="divide-y divide-white/5">
           {rows.map((r, i) => (
-            <li key={i} className="flex items-center justify-between px-4 py-3">
+            <li key={`${r.player_name}-${i}`} className="flex items-center justify-between px-4 py-3">
               <div className="flex items-center gap-3 min-w-0">
                 <span
                   className="font-display text-sm w-5 text-center"
@@ -313,19 +255,19 @@ function RecordCard({
                 >
                   {i + 1}
                 </span>
-                <span className="text-lg leading-none">{r.flag}</span>
+                <span className="text-lg leading-none">{COUNTRY_FLAGS[r.country] ?? "🏳️"}</span>
                 <div className="min-w-0">
-                  <div className="text-sm text-white truncate">{r.name}</div>
+                  <div className="text-sm text-white truncate">{r.player_name}</div>
                   <div className="text-[10px] uppercase tracking-wider text-white/45 truncate">
-                    {r.meta}{r.meta && r.nation ? " - " : ""}{r.nation}
+                    {posLabel(r.position)} · {r.country} · {r.manager_name}
                   </div>
                 </div>
               </div>
               <div className="text-right">
                 <div className="font-display text-lg tabular-nums" style={{ color: WC_THEME.goldBright }}>
-                  {r.value}
+                  {r.total_points}
                 </div>
-                <div className="text-[9px] uppercase tracking-widest text-white/45">{unit}</div>
+                <div className="text-[9px] uppercase tracking-widest text-white/45">pts</div>
               </div>
             </li>
           ))}
@@ -335,20 +277,6 @@ function RecordCard({
   );
 }
 
-function EmptyPanel({ message }: { message: string }) {
-  return (
-    <div
-      className="rounded-xl p-10 text-center"
-      style={{
-        background: `linear-gradient(160deg, ${WC_THEME.maroonDeep}, ${WC_THEME.maroonInk})`,
-        border: `1px dashed ${WC_THEME.gold}55`,
-        color: "rgba(255,255,255,0.6)",
-      }}
-    >
-      {message}
-    </div>
-  );
-}
 
 function WCStyles() {
   return (
