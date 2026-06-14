@@ -24,6 +24,8 @@ type SquadPlayer = {
   country: string;
   position: UiPos;
   draft_pick: number | null;
+  total_points: number;
+  rounds_played: number;
 };
 
 const POS_MAP: Record<DbPos, UiPos> = { G: "GK", D: "DEF", M: "MID", F: "FWD" };
