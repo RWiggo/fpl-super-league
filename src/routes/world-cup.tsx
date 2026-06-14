@@ -4,6 +4,7 @@ import { Trophy, Crown, Shield, Swords, Star } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { WC_PARTICIPANT_FALLBACK, WC_THEME, type WcParticipant } from "@/lib/worldCup";
 import { WorldCupLiveTable } from "@/components/WorldCupLiveTable";
+import { getBranding } from "@/lib/managerBranding";
 
 export const Route = createFileRoute("/world-cup")({
   component: WorldCupRoute,
