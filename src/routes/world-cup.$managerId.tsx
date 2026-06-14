@@ -184,6 +184,9 @@ function SquadPage() {
                       <div className="text-[10px] uppercase tracking-wider text-white/55 truncate mt-0.5">
                         {p.country || "Unknown"}
                       </div>
+                      <div className="text-[10px] uppercase tracking-wider text-white/45 mt-1 tabular-nums">
+                        {p.total_points} pts · {p.rounds_played} {p.rounds_played === 1 ? "game" : "games"}
+                      </div>
                     </div>
                     {p.draft_pick != null && (
                       <div className="text-right">
