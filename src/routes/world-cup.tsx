@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useMatchRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Trophy, Crown, Shield, Swords } from "lucide-react";
+import { Trophy, Crown, Shield, Swords, Star } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { WC_PARTICIPANT_FALLBACK, WC_THEME, type WcParticipant } from "@/lib/worldCup";
 import { WorldCupLiveTable } from "@/components/WorldCupLiveTable";
