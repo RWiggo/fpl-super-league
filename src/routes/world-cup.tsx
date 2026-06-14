@@ -71,6 +71,7 @@ function WorldCupPage() {
   const topDefence = leaderboard
     .filter((p) => (p.position === "G" || p.position === "D") && p.total_points > 0)
     .slice(0, 5);
+  const tott = pickTeamOfTournament(leaderboard);
 
   return (
     <div
