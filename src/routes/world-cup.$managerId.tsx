@@ -185,17 +185,16 @@ function SquadPage() {
                         {p.country || "Unknown"}
                       </div>
                       <div className="text-[10px] uppercase tracking-wider text-white/45 mt-1 tabular-nums">
-                        {p.total_points} pts · {p.rounds_played} {p.rounds_played === 1 ? "game" : "games"}
+                        {p.rounds_played} {p.rounds_played === 1 ? "game" : "games"}
+                        {p.draft_pick != null && <> · pick #{p.draft_pick}</>}
                       </div>
                     </div>
-                    {p.draft_pick != null && (
-                      <div className="text-right">
-                        <div className="font-display text-lg tabular-nums" style={{ color: WC_THEME.goldBright }}>
-                          #{p.draft_pick}
-                        </div>
-                        <div className="text-[9px] uppercase tracking-widest text-white/45">pick</div>
+                    <div className="text-right shrink-0">
+                      <div className="font-display text-2xl tabular-nums leading-none" style={{ color: WC_THEME.goldBright }}>
+                        {p.total_points}
                       </div>
-                    )}
+                      <div className="text-[9px] uppercase tracking-widest text-white/45 mt-1">pts</div>
+                    </div>
                   </div>
                 ))}
               </div>
