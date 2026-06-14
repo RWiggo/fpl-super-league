@@ -259,7 +259,7 @@ function pickTeamOfTournament(rows: LeaderRow[]): Xi {
   return best;
 }
 
-function TottPitch({ xi }: { xi: Xi }) {
+function TottPitch({ xi, managerIdByName }: { xi: Xi; managerIdByName: Record<string, number> }) {
   if (!xi.gk && xi.def.length === 0 && xi.mid.length === 0 && xi.fwd.length === 0) {
     return (
       <div
@@ -314,9 +314,11 @@ function TottPitch({ xi }: { xi: Xi }) {
       <div className="absolute inset-0 flex flex-col justify-around p-2 sm:p-4">
         {rows.map((row, i) => (
           <div key={i} className="flex justify-around items-center gap-1 sm:gap-3 px-1">
-            {row.players.map((p, j) => (
-              <TottChip key={`${row.label}-${j}`} player={p} />
-            ))}
+            {row.players.map((p, j) => {
+              const mgrId = managerIdByName[p.manager_name];
+              const badge = mgrId != null ? getBranding(mgrId)?.badge ?? null : null;
+              return <TottChip key={`${row.label}-${j}`} player={p} badge={badge} />;
+            })}
           </div>
         ))}
       </div>
@@ -324,14 +326,18 @@ function TottPitch({ xi }: { xi: Xi }) {
   );
 }
 
-function TottChip({ player }: { player: LeaderRow }) {
+function TottChip({ player, badge }: { player: LeaderRow; badge: string | null }) {
   return (
     <div className="flex flex-col items-center w-[64px] sm:w-[110px]">
       <div
-        className="w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-2xl sm:text-3xl mb-1 drop-shadow-[0_3px_8px_rgba(0,0,0,0.6)]"
+        className="w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center mb-1 drop-shadow-[0_3px_8px_rgba(0,0,0,0.6)] overflow-hidden"
         style={{ background: `${WC_THEME.maroonInk}cc`, border: `1px solid ${WC_THEME.gold}88` }}
       >
-        {COUNTRY_FLAGS[player.country] ?? "🏳️"}
+        {badge ? (
+          <img src={badge} alt={player.manager_name} className="w-full h-full object-contain p-1" />
+        ) : (
+          <span className="text-2xl sm:text-3xl">{COUNTRY_FLAGS[player.country] ?? "🏳️"}</span>
+        )}
       </div>
       <div
         className="rounded px-1 sm:px-2 py-0.5 sm:py-1 text-center w-full"
