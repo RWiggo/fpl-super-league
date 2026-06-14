@@ -61,13 +61,32 @@ function SquadPage() {
         setSquad([]);
         return;
       }
-      const mapped: SquadPlayer[] = (data ?? []).map((r: any) => ({
+      const rows = data ?? [];
+      const playerIds = rows.map((r: any) => r.player_id);
+
+      const scoreAgg: Record<string, { total: number; rounds: number }> = {};
+      if (playerIds.length > 0) {
+        const { data: scores } = await supabase
+          .from("wc_player_scores")
+          .select("player_id, fpl_points")
+          .in("player_id", playerIds);
+        for (const s of (scores ?? []) as Array<{ player_id: string; fpl_points: number | null }>) {
+          const cur = scoreAgg[s.player_id] ?? { total: 0, rounds: 0 };
+          cur.total += Number(s.fpl_points ?? 0);
+          cur.rounds += 1;
+          scoreAgg[s.player_id] = cur;
+        }
+      }
+
+      const mapped: SquadPlayer[] = rows.map((r: any) => ({
         id: r.id,
         player_id: r.player_id,
         player_name: r.wc_players?.name ?? r.player_id,
         country: r.wc_players?.country ?? "",
         position: POS_MAP[(r.wc_players?.position as DbPos) ?? "M"] ?? "MID",
         draft_pick: r.draft_pick,
+        total_points: scoreAgg[r.player_id]?.total ?? 0,
+        rounds_played: scoreAgg[r.player_id]?.rounds ?? 0,
       }));
       setSquad(mapped);
     })();
