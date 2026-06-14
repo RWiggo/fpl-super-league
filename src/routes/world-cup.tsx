@@ -214,7 +214,7 @@ function WorldCupPage() {
 
         <section>
           <SectionTitle kicker="Best XI" title="Live Team of the Tournament" />
-          <TottPitch xi={tott} />
+          <TottPitch xi={tott} managerIdByName={managerIdByName} />
         </section>
       </div>
     </div>
