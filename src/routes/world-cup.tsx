@@ -47,12 +47,14 @@ function WorldCupPage() {
   const [participants] = useState<WcParticipant[]>(WC_PARTICIPANT_FALLBACK);
   const [squadCounts, setSquadCounts] = useState<Record<number, number>>({});
   const [leaderboard, setLeaderboard] = useState<LeaderRow[]>([]);
+  const [managerIdByName, setManagerIdByName] = useState<Record<string, number>>({});
 
   useEffect(() => {
     (async () => {
-      const [squadsRes, lbRes] = await Promise.all([
+      const [squadsRes, lbRes, mgrRes] = await Promise.all([
         supabase.from("wc_squads").select("manager_id"),
         supabase.from("wc_player_leaderboard").select("*").order("total_points", { ascending: false }),
+        supabase.from("managers").select("id, name"),
       ]);
       if (squadsRes.data) {
         const counts: Record<number, number> = {};
@@ -62,6 +64,11 @@ function WorldCupPage() {
         setSquadCounts(counts);
       }
       if (lbRes.data) setLeaderboard(lbRes.data as LeaderRow[]);
+      if (mgrRes.data) {
+        const map: Record<string, number> = {};
+        for (const m of mgrRes.data as Array<{ id: number; name: string }>) map[m.name] = m.id;
+        setManagerIdByName(map);
+      }
     })();
   }, []);
 
