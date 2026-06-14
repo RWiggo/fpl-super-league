@@ -203,6 +203,141 @@ function WorldCupPage() {
             />
           </div>
         </section>
+
+        <section>
+          <SectionTitle kicker="Best XI" title="Live Team of the Tournament" />
+          <TottPitch xi={tott} />
+        </section>
+      </div>
+    </div>
+  );
+}
+
+type Xi = { gk: LeaderRow | null; def: LeaderRow[]; mid: LeaderRow[]; fwd: LeaderRow[]; total: number };
+
+function pickTeamOfTournament(rows: LeaderRow[]): Xi {
+  const scored = rows.filter((r) => r.total_points > 0);
+  const byPos = (pos: LeaderRow["position"]) =>
+    scored.filter((r) => r.position === pos).sort((a, b) => b.total_points - a.total_points);
+  const gks = byPos("G");
+  const defs = byPos("D");
+  const mids = byPos("M");
+  const fwds = byPos("F");
+
+  const gk = gks[0] ?? null;
+  let best: Xi = { gk, def: [], mid: [], fwd: [], total: 0 };
+  let bestSum = -1;
+
+  for (let d = 3; d <= 5; d++) {
+    for (let m = 2; m <= 5; m++) {
+      for (let f = 1; f <= 3; f++) {
+        if (d + m + f !== 10) continue;
+        if (defs.length < d || mids.length < m || fwds.length < f) continue;
+        const def = defs.slice(0, d);
+        const mid = mids.slice(0, m);
+        const fwd = fwds.slice(0, f);
+        const sum =
+          (gk?.total_points ?? 0) +
+          def.reduce((a, b) => a + b.total_points, 0) +
+          mid.reduce((a, b) => a + b.total_points, 0) +
+          fwd.reduce((a, b) => a + b.total_points, 0);
+        if (sum > bestSum) {
+          bestSum = sum;
+          best = { gk, def, mid, fwd, total: sum };
+        }
+      }
+    }
+  }
+  return best;
+}
+
+function TottPitch({ xi }: { xi: Xi }) {
+  if (!xi.gk && xi.def.length === 0 && xi.mid.length === 0 && xi.fwd.length === 0) {
+    return (
+      <div
+        className="rounded-xl p-10 text-center text-white/55"
+        style={{ background: WC_THEME.maroonDeep, border: `1px dashed ${WC_THEME.gold}55` }}
+      >
+        Awaiting first round of scores - the best XI will appear once points are recorded.
+      </div>
+    );
+  }
+
+  const rows: Array<{ label: string; players: LeaderRow[] }> = [
+    { label: "GK", players: xi.gk ? [xi.gk] : [] },
+    { label: "DEF", players: xi.def },
+    { label: "MID", players: xi.mid },
+    { label: "FWD", players: xi.fwd },
+  ];
+
+  return (
+    <div
+      className="relative w-full aspect-[3/4] sm:aspect-[4/3] max-w-4xl mx-auto rounded-2xl overflow-hidden"
+      style={{ border: `1px solid ${WC_THEME.gold}55`, boxShadow: `0 30px 80px -30px ${WC_THEME.maroonInk}` }}
+    >
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 150" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="wc-pitch" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#0d3d1f" />
+            <stop offset="50%" stopColor="#0a2f17" />
+            <stop offset="100%" stopColor="#0d3d1f" />
+          </linearGradient>
+          <pattern id="wc-stripes" width="10" height="15" patternUnits="userSpaceOnUse">
+            <rect width="10" height="15" fill="url(#wc-pitch)" />
+            <rect width="10" height="7.5" fill="rgba(0,0,0,0.12)" />
+          </pattern>
+        </defs>
+        <rect width="100" height="150" fill="url(#wc-stripes)" />
+        <rect x="2" y="2" width="96" height="146" fill="none" stroke="white" strokeOpacity="0.45" strokeWidth="0.4" />
+        <line x1="2" y1="75" x2="98" y2="75" stroke="white" strokeOpacity="0.45" strokeWidth="0.4" />
+        <circle cx="50" cy="75" r="9" fill="none" stroke="white" strokeOpacity="0.45" strokeWidth="0.4" />
+        <rect x="25" y="2" width="50" height="18" fill="none" stroke="white" strokeOpacity="0.45" strokeWidth="0.4" />
+        <rect x="25" y="130" width="50" height="18" fill="none" stroke="white" strokeOpacity="0.45" strokeWidth="0.4" />
+      </svg>
+
+      <div
+        className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.25em]"
+        style={{ background: `${WC_THEME.maroonInk}cc`, border: `1px solid ${WC_THEME.gold}66`, color: WC_THEME.goldBright }}
+      >
+        <Star className="w-3 h-3" />
+        {xi.total} pts
+      </div>
+
+      <div className="absolute inset-0 flex flex-col justify-around p-2 sm:p-4">
+        {rows.map((row, i) => (
+          <div key={i} className="flex justify-around items-center gap-1 sm:gap-3 px-1">
+            {row.players.map((p, j) => (
+              <TottChip key={`${row.label}-${j}`} player={p} />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TottChip({ player }: { player: LeaderRow }) {
+  return (
+    <div className="flex flex-col items-center w-[64px] sm:w-[110px]">
+      <div
+        className="w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-2xl sm:text-3xl mb-1 drop-shadow-[0_3px_8px_rgba(0,0,0,0.6)]"
+        style={{ background: `${WC_THEME.maroonInk}cc`, border: `1px solid ${WC_THEME.gold}88` }}
+      >
+        {COUNTRY_FLAGS[player.country] ?? "🏳️"}
+      </div>
+      <div
+        className="rounded px-1 sm:px-2 py-0.5 sm:py-1 text-center w-full"
+        style={{ background: `${WC_THEME.maroonInk}e6`, border: `1px solid ${WC_THEME.gold}55` }}
+      >
+        <div className="text-[9px] sm:text-[11px] font-medium leading-tight text-white truncate">
+          {player.player_name}
+        </div>
+        <div className="text-[8px] sm:text-[9px] uppercase tracking-wider text-white/55 truncate">
+          {player.country}
+        </div>
+        <div className="font-display text-sm sm:text-base tabular-nums" style={{ color: WC_THEME.goldBright }}>
+          {player.total_points}
+        </div>
       </div>
     </div>
   );
