@@ -29,25 +29,34 @@ function SeasonPage() {
         supabase.from("fixture_records").select("*").eq("season_id", seasonId),
         supabase.from("gameweek_table").select("*").eq("season_id", seasonId),
         supabase.from("win_streaks").select("*").eq("season_name", sname),
-        supabase.from("losing_streaks").select("*").eq("season_name", sname),
-        supabase.from("unbeaten_streaks").select("*").eq("season_name", sname),
-        supabase.from("winless_streaks").select("*").eq("season_name", sname),
+        supabase.from("losing_streaks").select("*"),
+        supabase.from("unbeaten_streaks").select("*"),
+        supabase.from("winless_streaks").select("*"),
         supabase.from("team_season_stats_full").select("*").eq("season_name", sname),
         supabase.from("overall_team_of_the_season").select("*").eq("season_name", sname),
         supabase.from("weekly_high_scores").select("*").eq("season_id", seasonId),
         supabase.from("player_team_history").select("*").eq("season_name", sname),
       ]);
+      const mstRows = mst.data ?? [];
+      const teamByMgr: Record<string, string> = {};
+      mstRows.forEach((r: any) => { teamByMgr[r.manager_id] = r.team_name; });
+      const mgrIdByName: Record<string, string> = {};
+      (managers.data ?? []).forEach((m: any) => { mgrIdByName[m.name] = m.id; });
+      const injectTeam = (rows: any[]) => rows.map((r) => ({
+        ...r,
+        team_name: r.team_name ?? teamByMgr[mgrIdByName[r.manager_name]] ?? null,
+      }));
       setD({
         season: seasonRes.data,
         managers: managers.data ?? [],
-        mst: mst.data ?? [],
+        mst: mstRows,
         standings: (standings.data ?? []).sort((a: any, b: any) => a.position - b.position),
         fixtures: fixtures.data ?? [],
         gwTable: gwTable.data ?? [],
         winS: winS.data ?? [],
-        loseS: loseS.data ?? [],
-        unbeatenS: unbeatenS.data ?? [],
-        winlessS: winlessS.data ?? [],
+        loseS: injectTeam(filterStreaksForSeason(loseS.data, sname)),
+        unbeatenS: injectTeam(filterStreaksForSeason(unbeatenS.data, sname)),
+        winlessS: injectTeam(filterStreaksForSeason(winlessS.data, sname)),
         teamStats: teamStats.data ?? [],
         overallTOTS: overallTOTS.data ?? [],
         weeklyHi: weeklyHi.data ?? [],
