@@ -14,6 +14,7 @@ import { getSeasonBadge, getSeasonTeamName } from "@/lib/seasonBadges";
 import { getSeasonKit } from "@/lib/seasonKits";
 import { useSeasonAssets } from "@/lib/seasonAssets";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { normalizeStreaks } from "@/lib/streaks";
 
 export const Route = createFileRoute("/team/$managerId")({
   component: TeamPage,
@@ -72,9 +73,9 @@ function TeamPage() {
         tots: tots.data ?? [],
         history: history.data ?? [],
         alltimePlayers: alltimePlayers.data ?? [],
-        unbeaten: unbeaten.data ?? [],
-        winless: winless.data ?? [],
-        losing: losing.data ?? [],
+        unbeaten: normalizeStreaks(unbeaten.data),
+        winless: normalizeStreaks(winless.data),
+        losing: normalizeStreaks(losing.data),
         allClubs: [...new Set((allClubs.data ?? []).map((r: any) => r.club).filter(Boolean))] as string[],
       });
     })();

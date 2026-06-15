@@ -9,6 +9,7 @@ import { getSeasonKit } from "@/lib/seasonKits";
 import { GoalkeeperKit } from "@/components/GoalkeeperKit";
 import { Flame, Trophy, Crown, Target, Zap, Shield, TrendingDown, X, Award } from "lucide-react";
 import { getPlClubBadge, getPlClubColor } from "@/lib/plClubBadges";
+import { normalizeStreaks } from "@/lib/streaks";
 
 export const Route = createFileRoute("/records")({
   component: RecordsPage,
@@ -106,9 +107,9 @@ function RecordsPage() {
         standings: sd.data ?? [],
         tots: tots.data ?? [],
         playerHistory: pth as any[],
-        unbeaten: ub.data ?? [],
-        winless: wl.data ?? [],
-        losing: ls.data ?? [],
+        unbeaten: normalizeStreaks(ub.data),
+        winless: normalizeStreaks(wl.data),
+        losing: normalizeStreaks(ls.data),
         teamSeasonStats: tss.data ?? [],
         playerSeasonStats: pss as any[],
         adjusted: adj.data ?? [],
