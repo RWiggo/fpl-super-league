@@ -440,7 +440,7 @@ function RecordsSection({
   const top5Margin = [...completed].sort((a: any, b: any) => (b.margin ?? 0) - (a.margin ?? 0)).slice(0, 5);
 
   const top5WinStreaks = [...d.winS].filter((s: any) => s.outcome === "W").sort((a: any, b: any) => b.streak_length - a.streak_length).slice(0, 5);
-  const top5LoseStreaks = [...d.loseS].filter((s: any) => s.outcome === "L").sort((a: any, b: any) => b.streak_length - a.streak_length).slice(0, 5);
+  const top5LoseStreaks = [...d.loseS].sort((a: any, b: any) => b.streak_length - a.streak_length).slice(0, 5);
 
   // Streak detail: fixtures during streak window for that team
   const streakFixtures = (s: any) => {
