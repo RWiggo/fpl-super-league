@@ -9,6 +9,7 @@ import { getSeasonKit } from "@/lib/seasonKits";
 import { GoalkeeperKit } from "@/components/GoalkeeperKit";
 import { Flame, Trophy, Crown, Target, Zap, Shield, TrendingDown, X, Award } from "lucide-react";
 import { getPlClubBadge, getPlClubColor } from "@/lib/plClubBadges";
+import { normalizeStreaks } from "@/lib/streaks";
 
 export const Route = createFileRoute("/records")({
   component: RecordsPage,
