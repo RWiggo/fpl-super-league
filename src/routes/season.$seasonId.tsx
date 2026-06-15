@@ -95,7 +95,7 @@ function SeasonPage() {
     .sort((a: any, b: any) => (a.margin ?? 0) - (b.margin ?? 0))[0];
 
   const longestWin = [...d.winS].filter((s: any) => s.outcome === "W").sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
-  const longestLose = [...d.loseS].filter((s: any) => s.outcome === "L").sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
+  const longestLose = [...d.loseS].sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
   const longestUnbeaten = [...d.unbeatenS].sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
   const longestWinless = [...d.winlessS].sort((a: any, b: any) => b.streak_length - a.streak_length)[0];
 
