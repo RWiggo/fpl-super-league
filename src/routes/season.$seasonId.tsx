@@ -7,6 +7,7 @@ import { getBranding } from "@/lib/managerBranding";
 import { currentTeamName } from "@/lib/currentTeamNames";
 import { getSeasonBadge } from "@/lib/seasonBadges";
 import { Trophy, Crown, Flame, Target, Zap, Skull, Shield, TrendingUp, TrendingDown, Users, Swords, Star, ArrowDown, ArrowUp, AlertOctagon, Info, ChevronRight } from "lucide-react";
+import { filterStreaksForSeason } from "@/lib/streaks";
 
 export const Route = createFileRoute("/season/$seasonId")({
   component: SeasonPage,
