@@ -73,9 +73,9 @@ function TeamPage() {
         tots: tots.data ?? [],
         history: history.data ?? [],
         alltimePlayers: alltimePlayers.data ?? [],
-        unbeaten: unbeaten.data ?? [],
-        winless: winless.data ?? [],
-        losing: losing.data ?? [],
+        unbeaten: normalizeStreaks(unbeaten.data),
+        winless: normalizeStreaks(winless.data),
+        losing: normalizeStreaks(losing.data),
         allClubs: [...new Set((allClubs.data ?? []).map((r: any) => r.club).filter(Boolean))] as string[],
       });
     })();
