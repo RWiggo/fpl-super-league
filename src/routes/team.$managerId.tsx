@@ -14,6 +14,7 @@ import { getSeasonBadge, getSeasonTeamName } from "@/lib/seasonBadges";
 import { getSeasonKit } from "@/lib/seasonKits";
 import { useSeasonAssets } from "@/lib/seasonAssets";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { normalizeStreaks } from "@/lib/streaks";
 
 export const Route = createFileRoute("/team/$managerId")({
   component: TeamPage,
