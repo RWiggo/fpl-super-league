@@ -79,7 +79,7 @@ function SeasonPage() {
   const maxGW = Math.max(...d.fixtures.map((f: any) => f.gameweek), 1);
 
   // Records
-  const completed = d.fixtures.filter((f: any) => f.home_score != null);
+  const completed = d.fixtures.filter((f: any) => f.home_score != null && !(Number(f.home_score) === 0 && Number(f.away_score) === 0));
   const highest = [...completed].sort((a: any, b: any) =>
     Math.max(b.home_score, b.away_score) - Math.max(a.home_score, a.away_score)
   )[0];
@@ -111,6 +111,7 @@ function SeasonPage() {
 
   // Time at top / bottom of league (gw_table)
   const positionCounts = (() => {
+    if (completed.length === 0) return { topId: undefined, botId: undefined };
     const top: Record<string, number> = {};
     const bot: Record<string, number> = {};
     d.gwTable.forEach((row: any) => {
