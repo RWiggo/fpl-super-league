@@ -44,46 +44,71 @@ function H2HPage() {
     });
   }, []);
 
+  // Count "unplayed" fixtures per pair (both scores 0 — h2h scores can't legitimately be 0-0)
+  const unplayedByPair = useMemo(() => {
+    const m = new Map<string, number>();
+    if (!d) return m;
+    const nameToId = new Map<string, any>();
+    for (const mgr of d.managers) nameToId.set(mgr.name, mgr.id);
+    for (const f of d.fixtures) {
+      if (!(Number(f.home_score) === 0 && Number(f.away_score) === 0)) continue;
+      const ha = nameToId.get(f.home_manager);
+      const aw = nameToId.get(f.away_manager);
+      if (ha == null || aw == null) continue;
+      const lo = Math.min(Number(ha), Number(aw));
+      const hi = Math.max(Number(ha), Number(aw));
+      const k = `${lo}|${hi}`;
+      m.set(k, (m.get(k) ?? 0) + 1);
+    }
+    return m;
+  }, [d]);
+
   const recordsByManager = useMemo(() => {
     const map = new Map<string, Rivalry[]>();
     if (!d) return map;
     for (const m of d.managers) map.set(String(m.id), []);
     for (const r of d.h2h) {
+      const lo = Math.min(Number(r.manager1_id), Number(r.manager2_id));
+      const hi = Math.max(Number(r.manager1_id), Number(r.manager2_id));
+      const unplayed = unplayedByPair.get(`${lo}|${hi}`) ?? 0;
+      const draws = Math.max(0, (r.draws ?? 0) - unplayed);
+      const games = Math.max(0, (r.total_played ?? 0) - unplayed);
       const aRow: Rivalry = {
         opponent_id: r.manager2_id,
         wins: r.manager1_wins ?? 0,
         losses: r.manager2_wins ?? 0,
-        draws: r.draws ?? 0,
+        draws,
         pf: Number(r.manager1_points_for ?? 0),
         pa: Number(r.manager2_points_for ?? 0),
-        games: r.total_played ?? 0,
-        winpct: Number(r.manager1_win_pct ?? 0),
+        games,
+        winpct: games ? ((r.manager1_wins ?? 0) / games) * 100 : 0,
         diff: Number(r.manager1_points_for ?? 0) - Number(r.manager2_points_for ?? 0),
       };
       const bRow: Rivalry = {
         opponent_id: r.manager1_id,
         wins: r.manager2_wins ?? 0,
         losses: r.manager1_wins ?? 0,
-        draws: r.draws ?? 0,
+        draws,
         pf: Number(r.manager2_points_for ?? 0),
         pa: Number(r.manager1_points_for ?? 0),
-        games: r.total_played ?? 0,
-        winpct: r.total_played ? ((r.manager2_wins ?? 0) / r.total_played) * 100 : 0,
+        games,
+        winpct: games ? ((r.manager2_wins ?? 0) / games) * 100 : 0,
         diff: Number(r.manager2_points_for ?? 0) - Number(r.manager1_points_for ?? 0),
       };
       map.get(String(r.manager1_id))?.push(aRow);
       map.get(String(r.manager2_id))?.push(bRow);
     }
     return map;
-  }, [d]);
+  }, [d, unplayedByPair]);
 
-  // index fixture history by manager-pair: key = "lo|hi" (sorted ids)
+  // index fixture history by manager-pair: key = "lo|hi" (sorted ids); exclude unplayed 0-0s
   const fixturesByPair = useMemo(() => {
     const m = new Map<string, any[]>();
     if (!d) return m;
     const nameToId = new Map<string, any>();
     for (const mgr of d.managers) nameToId.set(mgr.name, mgr.id);
     for (const f of d.fixtures) {
+      if (Number(f.home_score) === 0 && Number(f.away_score) === 0) continue;
       const ha = nameToId.get(f.home_manager);
       const aw = nameToId.get(f.away_manager);
       if (ha == null || aw == null) continue;
