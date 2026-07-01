@@ -111,6 +111,7 @@ function SeasonPage() {
 
   // Time at top / bottom of league (gw_table)
   const positionCounts = (() => {
+    if (completed.length === 0) return { topId: undefined, botId: undefined };
     const top: Record<string, number> = {};
     const bot: Record<string, number> = {};
     d.gwTable.forEach((row: any) => {
