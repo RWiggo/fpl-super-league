@@ -23,6 +23,9 @@ import ajaxOld from "@/assets/badges/4.svg";
 // Send Me Location used the red/navy crest through season 4;
 // the new navy crest (in managerBranding) is used from season 5 onward.
 import smlOld from "@/assets/badges/10.svg";
+// Padleys Piranhas used the old crest through season 4;
+// the new red piranha crest (in managerBranding) is used from season 5 onward.
+import piranhasOld from "@/assets/badges/5.svg";
 
 type Override = { badge?: string; teamName?: string };
 
@@ -46,6 +49,9 @@ const OVERRIDES: Record<string, Override> = {
   "10|2": { badge: smlOld },
   "10|3": { badge: smlOld },
   "10|4": { badge: smlOld },
+  "5|2": { badge: piranhasOld },
+  "5|3": { badge: piranhasOld },
+  "5|4": { badge: piranhasOld },
 };
 
 /** Badge for a manager in a given season. Falls back to the latest badge. */
