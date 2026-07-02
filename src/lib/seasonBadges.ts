@@ -49,6 +49,9 @@ const OVERRIDES: Record<string, Override> = {
   "10|2": { badge: smlOld },
   "10|3": { badge: smlOld },
   "10|4": { badge: smlOld },
+  "5|2": { badge: piranhasOld },
+  "5|3": { badge: piranhasOld },
+  "5|4": { badge: piranhasOld },
 };
 
 /** Badge for a manager in a given season. Falls back to the latest badge. */
