@@ -17,6 +17,10 @@ import s1_8 from "@/assets/badges/season1/8.png";
 import s2_4 from "@/assets/badges/season2/4.png";
 import s2_8 from "@/assets/badges/season2/8.png";
 
+// ALS Ajax used the older Irish-green crest for seasons 3 and 4;
+// the new dark-green crest (in managerBranding) is used from season 5 onward.
+import ajaxOld from "@/assets/badges/4.svg";
+
 type Override = { badge?: string; teamName?: string };
 
 // Local bundled fallbacks (used only if the Supabase asset cache misses).
@@ -30,6 +34,8 @@ const OVERRIDES: Record<string, Override> = {
   "7|1": { badge: s1_7, teamName: "Ryan's Lions" },
   "8|1": { badge: s1_8, teamName: "Adam All Stars" },
   "4|2": { badge: s2_4 },
+  "4|3": { badge: ajaxOld },
+  "4|4": { badge: ajaxOld },
   "8|2": { badge: s2_8 },
   "6|2": { teamName: "Jeffrey Schlupp the Bum FC" },
   "9|3": { teamName: "Lallana Rhoades FC" },
