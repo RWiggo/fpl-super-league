@@ -3,7 +3,7 @@
 import b1 from "@/assets/badges/1.svg";
 import b2 from "@/assets/badges/2.svg";
 import b3 from "@/assets/badges/3.svg";
-import b4 from "@/assets/badges/4.svg";
+import b4 from "@/assets/badges/4.png";
 import b5 from "@/assets/badges/5.svg";
 import b6 from "@/assets/badges/6.svg";
 import b7 from "@/assets/badges/7.svg";
@@ -20,7 +20,7 @@ export const MANAGER_BRANDING: Record<string, Branding> = {
   "1":  { badge: b1,  primary: "#0a5c2e" },                              // El Changusto - darker green
   "2":  { badge: b2,  primary: "#b5b6d4", primaryFg: "#0a0a0a" },        // Charleston Athletic
   "3":  { badge: b3,  primary: "#01f9c9", primaryFg: "#0a0a0a" },        // Wiggo Wanderers
-  "4":  { badge: b4,  primary: "#169b62" },                              // ALS Ajax - Irish green
+  "4":  { badge: b4,  primary: "#16331A" },                              // ALS Ajax - Deep forest green
   "5":  { badge: b5,  primary: "#8a0d10" },                              // Padleys Piranhas - Deep Red
   "6":  { badge: b6,  primary: "#964e27" },                              // Fill Her Wycombe
   "7":  { badge: b7,  primary: "#7a1f3d" },                              // Raybould Eagles - Claret
