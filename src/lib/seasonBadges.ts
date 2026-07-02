@@ -20,6 +20,9 @@ import s2_8 from "@/assets/badges/season2/8.png";
 // ALS Ajax used the older Irish-green crest for seasons 3 and 4;
 // the new dark-green crest (in managerBranding) is used from season 5 onward.
 import ajaxOld from "@/assets/badges/4.svg";
+// Send Me Location used the red/navy crest through season 4;
+// the new navy crest (in managerBranding) is used from season 5 onward.
+import smlOld from "@/assets/badges/10.svg";
 
 type Override = { badge?: string; teamName?: string };
 
@@ -40,6 +43,9 @@ const OVERRIDES: Record<string, Override> = {
   "6|2": { teamName: "Jeffrey Schlupp the Bum FC" },
   "9|3": { teamName: "Lallana Rhoades FC" },
   "9|2": { teamName: "Lallana Rhoades FC" },
+  "10|2": { badge: smlOld },
+  "10|3": { badge: smlOld },
+  "10|4": { badge: smlOld },
 };
 
 /** Badge for a manager in a given season. Falls back to the latest badge. */
