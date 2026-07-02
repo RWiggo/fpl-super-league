@@ -12,6 +12,7 @@ export const MANAGER_NICKNAMES: Record<string, string> = {
   "10": "The Brawlers",        // Send Me Location
   "11": "The Thrushes",        // Not Too Xabi FC
   "12": "The Averages",        // Average Team
+  "13": "The Gunners",         // SW8 Gunners
 };
 
 export function getNickname(managerId: string | number): string | null {

@@ -12,6 +12,7 @@ export const CURRENT_TEAM_NAMES: Record<string, string> = {
   "10": "Send Me Location",
   "11": "Not Too Xabi FC",
   "12": "Average Team",
+  "13": "SW8 Gunners",
 };
 
 export function currentTeamName(
