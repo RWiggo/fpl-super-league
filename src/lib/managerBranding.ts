@@ -12,6 +12,7 @@ import b9 from "@/assets/badges/9.svg";
 import b10 from "@/assets/badges/10.svg";
 import b11 from "@/assets/badges/11.svg";
 import b12 from "@/assets/badges/12.svg";
+import b13 from "@/assets/badges/13.png";
 
 export type Branding = { badge: string; primary: string; primaryFg?: string };
 
@@ -29,6 +30,7 @@ export const MANAGER_BRANDING: Record<string, Branding> = {
   "10": { badge: b10, primary: "#e4181c" },                              // Send Me Location
   "11": { badge: b11, primary: "#3a6fff" },                              // Not Too Xabi FC - vivid royal blue (distinct from site bg)
   "12": { badge: b12, primary: "#f5f5f5", primaryFg: "#0a0a0a" },        // Average Team - White
+  "13": { badge: b13, primary: "#6E2320" },                              // SW8 Gunners - Deep claret
 };
 
 export function getBranding(managerId: string | number): Branding | null {
