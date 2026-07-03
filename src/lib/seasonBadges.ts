@@ -32,6 +32,9 @@ import charlestonOld from "@/assets/badges/2.svg";
 // Raybould Eagles used the old crest through season 4;
 // the new crest (in managerBranding) is used from season 5 onward.
 import raybouldOld from "@/assets/badges/7.svg";
+// El Changusto used the old crest through season 4;
+// the new crest (in managerBranding) is used from season 5 onward.
+import changustoOld from "@/assets/badges/1.svg";
 
 type Override = { badge?: string; teamName?: string };
 
@@ -64,6 +67,9 @@ const OVERRIDES: Record<string, Override> = {
   "7|2": { badge: raybouldOld },
   "7|3": { badge: raybouldOld },
   "7|4": { badge: raybouldOld },
+  "1|2": { badge: changustoOld },
+  "1|3": { badge: changustoOld },
+  "1|4": { badge: changustoOld },
 };
 
 /** Badge for a manager in a given season. Falls back to the latest badge. */
