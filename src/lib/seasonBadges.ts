@@ -26,6 +26,9 @@ import smlOld from "@/assets/badges/10.svg";
 // Padleys Piranhas used the old crest through season 4;
 // the new red piranha crest (in managerBranding) is used from season 5 onward.
 import piranhasOld from "@/assets/badges/5.svg";
+// Charleston Athletic used the old crest through season 4;
+// the new purple raven crest (in managerBranding) is used from season 5 onward.
+import charlestonOld from "@/assets/badges/2.svg";
 
 type Override = { badge?: string; teamName?: string };
 
@@ -52,6 +55,9 @@ const OVERRIDES: Record<string, Override> = {
   "5|2": { badge: piranhasOld },
   "5|3": { badge: piranhasOld },
   "5|4": { badge: piranhasOld },
+  "2|2": { badge: charlestonOld },
+  "2|3": { badge: charlestonOld },
+  "2|4": { badge: charlestonOld },
 };
 
 /** Badge for a manager in a given season. Falls back to the latest badge. */

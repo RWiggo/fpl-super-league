@@ -1,7 +1,7 @@
 // Manager-specific branding: imported badge SVGs + primary brand color.
 // Primary color is applied to the team page hero accent (overrides --gold locally).
 import b1 from "@/assets/badges/1.svg";
-import b2 from "@/assets/badges/2.svg";
+import b2 from "@/assets/badges/2.png";
 import b3 from "@/assets/badges/3.svg";
 import b4 from "@/assets/badges/4.png";
 import b5 from "@/assets/badges/5.png";
@@ -19,7 +19,7 @@ export type Branding = { badge: string; primary: string; primaryFg?: string };
 // Keys are manager IDs (as strings, since route params are strings).
 export const MANAGER_BRANDING: Record<string, Branding> = {
   "1":  { badge: b1,  primary: "#0a5c2e" },                              // El Changusto - darker green
-  "2":  { badge: b2,  primary: "#b5b6d4", primaryFg: "#0a0a0a" },        // Charleston Athletic
+  "2":  { badge: b2,  primary: "#4A3A73" },                              // Charleston Athletic
   "3":  { badge: b3,  primary: "#01f9c9", primaryFg: "#0a0a0a" },        // Wiggo Wanderers
   "4":  { badge: b4,  primary: "#16331A" },                              // ALS Ajax - Deep forest green
   "5":  { badge: b5,  primary: "#A5121A" },                              // Padleys Piranhas - Deep Red
