@@ -32,6 +32,9 @@ import charlestonOld from "@/assets/badges/2.svg";
 // Raybould Eagles used the old crest through season 4;
 // the new crest (in managerBranding) is used from season 5 onward.
 import raybouldOld from "@/assets/badges/7.svg";
+// El Changusto used the old crest through season 4;
+// the new crest (in managerBranding) is used from season 5 onward.
+import changustoOld from "@/assets/badges/1.svg";
 
 type Override = { badge?: string; teamName?: string };
 
