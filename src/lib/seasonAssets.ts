@@ -48,11 +48,13 @@ export function ensureSeasonAssets() {
 export function getDbSeasonBadge(
   managerId: string | number | null | undefined,
   seasonId: string | number | null | undefined,
+  opts?: { exact?: boolean },
 ): string | null {
   if (managerId == null) return null;
   if (seasonId != null) {
     const direct = badgeMap.get(`${managerId}|${seasonId}`);
     if (direct) return direct;
+    if (opts?.exact) return null;
   }
   const latest = latestBadgeSeason.get(String(managerId));
   if (latest) return badgeMap.get(`${managerId}|${latest}`) ?? null;

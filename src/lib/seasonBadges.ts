@@ -78,7 +78,10 @@ export function getSeasonBadge(
   seasonId: string | number | null | undefined,
 ): string | null {
   if (managerId == null) return null;
-  const db = getDbSeasonBadge(managerId, seasonId);
+  // When a season is provided, only trust the DB for an exact match.
+  // Otherwise a manager whose newest DB row is (say) season 4 would keep
+  // returning the old crest for season 5+, masking refreshed branding.
+  const db = getDbSeasonBadge(managerId, seasonId, { exact: seasonId != null });
   if (db) return db;
   const key = `${managerId}|${seasonId}`;
   const override = OVERRIDES[key]?.badge;
