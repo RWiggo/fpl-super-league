@@ -7,7 +7,7 @@ import b4 from "@/assets/badges/4.png";
 import b5 from "@/assets/badges/5.png";
 import b6 from "@/assets/badges/6.svg";
 import b7 from "@/assets/badges/7.png";
-import b8 from "@/assets/badges/8.svg";
+import b8 from "@/assets/badges/8.png";
 import b9 from "@/assets/badges/9.svg";
 import b10 from "@/assets/badges/10.png";
 import b11 from "@/assets/badges/11.svg";
@@ -25,7 +25,7 @@ export const MANAGER_BRANDING: Record<string, Branding> = {
   "5":  { badge: b5,  primary: "#A5121A" },                              // Padleys Piranhas - Deep Red
   "6":  { badge: b6,  primary: "#964e27" },                              // Fill Her Wycombe
   "7":  { badge: b7,  primary: "#6F1D3A" },                              // Raybould Eagles - Claret
-  "8":  { badge: b8,  primary: "#f8cf2c", primaryFg: "#0a0a0a" },        // Adam All Stars - Yellow
+  "8":  { badge: b8,  primary: "#E5B91F", primaryFg: "#0a0a0a" },        // Adam All Stars - Yellow
   "9":  { badge: b9,  primary: "#ff7a00" },                              // Jake Toyer - Orange
   "10": { badge: b10, primary: "#0E2A63" },                              // Send Me Location - Navy
   "11": { badge: b11, primary: "#3a6fff" },                              // Not Too Xabi FC - vivid royal blue (distinct from site bg)
