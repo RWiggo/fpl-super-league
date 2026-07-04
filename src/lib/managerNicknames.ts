@@ -7,7 +7,7 @@ export const MANAGER_NICKNAMES: Record<string, string> = {
   "5": "The Piranhas",         // Padleys Piranhas
   "6": "The Cums",             // Fill Her Wycombe
   "7": "The Eagles",           // Raybould Eagles
-  "8": "The Rhinos",           // Adam All Stars
+  "8": "The Polar Bears",      // Adam All Stars
   "9": "The Hatters",          // Lallana Rhoades
   "10": "The Brawlers",        // Send Me Location
   "11": "The Thrushes",        // Not Too Xabi FC
