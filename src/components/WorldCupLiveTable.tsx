@@ -15,15 +15,16 @@ export function WorldCupLiveTable({ compact = false }: { compact?: boolean }) {
       // reports every drafted squad member as "used" even when no scores exist.
       const [squadsRes, scoresRes] = await Promise.all([
         supabase.from("wc_squads").select("manager_id, player_id"),
-        supabase.from("wc_player_scores").select("player_id, fpl_points"),
+        supabase.from("wc_player_scores").select("manager_id, player_id, fpl_points"),
       ]);
       const playerToMgr = new Map<string, number>();
       for (const s of (squadsRes.data ?? []) as Array<{ manager_id: number; player_id: string }>) {
         playerToMgr.set(s.player_id, s.manager_id);
       }
       const pointsByMgr: Record<number, { points: number; played: number }> = {};
-      for (const s of (scoresRes.data ?? []) as Array<{ player_id: string; fpl_points: number | null }>) {
-        const mgr = playerToMgr.get(s.player_id);
+      for (const s of (scoresRes.data ?? []) as Array<{ manager_id: number | null; player_id: string; fpl_points: number | null }>) {
+        // Mirror the view fix: prefer the score row's manager_id, fall back to the squad mapping.
+        const mgr = s.manager_id ?? playerToMgr.get(s.player_id);
         if (mgr == null) continue;
         const current = pointsByMgr[mgr] ?? { points: 0, played: 0 };
         current.points += Number(s.fpl_points ?? 0);
