@@ -38,6 +38,9 @@ import changustoOld from "@/assets/badges/1.svg";
 // Adam All Stars used the old crest through season 4;
 // the new polar bear crest (in managerBranding) is used from season 5 onward.
 import adamOld from "@/assets/badges/8.svg";
+// Not Too Xabi FC used the old crest through season 4;
+// the new crest (in managerBranding) is used from season 5 onward.
+import xabiOld from "@/assets/badges/11.svg";
 
 type Override = { badge?: string; teamName?: string };
 
@@ -75,6 +78,10 @@ const OVERRIDES: Record<string, Override> = {
   "1|4": { badge: changustoOld },
   "8|3": { badge: adamOld },
   "8|4": { badge: adamOld },
+  "11|1": { badge: xabiOld },
+  "11|2": { badge: xabiOld },
+  "11|3": { badge: xabiOld },
+  "11|4": { badge: xabiOld },
 };
 
 /** Badge for a manager in a given season. Falls back to the latest badge. */

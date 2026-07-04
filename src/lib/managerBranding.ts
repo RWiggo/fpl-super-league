@@ -10,7 +10,7 @@ import b7 from "@/assets/badges/7.png";
 import b8 from "@/assets/badges/8.png";
 import b9 from "@/assets/badges/9.svg";
 import b10 from "@/assets/badges/10.png";
-import b11 from "@/assets/badges/11.svg";
+import b11 from "@/assets/badges/11.png";
 import b12 from "@/assets/badges/12.svg";
 import b13 from "@/assets/badges/13.png";
 
@@ -28,7 +28,7 @@ export const MANAGER_BRANDING: Record<string, Branding> = {
   "8":  { badge: b8,  primary: "#E5B91F", primaryFg: "#0a0a0a" },        // Adam All Stars - Yellow
   "9":  { badge: b9,  primary: "#ff7a00" },                              // Jake Toyer - Orange
   "10": { badge: b10, primary: "#0E2A63" },                              // Send Me Location - Navy
-  "11": { badge: b11, primary: "#3a6fff" },                              // Not Too Xabi FC - vivid royal blue (distinct from site bg)
+  "11": { badge: b11, primary: "#0F2D63" },                              // Not Too Xabi FC - navy
   "12": { badge: b12, primary: "#f5f5f5", primaryFg: "#0a0a0a" },        // Average Team - White
   "13": { badge: b13, primary: "#6E2320" },                              // SW8 Gunners - Deep claret
 };
