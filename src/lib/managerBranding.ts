@@ -20,10 +20,10 @@ export type Branding = { badge: string; primary: string; primaryFg?: string };
 export const MANAGER_BRANDING: Record<string, Branding> = {
   "1":  { badge: b1,  primary: "#5EA36A" },                              // El Changusto - green
   "2":  { badge: b2,  primary: "#4A3A73" },                              // Charleston Athletic
-  "3":  { badge: b3,  primary: "#01f9c9", primaryFg: "#0a0a0a" },        // Wiggo Wanderers
+  "3":  { badge: b3,  primary: "#18D6D9", primaryFg: "#0a0a0a" },        // Wiggo Wanderers
   "4":  { badge: b4,  primary: "#16331A" },                              // ALS Ajax - Deep forest green
   "5":  { badge: b5,  primary: "#A5121A" },                              // Padleys Piranhas - Deep Red
-  "6":  { badge: b6,  primary: "#964e27" },                              // Fill Her Wycombe
+  "6":  { badge: b6,  primary: "#F34FA0" },                              // Fordys XI - Flamingo Pink
   "7":  { badge: b7,  primary: "#6F1D3A" },                              // Raybould Eagles - Claret
   "8":  { badge: b8,  primary: "#E5B91F", primaryFg: "#0a0a0a" },        // Adam All Stars - Yellow
   "9":  { badge: b9,  primary: "#ff7a00" },                              // Jake Toyer - Orange
