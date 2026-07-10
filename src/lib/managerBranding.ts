@@ -8,7 +8,7 @@ import b5 from "@/assets/badges/5.png";
 import b6 from "@/assets/badges/6.svg";
 import b7 from "@/assets/badges/7.png";
 import b8 from "@/assets/badges/8.png";
-import b9 from "@/assets/badges/9.svg";
+import b9 from "@/assets/badges/9.png";
 import b10 from "@/assets/badges/10.png";
 import b11 from "@/assets/badges/11.png";
 import b12 from "@/assets/badges/12.svg";
