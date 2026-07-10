@@ -5,7 +5,7 @@ export const CURRENT_TEAM_NAMES: Record<string, string> = {
   "3": "Wiggo Wanderers",
   "4": "ALS Ajax",
   "5": "Padleys Piranhas",
-  "6": "Fill Her Wycombe FC",
+  "6": "Fordys XI",
   "7": "The 2aybould Eagles",
   "8": "Adam All Stars",
   "9": "Power Reijnders FC",
