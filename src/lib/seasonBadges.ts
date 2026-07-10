@@ -41,6 +41,9 @@ import adamOld from "@/assets/badges/8.svg";
 // Not Too Xabi FC used the old crest through season 4;
 // the new crest (in managerBranding) is used from season 5 onward.
 import xabiOld from "@/assets/badges/11.svg";
+// Wiggo Wanderers used the old crest through season 4;
+// the new penguin crest (in managerBranding) is used from season 5 onward.
+import wiggoOld from "@/assets/badges/3.svg";
 
 type Override = { badge?: string; teamName?: string };
 
@@ -82,6 +85,9 @@ const OVERRIDES: Record<string, Override> = {
   "11|2": { badge: xabiOld },
   "11|3": { badge: xabiOld },
   "11|4": { badge: xabiOld },
+  "3|2": { badge: wiggoOld },
+  "3|3": { badge: wiggoOld },
+  "3|4": { badge: wiggoOld },
 };
 
 /** Badge for a manager in a given season. Falls back to the latest badge. */
