@@ -44,6 +44,9 @@ import xabiOld from "@/assets/badges/11.svg";
 // Wiggo Wanderers used the old crest through season 4;
 // the new penguin crest (in managerBranding) is used from season 5 onward.
 import wiggoOld from "@/assets/badges/3.svg";
+// Fordys XI (formerly Fill Her Wycombe) used the old crest through season 4;
+// the new Flamingos crest (in managerBranding) is used from season 5 onward.
+import fordysOld from "@/assets/badges/6.svg";
 
 type Override = { badge?: string; teamName?: string };
 
@@ -61,7 +64,9 @@ const OVERRIDES: Record<string, Override> = {
   "4|3": { badge: ajaxOld },
   "4|4": { badge: ajaxOld },
   "8|2": { badge: s2_8 },
-  "6|2": { teamName: "Jeffrey Schlupp the Bum FC" },
+  "6|2": { badge: fordysOld, teamName: "Jeffrey Schlupp the Bum FC" },
+  "6|3": { badge: fordysOld, teamName: "Fill Her Wycombe FC" },
+  "6|4": { badge: fordysOld, teamName: "Fill Her Wycombe FC" },
   "9|3": { teamName: "Lallana Rhoades FC" },
   "9|2": { teamName: "Lallana Rhoades FC" },
   "10|2": { badge: smlOld },
