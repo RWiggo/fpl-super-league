@@ -5,7 +5,7 @@ import b2 from "@/assets/badges/2.png";
 import b3 from "@/assets/badges/3.png";
 import b4 from "@/assets/badges/4.png";
 import b5 from "@/assets/badges/5.png";
-import b6 from "@/assets/badges/6.svg";
+import b6 from "@/assets/badges/6.png";
 import b7 from "@/assets/badges/7.png";
 import b8 from "@/assets/badges/8.png";
 import b9 from "@/assets/badges/9.png";

@@ -44,6 +44,9 @@ import xabiOld from "@/assets/badges/11.svg";
 // Wiggo Wanderers used the old crest through season 4;
 // the new penguin crest (in managerBranding) is used from season 5 onward.
 import wiggoOld from "@/assets/badges/3.svg";
+// Fordys XI (formerly Fill Her Wycombe) used the old crest through season 4;
+// the new Flamingos crest (in managerBranding) is used from season 5 onward.
+import fordysOld from "@/assets/badges/6.svg";
 
 type Override = { badge?: string; teamName?: string };
 
