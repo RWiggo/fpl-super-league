@@ -701,7 +701,7 @@ function Home() {
 }
 
 function TeamConstellation({ managers, logoSrc }: { managers: any[]; logoSrc: string }) {
-  const teams = managers.slice(0, 12);
+  const teams = managers.slice(0, 13);
   const n = teams.length;
   return (
     <div className="relative mx-auto mt-10 md:mt-14 w-[min(92vw,640px)] aspect-square">
