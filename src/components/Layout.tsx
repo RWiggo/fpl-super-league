@@ -148,7 +148,7 @@ export function Layout() {
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                     {teamsList.map((m) => {
                       const b = getBranding(m.id);
-                      const badge = getSeasonBadge(m.id, m.latestSeasonId) ?? b?.badge ?? null;
+                      const badge = b?.badge ?? getSeasonBadge(m.id, m.latestSeasonId) ?? null;
                       const tint = b?.primary ?? "#508cff";
                       return (
                         <Link
