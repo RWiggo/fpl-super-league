@@ -9,7 +9,7 @@ import { getSeasonBadge, getSeasonTeamName } from "@/lib/seasonBadges";
 import { getSeasonKit } from "@/lib/seasonKits";
 import { getNickname } from "@/lib/managerNicknames";
 import { currentTeamName } from "@/lib/currentTeamNames";
-import { WorldCupLiveTable } from "@/components/WorldCupLiveTable";
+import { WorldCupCompletedSummary } from "@/components/WorldCupCompletedSummary";
 
 
 function rankColor(pos: number, total: number) {
@@ -572,23 +572,23 @@ function Home() {
       )}
 
 
-      {/* WORLD CUP - LIVE TABLE (replaces the season table during the tournament) */}
+      {/* WORLD CUP - COMPLETED SUMMARY */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 border-t border-border/50">
         <div className="flex items-end justify-between flex-wrap gap-4 mb-8">
           <div>
             <div className="text-[11px] uppercase tracking-[0.3em] text-gold mb-2 flex items-center gap-2">
-              <span className="inline-block w-2 h-2 rounded-full bg-destructive animate-pulse" /> Live Now
+              <span className="inline-block w-2 h-2 rounded-full bg-gold" /> Completed
             </div>
             <h2 className="font-display text-3xl sm:text-4xl md:text-5xl">World Cup Special</h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-2 max-w-xl">
-              Standalone tournament - pure FPL points, no head to head. Records, squads, and team of the tournament on the World Cup page.
+              Standalone tournament - pure FPL points, no head to head. Full standings, squads, and team of the tournament on the World Cup page.
             </p>
           </div>
           <Link to="/world-cup" className="text-xs sm:text-sm uppercase tracking-wider text-gold hover:underline">
             Open World Cup →
           </Link>
         </div>
-        <WorldCupLiveTable />
+        <WorldCupCompletedSummary />
       </section>
 
 

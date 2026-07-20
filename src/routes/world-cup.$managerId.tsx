@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { WC_PARTICIPANT_FALLBACK, WC_THEME, type WcParticipant } from "@/lib/worldCup";
+import { COUNTRY_ISO } from "@/lib/flags";
 
 export const Route = createFileRoute("/world-cup/$managerId")({
   component: SquadPage,
@@ -31,15 +32,7 @@ type SquadPlayer = {
 const POS_MAP: Record<DbPos, UiPos> = { G: "GK", D: "DEF", M: "MID", F: "FWD" };
 const POS_ORDER: UiPos[] = ["GK", "DEF", "MID", "FWD"];
 
-// Lightweight country -> flag emoji map for player rows.
-const COUNTRY_FLAGS: Record<string, string> = {
-  Germany: "🇩🇪", Belgium: "🇧🇪", France: "🇫🇷", Spain: "🇪🇸", England: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-  Switzerland: "🇨🇭", Senegal: "🇸🇳", Brazil: "🇧🇷", Argentina: "🇦🇷", Morocco: "🇲🇦",
-  Portugal: "🇵🇹", Canada: "🇨🇦", Uruguay: "🇺🇾", Netherlands: "🇳🇱", Ecuador: "🇪🇨",
-  Paraguay: "🇵🇾", Austria: "🇦🇹", Turkey: "🇹🇷", USA: "🇺🇸", Norway: "🇳🇴",
-  Colombia: "🇨🇴", Scotland: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", Mexico: "🇲🇽", Japan: "🇯🇵", Egypt: "🇪🇬",
-  Sweden: "🇸🇪", Ghana: "🇬🇭", Croatia: "🇭🇷", "Ivory Coast": "🇨🇮",
-};
+
 
 function SquadPage() {
   const { managerId } = Route.useParams();
@@ -171,13 +164,22 @@ function SquadPage() {
                     }}
                   >
                     <div
-                      className="w-12 h-12 rounded-full flex items-center justify-center text-2xl shrink-0"
+                      className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden shrink-0"
                       style={{
                         background: `${participant.primary_color}33`,
                         border: `1px solid ${WC_THEME.gold}66`,
                       }}
                     >
-                      {COUNTRY_FLAGS[p.country] ?? "🏳️"}
+                      {COUNTRY_ISO[p.country] ? (
+                        <img
+                          src={`https://flagcdn.com/w80/${COUNTRY_ISO[p.country]}.png`}
+                          alt={p.country}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <span className="text-2xl" role="img" aria-label={p.country}>🏳️</span>
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="text-sm text-white font-semibold truncate">{p.player_name}</div>

@@ -1,42 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { supabase } from "@/lib/supabase";
 import { getBranding } from "@/lib/managerBranding";
-import { WC_PARTICIPANT_FALLBACK, WC_THEME, type WcParticipant } from "@/lib/worldCup";
+import { WC_THEME, fetchWorldCupStandings, type WcStandingsRow } from "@/lib/worldCup";
 
-type Row = WcParticipant & { played: number; points: number };
+type Row = WcStandingsRow;
 
 export function WorldCupLiveTable({ compact = false }: { compact?: boolean }) {
   const [rows, setRows] = useState<Row[] | null>(null);
 
   useEffect(() => {
     (async () => {
-      // Calculate from the scoring table directly; the standings view currently
-      // reports every drafted squad member as "used" even when no scores exist.
-      const [squadsRes, scoresRes] = await Promise.all([
-        supabase.from("wc_squads").select("manager_id, player_id"),
-        supabase.from("wc_player_scores").select("manager_id, player_id, fpl_points"),
-      ]);
-      const playerToMgr = new Map<string, number>();
-      for (const s of (squadsRes.data ?? []) as Array<{ manager_id: number; player_id: string }>) {
-        playerToMgr.set(s.player_id, s.manager_id);
-      }
-      const pointsByMgr: Record<number, { points: number; played: number }> = {};
-      for (const s of (scoresRes.data ?? []) as Array<{ manager_id: number | null; player_id: string; fpl_points: number | null }>) {
-        // Mirror the view fix: prefer the score row's manager_id, fall back to the squad mapping.
-        const mgr = s.manager_id ?? playerToMgr.get(s.player_id);
-        if (mgr == null) continue;
-        const current = pointsByMgr[mgr] ?? { points: 0, played: 0 };
-        current.points += Number(s.fpl_points ?? 0);
-        current.played += 1;
-        pointsByMgr[mgr] = current;
-      }
-      const merged = WC_PARTICIPANT_FALLBACK.map((p) => ({
-        ...p,
-        played: pointsByMgr[p.manager_id]?.played ?? 0,
-        points: pointsByMgr[p.manager_id]?.points ?? 0,
-      }));
-      merged.sort((a, b) => b.points - a.points || a.nation_name.localeCompare(b.nation_name));
+      const merged = await fetchWorldCupStandings();
       setRows(merged);
     })();
   }, []);
@@ -64,8 +38,7 @@ export function WorldCupLiveTable({ compact = false }: { compact?: boolean }) {
         style={{ background: `${WC_THEME.maroon}55`, borderBottom: `1px solid ${WC_THEME.gold}33` }}
       >
         <div className="flex items-center gap-2">
-          <span className="inline-block w-2 h-2 rounded-full animate-pulse" style={{ background: WC_THEME.gold }} />
-          <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: WC_THEME.gold }}>Live Standings</span>
+          <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: WC_THEME.gold }}>Final Standings</span>
         </div>
         <span className="text-[10px] uppercase tracking-[0.2em] text-white/60">FPL points</span>
       </div>
@@ -107,7 +80,13 @@ export function WorldCupLiveTable({ compact = false }: { compact?: boolean }) {
                 {pos}
               </div>
               <div className="flex items-center gap-3 min-w-0">
-                <span className="text-2xl leading-none">{r.flag_emoji}</span>
+                <img
+                  src={`https://flagcdn.com/w80/${r.iso}.png`}
+                  srcSet={`https://flagcdn.com/w160/${r.iso}.png 2x`}
+                  alt={r.nation_name}
+                  className="w-7 h-5 object-cover rounded-[2px] shrink-0"
+                  loading="lazy"
+                />
                 <span
                   className="inline-block w-1.5 h-7 rounded-sm shrink-0"
                   style={{ background: getBranding(String(r.manager_id))?.primary ?? r.primary_color }}
@@ -132,7 +111,12 @@ export function WorldCupLiveTable({ compact = false }: { compact?: boolean }) {
                 {pos}
               </div>
               <div className="flex items-center gap-2 min-w-0">
-                <span className="text-lg leading-none">{r.flag_emoji}</span>
+                <img
+                  src={`https://flagcdn.com/w40/${r.iso}.png`}
+                  alt={r.nation_name}
+                  className="w-5 h-3.5 object-cover rounded-[1px] shrink-0"
+                  loading="lazy"
+                />
                 <span className="inline-block w-1 h-5 rounded-sm shrink-0" style={{ background: getBranding(String(r.manager_id))?.primary ?? r.primary_color }} />
                 <div className="text-[11px] font-semibold truncate text-white">{r.nation_name}</div>
               </div>

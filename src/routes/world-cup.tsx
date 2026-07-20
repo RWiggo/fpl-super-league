@@ -1,10 +1,12 @@
 import { createFileRoute, Link, Outlet, useMatchRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Trophy, Crown, Shield, Swords, Star } from "lucide-react";
+import { Trophy, Crown, Shield, Swords, Star, ChevronRight, Info } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { WC_PARTICIPANT_FALLBACK, WC_THEME, type WcParticipant } from "@/lib/worldCup";
+import { WC_PARTICIPANT_FALLBACK, WC_THEME, fetchWorldCupStandings, type WcParticipant, type WcStandingsRow } from "@/lib/worldCup";
 import { WorldCupLiveTable } from "@/components/WorldCupLiveTable";
 import { getBranding } from "@/lib/managerBranding";
+import { FlagImg, COUNTRY_ISO } from "@/lib/flags";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/world-cup")({
   component: WorldCupRoute,
@@ -27,14 +29,6 @@ type LeaderRow = {
   rounds_played: number;
 };
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  Germany: "🇩🇪", Belgium: "🇧🇪", France: "🇫🇷", Spain: "🇪🇸", England: "🏴",
-  Switzerland: "🇨🇭", Senegal: "🇸🇳", Brazil: "🇧🇷", Argentina: "🇦🇷", Morocco: "🇲🇦",
-  Portugal: "🇵🇹", Canada: "🇨🇦", Uruguay: "🇺🇾", Netherlands: "🇳🇱", Ecuador: "🇪🇨",
-  Paraguay: "🇵🇾", Austria: "🇦🇹", Turkey: "🇹🇷", USA: "🇺🇸", Norway: "🇳🇴",
-  Colombia: "🇨🇴", Scotland: "🏴", Mexico: "🇲🇽", Japan: "🇯🇵", Egypt: "🇪🇬",
-  Sweden: "🇸🇪", Ghana: "🇬🇭", Croatia: "🇭🇷", "Ivory Coast": "🇨🇮",
-};
 
 function WorldCupRoute() {
   const matchRoute = useMatchRoute();
@@ -48,13 +42,15 @@ function WorldCupPage() {
   const [squadCounts, setSquadCounts] = useState<Record<number, number>>({});
   const [leaderboard, setLeaderboard] = useState<LeaderRow[]>([]);
   const [managerIdByName, setManagerIdByName] = useState<Record<string, number>>({});
+  const [standings, setStandings] = useState<WcStandingsRow[] | null>(null);
 
   useEffect(() => {
     (async () => {
-      const [squadsRes, lbRes, mgrRes] = await Promise.all([
+      const [squadsRes, lbRes, mgrRes, standingsRows] = await Promise.all([
         supabase.from("wc_squads").select("manager_id"),
         supabase.from("wc_player_leaderboard").select("*").order("total_points", { ascending: false }),
         supabase.from("managers").select("id, name"),
+        fetchWorldCupStandings(),
       ]);
       if (squadsRes.data) {
         const counts: Record<number, number> = {};
@@ -69,17 +65,22 @@ function WorldCupPage() {
         for (const m of mgrRes.data as Array<{ id: number; name: string }>) map[m.name] = m.id;
         setManagerIdByName(map);
       }
+      setStandings(standingsRows);
     })();
   }, []);
 
-  const topOverall = leaderboard.filter((p) => p.total_points > 0).slice(0, 5);
-  const topAttack = leaderboard
-    .filter((p) => (p.position === "F" || p.position === "M") && p.total_points > 0)
-    .slice(0, 5);
-  const topDefence = leaderboard
-    .filter((p) => (p.position === "G" || p.position === "D") && p.total_points > 0)
-    .slice(0, 5);
+  const scoredLeaderboard = leaderboard.filter((p) => p.total_points > 0);
+  const topOverall = scoredLeaderboard.slice(0, 5);
+  const topOverall20 = scoredLeaderboard.slice(0, 20);
+  const topAttack = scoredLeaderboard.filter((p) => p.position === "F" || p.position === "M").slice(0, 5);
+  const topAttack20 = scoredLeaderboard.filter((p) => p.position === "F" || p.position === "M").slice(0, 20);
+  const topDefence = scoredLeaderboard.filter((p) => p.position === "G" || p.position === "D").slice(0, 5);
+  const topDefence20 = scoredLeaderboard.filter((p) => p.position === "G" || p.position === "D").slice(0, 20);
   const tott = pickTeamOfTournament(leaderboard);
+
+  const champion = standings && standings.length > 0 ? standings[0] : null;
+  const woodenSpoon = standings && standings.length > 0 ? standings[standings.length - 1] : null;
+  const playerOfTournament = topOverall[0] ?? null;
 
   return (
     <div
@@ -129,21 +130,96 @@ function WorldCupPage() {
 
           <div className="flex justify-center flex-wrap gap-2 mt-8 max-w-2xl mx-auto">
             {participants.map((p) => (
-              <span
+              <img
                 key={p.manager_id}
+                src={`https://flagcdn.com/w40/${p.iso}.png`}
+                alt={p.nation_name}
                 title={p.nation_name}
-                className="text-2xl sm:text-3xl drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]"
-              >
-                {p.flag_emoji}
-              </span>
+                className="w-8 h-6 sm:w-10 sm:h-7 object-cover rounded-[2px] drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]"
+                loading="lazy"
+              />
             ))}
+          </div>
+
+          {/* Champion / Wooden Spoon / Player of the Tournament summary */}
+          <div className="max-w-3xl mx-auto mt-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {champion ? (
+                <Link
+                  to="/world-cup/$managerId"
+                  params={{ managerId: String(champion.manager_id) }}
+                  className="group flex items-center gap-3 rounded-lg p-3 sm:p-4 text-left transition hover:-translate-y-0.5"
+                  style={{ background: `${WC_THEME.maroonInk}cc`, border: `1px solid ${WC_THEME.gold}66` }}
+                >
+                  {getBranding(champion.manager_id)?.badge && (
+                    <img src={getBranding(champion.manager_id)!.badge!} alt="" className="w-11 h-11 sm:w-14 sm:h-14 object-contain shrink-0" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[9px] sm:text-[10px] uppercase tracking-widest" style={{ color: WC_THEME.gold }}>Champion</div>
+                    <div className="font-display text-lg sm:text-xl text-white leading-tight group-hover:underline truncate" style={{ color: WC_THEME.goldBright }}>{champion.nation_name}</div>
+                    <div className="text-[10px] sm:text-xs text-white/60 truncate">{Object.keys(managerIdByName).find((n) => managerIdByName[n] === champion.manager_id) ?? ""}</div>
+                  </div>
+                  <Trophy className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" style={{ color: WC_THEME.goldBright }} />
+                </Link>
+              ) : <div />}
+              {woodenSpoon ? (
+                <Link
+                  to="/world-cup/$managerId"
+                  params={{ managerId: String(woodenSpoon.manager_id) }}
+                  className="group flex items-center gap-3 rounded-lg p-3 sm:p-4 text-left transition hover:-translate-y-0.5"
+                  style={{ background: `${WC_THEME.maroonInk}cc`, border: `1px solid ${WC_THEME.gold}33` }}
+                >
+                  {getBranding(woodenSpoon.manager_id)?.badge && (
+                    <img src={getBranding(woodenSpoon.manager_id)!.badge!} alt="" className="w-11 h-11 sm:w-14 sm:h-14 object-contain opacity-80 shrink-0" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[9px] sm:text-[10px] uppercase tracking-widest text-white/50">Wooden Spoon</div>
+                    <div className="font-display text-lg sm:text-xl text-white/80 leading-tight group-hover:underline truncate">{woodenSpoon.nation_name}</div>
+                    <div className="text-[10px] sm:text-xs text-white/50 truncate">{Object.keys(managerIdByName).find((n) => managerIdByName[n] === woodenSpoon.manager_id) ?? ""}</div>
+                  </div>
+                  <span className="text-xl sm:text-2xl shrink-0" role="img" aria-label="wooden spoon">🥄</span>
+                </Link>
+              ) : <div />}
+            </div>
+
+            {playerOfTournament && (
+              <div
+                className="flex items-center gap-3 rounded-lg p-3 sm:p-4 mt-3"
+                style={{ background: `${WC_THEME.gold}12`, border: `1px solid ${WC_THEME.gold}66` }}
+              >
+                <div
+                  className="w-11 h-11 sm:w-14 sm:h-14 rounded-full flex items-center justify-center overflow-hidden shrink-0"
+                  style={{ border: `1px solid ${WC_THEME.gold}88` }}
+                >
+                  {COUNTRY_ISO[playerOfTournament.country] ? (
+                    <img
+                      src={`https://flagcdn.com/w80/${COUNTRY_ISO[playerOfTournament.country]}.png`}
+                      alt={playerOfTournament.country}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span className="text-2xl">🏳️</span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1 text-left">
+                  <div className="text-[9px] sm:text-[10px] uppercase tracking-widest" style={{ color: WC_THEME.gold }}>Player of the Tournament</div>
+                  <div className="font-display text-lg sm:text-xl text-white leading-tight truncate">{playerOfTournament.player_name}</div>
+                  <div className="text-[10px] sm:text-xs text-white/60 truncate">{playerOfTournament.country} · {playerOfTournament.manager_name}</div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="font-display text-2xl sm:text-3xl tabular-nums" style={{ color: WC_THEME.goldBright }}>{playerOfTournament.total_points}</div>
+                  <div className="text-[9px] uppercase tracking-widest text-white/50">pts</div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 space-y-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-24 space-y-20">
         <section>
-          <SectionTitle kicker="Standings" title="Live League Table" />
+          <SectionTitle kicker="Standings" title="Final Standings" />
           <WorldCupLiveTable />
         </section>
 
@@ -171,11 +247,13 @@ function WorldCupPage() {
                     }}
                   />
                   <div className="p-5 flex items-center gap-4">
-                    <div className="text-5xl drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">{p.flag_emoji}</div>
+                    <img
+                      src={`https://flagcdn.com/w80/${p.iso}.png`}
+                      alt={p.nation_name}
+                      className="w-14 h-10 object-cover rounded-[3px] drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)] shrink-0"
+                      loading="lazy"
+                    />
                     <div className="min-w-0 flex-1">
-                      <div className="text-[9px] uppercase tracking-[0.3em]" style={{ color: WC_THEME.gold }}>
-                        Group {p.group_name}
-                      </div>
                       <div className="font-display text-xl text-white truncate">{p.nation_name}</div>
                       <div className="text-[10px] uppercase tracking-wider text-white/55 mt-1">
                         {sqCount > 0 ? `${sqCount} player${sqCount === 1 ? "" : "s"} - tap for squad` : "Tap for squad"}
@@ -189,24 +267,27 @@ function WorldCupPage() {
         </section>
 
         <section>
-          <SectionTitle kicker="Player Leaderboard" title="Top FPL Scorers" />
+          <SectionTitle kicker="Player Leaderboard" title="Top Performers" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <LeaderboardCard
               icon={<Crown className="w-4 h-4" />}
               title="Overall Top 5"
               rows={topOverall}
+              fullRows={topOverall20}
               empty="Awaiting first round of points."
             />
             <LeaderboardCard
               icon={<Swords className="w-4 h-4" />}
               title="Top Attackers"
               rows={topAttack}
+              fullRows={topAttack20}
               empty="No attacking points yet."
             />
             <LeaderboardCard
               icon={<Shield className="w-4 h-4" />}
               title="Top Defence"
               rows={topDefence}
+              fullRows={topDefence20}
               empty="No defensive points yet."
             />
           </div>
@@ -221,8 +302,9 @@ function WorldCupPage() {
   );
 }
 
-type Xi = { gk: LeaderRow | null; def: LeaderRow[]; mid: LeaderRow[]; fwd: LeaderRow[]; total: number };
+type Xi = { gk: LeaderRow | null; def: LeaderRow[]; mid: LeaderRow[]; fwd: LeaderRow[]; total: number; subs: LeaderRow[] };
 
+// Legal formation: always 1 GK, 3-5 DEF, 2-5 MID, 1-4 FWD (11 starters total).
 function pickTeamOfTournament(rows: LeaderRow[]): Xi {
   const scored = rows.filter((r) => r.total_points > 0);
   const byPos = (pos: LeaderRow["position"]) =>
@@ -233,12 +315,12 @@ function pickTeamOfTournament(rows: LeaderRow[]): Xi {
   const fwds = byPos("F");
 
   const gk = gks[0] ?? null;
-  let best: Xi = { gk, def: [], mid: [], fwd: [], total: 0 };
+  let best: Xi = { gk, def: [], mid: [], fwd: [], total: 0, subs: [] };
   let bestSum = -1;
 
   for (let d = 3; d <= 5; d++) {
     for (let m = 2; m <= 5; m++) {
-      for (let f = 1; f <= 3; f++) {
+      for (let f = 1; f <= 4; f++) {
         if (d + m + f !== 10) continue;
         if (defs.length < d || mids.length < m || fwds.length < f) continue;
         const def = defs.slice(0, d);
@@ -251,11 +333,24 @@ function pickTeamOfTournament(rows: LeaderRow[]): Xi {
           fwd.reduce((a, b) => a + b.total_points, 0);
         if (sum > bestSum) {
           bestSum = sum;
-          best = { gk, def, mid, fwd, total: sum };
+          best = { gk, def, mid, fwd, total: sum, subs: [] };
         }
       }
     }
   }
+
+  // Bench: next-highest scorer per position not already in the starting XI (1 per position).
+  const starterNames = new Set<string>([
+    ...(best.gk ? [best.gk.player_name] : []),
+    ...best.def.map((p) => p.player_name),
+    ...best.mid.map((p) => p.player_name),
+    ...best.fwd.map((p) => p.player_name),
+  ]);
+  const nextUnused = (pool: LeaderRow[]) => pool.find((p) => !starterNames.has(p.player_name)) ?? null;
+  best.subs = [nextUnused(gks), nextUnused(defs), nextUnused(mids), nextUnused(fwds)].filter(
+    (p): p is LeaderRow => p != null
+  );
+
   return best;
 }
 
@@ -279,56 +374,79 @@ function TottPitch({ xi, managerIdByName }: { xi: Xi; managerIdByName: Record<st
   ];
 
   return (
-    <div
-      className="relative w-full aspect-[3/4] sm:aspect-[4/3] max-w-4xl mx-auto rounded-2xl overflow-hidden"
-      style={{ border: `1px solid ${WC_THEME.gold}55`, boxShadow: `0 30px 80px -30px ${WC_THEME.maroonInk}` }}
-    >
-      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 150" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="wc-pitch" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#0d3d1f" />
-            <stop offset="50%" stopColor="#0a2f17" />
-            <stop offset="100%" stopColor="#0d3d1f" />
-          </linearGradient>
-          <pattern id="wc-stripes" width="10" height="15" patternUnits="userSpaceOnUse">
-            <rect width="10" height="15" fill="url(#wc-pitch)" />
-            <rect width="10" height="7.5" fill="rgba(0,0,0,0.12)" />
-          </pattern>
-        </defs>
-        <rect width="100" height="150" fill="url(#wc-stripes)" />
-        <rect x="2" y="2" width="96" height="146" fill="none" stroke="white" strokeOpacity="0.45" strokeWidth="0.4" />
-        <line x1="2" y1="75" x2="98" y2="75" stroke="white" strokeOpacity="0.45" strokeWidth="0.4" />
-        <circle cx="50" cy="75" r="9" fill="none" stroke="white" strokeOpacity="0.45" strokeWidth="0.4" />
-        <rect x="25" y="2" width="50" height="18" fill="none" stroke="white" strokeOpacity="0.45" strokeWidth="0.4" />
-        <rect x="25" y="130" width="50" height="18" fill="none" stroke="white" strokeOpacity="0.45" strokeWidth="0.4" />
-      </svg>
-
+    <div>
       <div
-        className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.25em]"
-        style={{ background: `${WC_THEME.maroonInk}cc`, border: `1px solid ${WC_THEME.gold}66`, color: WC_THEME.goldBright }}
+        className="relative w-full aspect-[3/4] sm:aspect-[4/3] max-w-4xl mx-auto rounded-2xl overflow-hidden"
+        style={{ border: `1px solid ${WC_THEME.gold}55`, boxShadow: `0 30px 80px -30px ${WC_THEME.maroonInk}` }}
       >
-        <Star className="w-3 h-3" />
-        {xi.total} pts
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 150" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="wc-pitch" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="#0d3d1f" />
+              <stop offset="50%" stopColor="#0a2f17" />
+              <stop offset="100%" stopColor="#0d3d1f" />
+            </linearGradient>
+            <pattern id="wc-stripes" width="10" height="15" patternUnits="userSpaceOnUse">
+              <rect width="10" height="15" fill="url(#wc-pitch)" />
+              <rect width="10" height="7.5" fill="rgba(0,0,0,0.12)" />
+            </pattern>
+          </defs>
+          <rect width="100" height="150" fill="url(#wc-stripes)" />
+          <rect x="2" y="2" width="96" height="146" fill="none" stroke="white" strokeOpacity="0.45" strokeWidth="0.4" />
+          <line x1="2" y1="75" x2="98" y2="75" stroke="white" strokeOpacity="0.45" strokeWidth="0.4" />
+          <circle cx="50" cy="75" r="9" fill="none" stroke="white" strokeOpacity="0.45" strokeWidth="0.4" />
+          <rect x="25" y="2" width="50" height="18" fill="none" stroke="white" strokeOpacity="0.45" strokeWidth="0.4" />
+          <rect x="25" y="130" width="50" height="18" fill="none" stroke="white" strokeOpacity="0.45" strokeWidth="0.4" />
+        </svg>
+
+        <div
+          className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.25em]"
+          style={{ background: `${WC_THEME.maroonInk}cc`, border: `1px solid ${WC_THEME.gold}66`, color: WC_THEME.goldBright }}
+        >
+          <Star className="w-3 h-3" />
+          {xi.total} pts
+        </div>
+
+        <div className="absolute inset-0 flex flex-col justify-around p-2 sm:p-4">
+          {rows.map((row, i) => (
+            <div key={i} className="flex justify-around items-center gap-1 sm:gap-3 px-1">
+              {row.players.map((p, j) => {
+                const mgrId = managerIdByName[p.manager_name];
+                const badge = mgrId != null ? getBranding(mgrId)?.badge ?? null : null;
+                return <TottChip key={`${row.label}-${j}`} player={p} badge={badge} />;
+              })}
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="absolute inset-0 flex flex-col justify-around p-2 sm:p-4">
-        {rows.map((row, i) => (
-          <div key={i} className="flex justify-around items-center gap-1 sm:gap-3 px-1">
-            {row.players.map((p, j) => {
+      {xi.subs.length > 0 && (
+        <div className="max-w-4xl mx-auto mt-4">
+          <div
+            className="text-[10px] uppercase tracking-[0.3em] mb-2 text-center"
+            style={{ color: WC_THEME.gold }}
+          >
+            Substitutes
+          </div>
+          <div
+            className="flex justify-center flex-wrap gap-3 sm:gap-4 rounded-xl px-3 py-4"
+            style={{ background: `${WC_THEME.maroonInk}cc`, border: `1px dashed ${WC_THEME.gold}44` }}
+          >
+            {xi.subs.map((p, i) => {
               const mgrId = managerIdByName[p.manager_name];
               const badge = mgrId != null ? getBranding(mgrId)?.badge ?? null : null;
-              return <TottChip key={`${row.label}-${j}`} player={p} badge={badge} />;
+              return <TottChip key={`sub-${i}`} player={p} badge={badge} muted />;
             })}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function TottChip({ player, badge }: { player: LeaderRow; badge: string | null }) {
+function TottChip({ player, badge, muted }: { player: LeaderRow; badge: string | null; muted?: boolean }) {
   return (
-    <div className="flex flex-col items-center w-[64px] sm:w-[110px]">
+    <div className={`flex flex-col items-center w-[64px] sm:w-[110px] ${muted ? "opacity-75" : ""}`}>
       <div
         className="w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center mb-1 drop-shadow-[0_3px_8px_rgba(0,0,0,0.6)] overflow-hidden"
         style={{ background: `${WC_THEME.maroonInk}cc`, border: `1px solid ${WC_THEME.gold}88` }}
@@ -336,7 +454,7 @@ function TottChip({ player, badge }: { player: LeaderRow; badge: string | null }
         {badge ? (
           <img src={badge} alt={player.manager_name} className="w-full h-full object-contain p-1" />
         ) : (
-          <span className="text-2xl sm:text-3xl">{COUNTRY_FLAGS[player.country] ?? "🏳️"}</span>
+          <FlagImg country={player.country} className="w-full h-full object-cover" />
         )}
       </div>
       <div
@@ -369,18 +487,47 @@ function SectionTitle({ kicker, title }: { kicker: string; title: string }) {
   );
 }
 
+function LeaderRowItem({ r, i }: { r: LeaderRow; i: number }) {
+  const posLabel = (p: LeaderRow["position"]) => p === "G" ? "GK" : p === "D" ? "DEF" : p === "M" ? "MID" : "FWD";
+  return (
+    <li className="flex items-center justify-between px-4 py-3">
+      <div className="flex items-center gap-3 min-w-0">
+        <span
+          className="font-display text-sm w-5 text-center shrink-0"
+          style={{ color: i === 0 ? WC_THEME.goldBright : "rgba(255,255,255,0.5)" }}
+        >
+          {i + 1}
+        </span>
+        <FlagImg country={r.country} className="w-6 h-4 object-cover rounded-[2px] shrink-0" />
+        <div className="min-w-0">
+          <div className="text-sm text-white truncate">{r.player_name}</div>
+          <div className="text-[10px] uppercase tracking-wider text-white/45 truncate">
+            {posLabel(r.position)} · {r.country} · {r.manager_name}
+          </div>
+        </div>
+      </div>
+      <div className="text-right shrink-0">
+        <div className="font-display text-lg tabular-nums" style={{ color: WC_THEME.goldBright }}>
+          {r.total_points}
+        </div>
+        <div className="text-[9px] uppercase tracking-widest text-white/45">pts</div>
+      </div>
+    </li>
+  );
+}
+
 function LeaderboardCard({
-  icon, title, rows, empty,
+  icon, title, rows, fullRows, empty,
 }: {
   icon: React.ReactNode;
   title: string;
   rows: LeaderRow[];
+  fullRows: LeaderRow[];
   empty: string;
 }) {
-  const posLabel = (p: LeaderRow["position"]) => p === "G" ? "GK" : p === "D" ? "DEF" : p === "M" ? "MID" : "FWD";
-  return (
+  const cardInner = (
     <div
-      className="rounded-xl overflow-hidden"
+      className="rounded-xl overflow-hidden text-left w-full"
       style={{
         background: `linear-gradient(160deg, ${WC_THEME.maroonDeep}, ${WC_THEME.maroonInk})`,
         border: `1px solid ${WC_THEME.gold}44`,
@@ -397,35 +544,51 @@ function LeaderboardCard({
       {rows.length === 0 ? (
         <div className="p-6 text-sm text-white/55 text-center">{empty}</div>
       ) : (
-        <ul className="divide-y divide-white/5">
-          {rows.map((r, i) => (
-            <li key={`${r.player_name}-${i}`} className="flex items-center justify-between px-4 py-3">
-              <div className="flex items-center gap-3 min-w-0">
-                <span
-                  className="font-display text-sm w-5 text-center"
-                  style={{ color: i === 0 ? WC_THEME.goldBright : "rgba(255,255,255,0.5)" }}
-                >
-                  {i + 1}
-                </span>
-                <span className="text-lg leading-none">{COUNTRY_FLAGS[r.country] ?? "🏳️"}</span>
-                <div className="min-w-0">
-                  <div className="text-sm text-white truncate">{r.player_name}</div>
-                  <div className="text-[10px] uppercase tracking-wider text-white/45 truncate">
-                    {posLabel(r.position)} · {r.country} · {r.manager_name}
-                  </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="font-display text-lg tabular-nums" style={{ color: WC_THEME.goldBright }}>
-                  {r.total_points}
-                </div>
-                <div className="text-[9px] uppercase tracking-widest text-white/45">pts</div>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul className="divide-y divide-white/5">
+            {rows.map((r, i) => (
+              <LeaderRowItem key={`${r.player_name}-${i}`} r={r} i={i} />
+            ))}
+          </ul>
+          <div
+            className="px-4 py-2.5 flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.2em]"
+            style={{ background: `${WC_THEME.maroon}22`, color: `${WC_THEME.gold}cc`, borderTop: `1px solid ${WC_THEME.gold}22` }}
+          >
+            <Info className="w-3 h-3" />
+            <span>Tap for top 20</span>
+            <ChevronRight className="w-3 h-3" />
+          </div>
+        </>
       )}
     </div>
+  );
+
+  if (rows.length === 0) return cardInner;
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button className="text-left w-full focus:outline-none focus:ring-2 focus:ring-white/30 rounded-xl transition hover:-translate-y-0.5">
+          {cardInner}
+        </button>
+      </DialogTrigger>
+      <DialogContent
+        className="max-w-lg border-0 p-0 overflow-hidden"
+        style={{ background: `linear-gradient(160deg, ${WC_THEME.maroonDeep}, ${WC_THEME.maroonInk})` }}
+      >
+        <DialogHeader className="px-5 pt-5">
+          <DialogTitle className="font-display text-xl flex items-center gap-2" style={{ color: WC_THEME.goldBright }}>
+            {icon}
+            {title} · Top 20
+          </DialogTitle>
+        </DialogHeader>
+        <ul className="divide-y divide-white/5 max-h-[70vh] overflow-y-auto mt-2">
+          {fullRows.map((r, i) => (
+            <LeaderRowItem key={`${r.player_name}-${i}`} r={r} i={i} />
+          ))}
+        </ul>
+      </DialogContent>
+    </Dialog>
   );
 }
 
