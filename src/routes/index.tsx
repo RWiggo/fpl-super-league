@@ -11,6 +11,7 @@ import { getNickname } from "@/lib/managerNicknames";
 import { currentTeamName } from "@/lib/currentTeamNames";
 import { WorldCupCompletedSummary } from "@/components/WorldCupCompletedSummary";
 import { WC_THEME } from "@/lib/worldCup";
+import { SeasonFiveDraftSection } from "@/components/SeasonFiveDraftSection";
 
 
 function rankColor(pos: number, total: number) {
@@ -572,6 +573,8 @@ function Home() {
         </section>
       )}
 
+
+      <SeasonFiveDraftSection />
 
       {/* WORLD CUP - COMPLETED SUMMARY */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
