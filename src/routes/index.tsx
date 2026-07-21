@@ -476,6 +476,8 @@ function Home() {
         </div>
       </section>
 
+      <SeasonFiveDraftSection />
+
       {/* HALL OF CHAMPIONS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-10">
@@ -573,8 +575,6 @@ function Home() {
         </section>
       )}
 
-
-      <SeasonFiveDraftSection />
 
       {/* WORLD CUP - COMPLETED SUMMARY */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
