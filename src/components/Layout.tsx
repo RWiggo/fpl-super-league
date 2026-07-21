@@ -1,5 +1,5 @@
 import { Link, Outlet } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Fragment } from "react";
 import { supabase, type Manager, type Season } from "@/lib/supabase";
 import { Menu, X, ChevronDown } from "lucide-react";
 import logo from "@/assets/fpl-super-league-logo.png";
@@ -372,13 +372,17 @@ export function Layout() {
             <div>
               <div className="text-[10px] uppercase tracking-[0.3em] text-gold mb-3">Seasons</div>
               <ul className="space-y-2 text-xs">
-                <li>
-                  <Link to="/world-cup" className="hover:text-foreground inline-flex items-center gap-1.5" style={{ color: "#D4AF37" }}>
-                    <span aria-hidden>🏆</span> World Cup
-                  </Link>
-                </li>
-                {seasons.map((s) => (
-                  <li key={s.id}><Link to="/season/$seasonId" params={{ seasonId: s.id }} className="hover:text-foreground">{s.name}</Link></li>
+                {seasons.map((s, i) => (
+                  <Fragment key={s.id}>
+                    {i === seasons.length - 1 && (
+                      <li key="world-cup">
+                        <Link to="/world-cup" className="hover:text-foreground inline-flex items-center gap-1.5" style={{ color: "#D4AF37" }}>
+                          <span aria-hidden>🏆</span> World Cup
+                        </Link>
+                      </li>
+                    )}
+                    <li><Link to="/season/$seasonId" params={{ seasonId: s.id }} className="hover:text-foreground">{s.name}</Link></li>
+                  </Fragment>
                 ))}
               </ul>
             </div>
