@@ -10,6 +10,7 @@ import { getSeasonKit } from "@/lib/seasonKits";
 import { getNickname } from "@/lib/managerNicknames";
 import { currentTeamName } from "@/lib/currentTeamNames";
 import { WorldCupCompletedSummary } from "@/components/WorldCupCompletedSummary";
+import { WC_THEME } from "@/lib/worldCup";
 
 
 function rankColor(pos: number, total: number) {
@@ -573,22 +574,30 @@ function Home() {
 
 
       {/* WORLD CUP - COMPLETED SUMMARY */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 border-t border-border/50">
-        <div className="flex items-end justify-between flex-wrap gap-4 mb-5">
-          <div>
-            <div className="text-[11px] uppercase tracking-[0.3em] text-gold mb-2 flex items-center gap-2">
-              <span className="inline-block w-2 h-2 rounded-full bg-gold" /> Completed
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+        <div
+          className="rounded-2xl p-5 sm:p-7"
+          style={{
+            background: `radial-gradient(ellipse at top, ${WC_THEME.maroonDeep} 0%, ${WC_THEME.maroonInk} 100%)`,
+            border: `1px solid ${WC_THEME.gold}33`,
+          }}
+        >
+          <div className="flex items-end justify-between flex-wrap gap-4 mb-5">
+            <div>
+              <div className="text-[11px] uppercase tracking-[0.3em] mb-2 flex items-center gap-2" style={{ color: WC_THEME.gold }}>
+                <span className="inline-block w-2 h-2 rounded-full" style={{ background: WC_THEME.gold }} /> Completed
+              </div>
+              <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-white">World Cup Special</h2>
+              <p className="text-xs text-white/60 mt-1.5 max-w-xl">
+                Pure FPL points, no head to head - full standings and squads on the World Cup page.
+              </p>
             </div>
-            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl">World Cup Special</h2>
-            <p className="text-xs text-muted-foreground mt-1.5 max-w-xl">
-              Pure FPL points, no head to head - full standings and squads on the World Cup page.
-            </p>
+            <Link to="/world-cup" className="text-xs sm:text-sm uppercase tracking-wider hover:underline" style={{ color: WC_THEME.goldBright }}>
+              Open World Cup →
+            </Link>
           </div>
-          <Link to="/world-cup" className="text-xs sm:text-sm uppercase tracking-wider text-gold hover:underline">
-            Open World Cup →
-          </Link>
+          <WorldCupCompletedSummary />
         </div>
-        <WorldCupCompletedSummary />
       </section>
 
 
