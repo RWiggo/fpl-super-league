@@ -573,15 +573,15 @@ function Home() {
 
 
       {/* WORLD CUP - COMPLETED SUMMARY */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 border-t border-border/50">
-        <div className="flex items-end justify-between flex-wrap gap-4 mb-8">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 border-t border-border/50">
+        <div className="flex items-end justify-between flex-wrap gap-4 mb-5">
           <div>
             <div className="text-[11px] uppercase tracking-[0.3em] text-gold mb-2 flex items-center gap-2">
               <span className="inline-block w-2 h-2 rounded-full bg-gold" /> Completed
             </div>
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl">World Cup Special</h2>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-2 max-w-xl">
-              Standalone tournament - pure FPL points, no head to head. Full standings, squads, and team of the tournament on the World Cup page.
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl">World Cup Special</h2>
+            <p className="text-xs text-muted-foreground mt-1.5 max-w-xl">
+              Pure FPL points, no head to head - full standings and squads on the World Cup page.
             </p>
           </div>
           <Link to="/world-cup" className="text-xs sm:text-sm uppercase tracking-wider text-gold hover:underline">
