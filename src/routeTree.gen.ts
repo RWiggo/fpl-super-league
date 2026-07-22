@@ -17,6 +17,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorldCupManagerIdRouteImport } from './routes/world-cup.$managerId'
 import { Route as TeamManagerIdRouteImport } from './routes/team.$managerId'
 import { Route as SeasonSeasonIdRouteImport } from './routes/season.$seasonId'
+import { Route as RulesPrizePoolRouteImport } from './routes/rules.prize-pool'
 
 const WorldCupRoute = WorldCupRouteImport.update({
   id: '/world-cup',
@@ -58,6 +59,11 @@ const SeasonSeasonIdRoute = SeasonSeasonIdRouteImport.update({
   path: '/season/$seasonId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RulesPrizePoolRoute = RulesPrizePoolRouteImport.update({
+  id: '/rules/prize-pool',
+  path: '/rules/prize-pool',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/records': typeof RecordsRoute
   '/table': typeof TableRoute
   '/world-cup': typeof WorldCupRouteWithChildren
+  '/rules/prize-pool': typeof RulesPrizePoolRoute
   '/season/$seasonId': typeof SeasonSeasonIdRoute
   '/team/$managerId': typeof TeamManagerIdRoute
   '/world-cup/$managerId': typeof WorldCupManagerIdRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/records': typeof RecordsRoute
   '/table': typeof TableRoute
   '/world-cup': typeof WorldCupRouteWithChildren
+  '/rules/prize-pool': typeof RulesPrizePoolRoute
   '/season/$seasonId': typeof SeasonSeasonIdRoute
   '/team/$managerId': typeof TeamManagerIdRoute
   '/world-cup/$managerId': typeof WorldCupManagerIdRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/records': typeof RecordsRoute
   '/table': typeof TableRoute
   '/world-cup': typeof WorldCupRouteWithChildren
+  '/rules/prize-pool': typeof RulesPrizePoolRoute
   '/season/$seasonId': typeof SeasonSeasonIdRoute
   '/team/$managerId': typeof TeamManagerIdRoute
   '/world-cup/$managerId': typeof WorldCupManagerIdRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/records'
     | '/table'
     | '/world-cup'
+    | '/rules/prize-pool'
     | '/season/$seasonId'
     | '/team/$managerId'
     | '/world-cup/$managerId'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/records'
     | '/table'
     | '/world-cup'
+    | '/rules/prize-pool'
     | '/season/$seasonId'
     | '/team/$managerId'
     | '/world-cup/$managerId'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/records'
     | '/table'
     | '/world-cup'
+    | '/rules/prize-pool'
     | '/season/$seasonId'
     | '/team/$managerId'
     | '/world-cup/$managerId'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   RecordsRoute: typeof RecordsRoute
   TableRoute: typeof TableRoute
   WorldCupRoute: typeof WorldCupRouteWithChildren
+  RulesPrizePoolRoute: typeof RulesPrizePoolRoute
   SeasonSeasonIdRoute: typeof SeasonSeasonIdRoute
   TeamManagerIdRoute: typeof TeamManagerIdRoute
 }
@@ -191,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SeasonSeasonIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rules/prize-pool': {
+      id: '/rules/prize-pool'
+      path: '/rules/prize-pool'
+      fullPath: '/rules/prize-pool'
+      preLoaderRoute: typeof RulesPrizePoolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -212,9 +232,19 @@ const rootRouteChildren: RootRouteChildren = {
   RecordsRoute: RecordsRoute,
   TableRoute: TableRoute,
   WorldCupRoute: WorldCupRouteWithChildren,
+  RulesPrizePoolRoute: RulesPrizePoolRoute,
   SeasonSeasonIdRoute: SeasonSeasonIdRoute,
   TeamManagerIdRoute: TeamManagerIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

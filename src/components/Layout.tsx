@@ -1,7 +1,7 @@
 import { Link, Outlet } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, Fragment } from "react";
 import { supabase, type Manager, type Season } from "@/lib/supabase";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, ScrollText } from "lucide-react";
 import logo from "@/assets/fpl-super-league-logo.png";
 import { getBranding } from "@/lib/managerBranding";
 import { useSeasonAssets } from "@/lib/seasonAssets";
@@ -48,6 +48,7 @@ export function Layout() {
   const [teamsOpen, setTeamsOpen] = useState(false);
   const [seasonsOpen, setSeasonsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
 
   useEffect(() => {
     supabase.from("managers").select("*").then(({ data }) => setManagers(data ?? []));
@@ -245,6 +246,26 @@ export function Layout() {
                 </div>
               )}
             </div>
+
+            <div
+              className="relative h-full flex items-stretch"
+              onMouseEnter={() => setRulesOpen(true)}
+              onMouseLeave={() => setRulesOpen(false)}
+            >
+              <button className={`${navItemBase} ${underline} ${underlineHover} ${rulesOpen ? "after:scale-x-100" : ""} gap-1`}>
+                Rules &amp; Regulations
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${rulesOpen ? "rotate-180" : ""}`} />
+              </button>
+              {rulesOpen && (
+                <div className="fixed left-0 right-0 top-[68px] bg-[#15164a] border-y border-cyan-500/20 shadow-2xl shadow-black/60">
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <RulesTile to="/rules/prize-pool" tint="hsl(285 80% 55%)" title="Season 5 Prize Pool" />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </nav>
 
           <button
@@ -338,6 +359,13 @@ export function Layout() {
                   <HistoryTile to="/records" tint="hsl(15 85% 55%)" iconKind="records" title="All-Time Records" compact onClick={() => setOpen(false)} />
                   <HistoryTile to="/h2h" tint="hsl(0 80% 55%)" iconKind="h2h" title="H2H History" compact onClick={() => setOpen(false)} />
                   <HistoryTile to="/table" tint="hsl(45 90% 55%)" iconKind="table" title="All-Time League Table" compact onClick={() => setOpen(false)} />
+                </div>
+              </details>
+
+              <details className="border-t border-cyan-500/15 pt-2 mt-2">
+                <summary className="py-2 text-xs font-bold uppercase tracking-[0.18em] cursor-pointer text-white/85">Rules &amp; Regulations</summary>
+                <div className="grid grid-cols-1 gap-2 pt-2 pb-1">
+                  <RulesTile to="/rules/prize-pool" tint="hsl(285 80% 55%)" title="Season 5 Prize Pool" compact onClick={() => setOpen(false)} />
                 </div>
               </details>
             </div>
@@ -442,6 +470,26 @@ function HistoryCrest({ kind, tint, size = 36 }: { kind: "records" | "h2h" | "ta
         )}
       </svg>
     </div>
+  );
+}
+
+function RulesTile({ to, tint, title, compact, onClick }: { to: string; tint: string; title: string; compact?: boolean; onClick?: () => void }) {
+  return (
+    <Link
+      to={to}
+      onClick={onClick}
+      className="group relative flex items-center gap-3 px-3 py-2.5 rounded-md overflow-hidden border border-white/10 hover:border-white/40 transition-all hover:scale-[1.02]"
+      style={{ background: `linear-gradient(120deg, ${tint}38 0%, ${tint}10 55%, rgba(10,17,48,0.6) 100%)` }}
+    >
+      <span className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: tint }} />
+      <div
+        className="rounded-full flex items-center justify-center shrink-0"
+        style={{ width: compact ? 28 : 36, height: compact ? 28 : 36, background: `${tint}33` }}
+      >
+        <ScrollText className={compact ? "w-3.5 h-3.5" : "w-4 h-4"} style={{ color: tint }} />
+      </div>
+      <span className="text-[11px] font-bold uppercase tracking-wider text-white leading-tight flex-1">{title}</span>
+    </Link>
   );
 }
 
