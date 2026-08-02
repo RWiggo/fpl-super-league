@@ -15,7 +15,7 @@ type Row = { label: string; value: string; note?: string };
 const CORE: Record<string, Row[]> = {
   GK: [
     { label: "Goal", value: "15" },
-    { label: "Assist (Official)", value: "8", note: "Assists last year were all worth the same" },
+    { label: "Assist (Official)", value: "8" },
     { label: "Assist (Fantasy)", value: "5" },
     { label: "Penalty Save", value: "8" },
     { label: "Clean Sheet", value: "5" },
@@ -42,7 +42,7 @@ const CORE: Record<string, Row[]> = {
   ],
   DEF: [
     { label: "Goal", value: "14" },
-    { label: "Assist (Official)", value: "8", note: "Assists last year were all worth the same" },
+    { label: "Assist (Official)", value: "8" },
     { label: "Assist (Fantasy)", value: "5" },
     { label: "Clean Sheet", value: "5" },
     { label: "Big Chance Created", value: "4" },
@@ -69,7 +69,7 @@ const CORE: Record<string, Row[]> = {
   ],
   MID: [
     { label: "Goal", value: "13" },
-    { label: "Assist (Official)", value: "7", note: "Assists last year were all worth the same" },
+    { label: "Assist (Official)", value: "7" },
     { label: "Assist (Fantasy)", value: "4" },
     { label: "Big Chance Created", value: "4" },
     { label: "Game Won", value: "3" },
@@ -96,7 +96,7 @@ const CORE: Record<string, Row[]> = {
   ],
   FWD: [
     { label: "Goal", value: "12" },
-    { label: "Assist (Official)", value: "6", note: "Assists last year were all worth the same" },
+    { label: "Assist (Official)", value: "6" },
     { label: "Assist (Fantasy)", value: "3" },
     { label: "Big Chance Created", value: "4" },
     { label: "Game Won", value: "3" },
