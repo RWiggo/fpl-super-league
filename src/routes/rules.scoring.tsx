@@ -39,6 +39,11 @@ const CORE: Record<string, Row[]> = {
     { label: "Penalty Missed", value: "-8" },
     { label: "Red Card", value: "-7", note: "Awarded back if rescinded" },
     { label: "Own Goal", value: "-10" },
+    { label: "Successful One-on-One", value: "2" },
+    { label: "Clearance Off the Line", value: "3" },
+    { label: "Aerials Won", value: "1" },
+    { label: "Foul Drawn", value: "1" },
+    { label: "Penalties Caused", value: "-3" },
   ],
   DEF: [
     { label: "Goal", value: "14" },
@@ -66,6 +71,16 @@ const CORE: Record<string, Row[]> = {
     { label: "Red Card", value: "-7", note: "Awarded back if rescinded" },
     { label: "Penalty Missed", value: "-8" },
     { label: "Own Goal", value: "-10" },
+    { label: "Clearance Off the Line", value: "3" },
+    { label: "Hat Trick", value: "3" },
+    { label: "Free Kick Goal", value: "+2", note: "Extra, on top of normal goal points" },
+    { label: "Goal Outside the Box", value: "+2", note: "Extra, on top of normal goal points" },
+    { label: "Aerials Won", value: "1" },
+    { label: "Ball Recovery", value: "1" },
+    { label: "Foul Drawn", value: "1" },
+    { label: "Key Pass", value: "1" },
+    { label: "Big Chance Missed", value: "-1" },
+    { label: "Penalties Caused", value: "-3" },
   ],
   MID: [
     { label: "Goal", value: "13" },
@@ -93,6 +108,16 @@ const CORE: Record<string, Row[]> = {
     { label: "Red Card", value: "-7", note: "Awarded back if rescinded" },
     { label: "Penalty Missed", value: "-8" },
     { label: "Own Goal", value: "-10" },
+    { label: "Clearance Off the Line", value: "3" },
+    { label: "Hat Trick", value: "3" },
+    { label: "Free Kick Goal", value: "+2", note: "Extra, on top of normal goal points" },
+    { label: "Goal Outside the Box", value: "+2", note: "Extra, on top of normal goal points" },
+    { label: "Aerials Won", value: "1" },
+    { label: "Ball Recovery", value: "1" },
+    { label: "Foul Drawn", value: "1" },
+    { label: "Key Pass", value: "1" },
+    { label: "Big Chance Missed", value: "-1" },
+    { label: "Penalties Caused", value: "-3" },
   ],
   FWD: [
     { label: "Goal", value: "12" },
@@ -118,41 +143,6 @@ const CORE: Record<string, Row[]> = {
     { label: "Red Card", value: "-7", note: "Awarded back if rescinded" },
     { label: "Penalty Missed", value: "-8" },
     { label: "Own Goal", value: "-10" },
-  ] };
-
-const NEW_POINTS: Record<string, Row[]> = {
-  GK: [
-    { label: "Successful One-on-One", value: "2" },
-    { label: "Clearance Off the Line", value: "3" },
-    { label: "Aerials Won", value: "1" },
-    { label: "Foul Drawn", value: "1" },
-    { label: "Penalties Caused", value: "-3" },
-  ],
-  DEF: [
-    { label: "Clearance Off the Line", value: "3" },
-    { label: "Hat Trick", value: "3" },
-    { label: "Free Kick Goal", value: "+2", note: "Extra, on top of normal goal points" },
-    { label: "Goal Outside the Box", value: "+2", note: "Extra, on top of normal goal points" },
-    { label: "Aerials Won", value: "1" },
-    { label: "Ball Recovery", value: "1" },
-    { label: "Foul Drawn", value: "1" },
-    { label: "Key Pass", value: "1" },
-    { label: "Big Chance Missed", value: "-1" },
-    { label: "Penalties Caused", value: "-3" },
-  ],
-  MID: [
-    { label: "Clearance Off the Line", value: "3" },
-    { label: "Hat Trick", value: "3" },
-    { label: "Free Kick Goal", value: "+2", note: "Extra, on top of normal goal points" },
-    { label: "Goal Outside the Box", value: "+2", note: "Extra, on top of normal goal points" },
-    { label: "Aerials Won", value: "1" },
-    { label: "Ball Recovery", value: "1" },
-    { label: "Foul Drawn", value: "1" },
-    { label: "Key Pass", value: "1" },
-    { label: "Big Chance Missed", value: "-1" },
-    { label: "Penalties Caused", value: "-3" },
-  ],
-  FWD: [
     { label: "Clearance Off the Line", value: "3" },
     { label: "Hat Trick", value: "3" },
     { label: "Free Kick Goal", value: "+2", note: "Extra, on top of normal goal points" },
@@ -236,11 +226,6 @@ function ScoringPage() {
               <h2 className="font-display text-xl" style={{ color: p.tint }}>{p.label} Scoring</h2>
             </div>
             <RowList rows={CORE[p.key]} />
-
-            <div className="flex items-center gap-2 mt-8 mb-4">
-              <h3 className="font-display text-lg" style={{ color: p.tint }}>New Points This Season</h3>
-            </div>
-            <RowList rows={NEW_POINTS[p.key]} />
           </TabsContent>
         ))}
       </Tabs>
