@@ -17,6 +17,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorldCupManagerIdRouteImport } from './routes/world-cup.$managerId'
 import { Route as TeamManagerIdRouteImport } from './routes/team.$managerId'
 import { Route as SeasonSeasonIdRouteImport } from './routes/season.$seasonId'
+import { Route as RulesScoringRouteImport } from './routes/rules.scoring'
 import { Route as RulesPrizePoolRouteImport } from './routes/rules.prize-pool'
 
 const WorldCupRoute = WorldCupRouteImport.update({
@@ -59,6 +60,11 @@ const SeasonSeasonIdRoute = SeasonSeasonIdRouteImport.update({
   path: '/season/$seasonId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RulesScoringRoute = RulesScoringRouteImport.update({
+  id: '/rules/scoring',
+  path: '/rules/scoring',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RulesPrizePoolRoute = RulesPrizePoolRouteImport.update({
   id: '/rules/prize-pool',
   path: '/rules/prize-pool',
@@ -72,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/table': typeof TableRoute
   '/world-cup': typeof WorldCupRouteWithChildren
   '/rules/prize-pool': typeof RulesPrizePoolRoute
+  '/rules/scoring': typeof RulesScoringRoute
   '/season/$seasonId': typeof SeasonSeasonIdRoute
   '/team/$managerId': typeof TeamManagerIdRoute
   '/world-cup/$managerId': typeof WorldCupManagerIdRoute
@@ -83,6 +90,7 @@ export interface FileRoutesByTo {
   '/table': typeof TableRoute
   '/world-cup': typeof WorldCupRouteWithChildren
   '/rules/prize-pool': typeof RulesPrizePoolRoute
+  '/rules/scoring': typeof RulesScoringRoute
   '/season/$seasonId': typeof SeasonSeasonIdRoute
   '/team/$managerId': typeof TeamManagerIdRoute
   '/world-cup/$managerId': typeof WorldCupManagerIdRoute
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/table': typeof TableRoute
   '/world-cup': typeof WorldCupRouteWithChildren
   '/rules/prize-pool': typeof RulesPrizePoolRoute
+  '/rules/scoring': typeof RulesScoringRoute
   '/season/$seasonId': typeof SeasonSeasonIdRoute
   '/team/$managerId': typeof TeamManagerIdRoute
   '/world-cup/$managerId': typeof WorldCupManagerIdRoute
@@ -108,6 +117,7 @@ export interface FileRouteTypes {
     | '/table'
     | '/world-cup'
     | '/rules/prize-pool'
+    | '/rules/scoring'
     | '/season/$seasonId'
     | '/team/$managerId'
     | '/world-cup/$managerId'
@@ -119,6 +129,7 @@ export interface FileRouteTypes {
     | '/table'
     | '/world-cup'
     | '/rules/prize-pool'
+    | '/rules/scoring'
     | '/season/$seasonId'
     | '/team/$managerId'
     | '/world-cup/$managerId'
@@ -130,6 +141,7 @@ export interface FileRouteTypes {
     | '/table'
     | '/world-cup'
     | '/rules/prize-pool'
+    | '/rules/scoring'
     | '/season/$seasonId'
     | '/team/$managerId'
     | '/world-cup/$managerId'
@@ -142,6 +154,7 @@ export interface RootRouteChildren {
   TableRoute: typeof TableRoute
   WorldCupRoute: typeof WorldCupRouteWithChildren
   RulesPrizePoolRoute: typeof RulesPrizePoolRoute
+  RulesScoringRoute: typeof RulesScoringRoute
   SeasonSeasonIdRoute: typeof SeasonSeasonIdRoute
   TeamManagerIdRoute: typeof TeamManagerIdRoute
 }
@@ -204,6 +217,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SeasonSeasonIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rules/scoring': {
+      id: '/rules/scoring'
+      path: '/rules/scoring'
+      fullPath: '/rules/scoring'
+      preLoaderRoute: typeof RulesScoringRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/rules/prize-pool': {
       id: '/rules/prize-pool'
       path: '/rules/prize-pool'
@@ -233,6 +253,7 @@ const rootRouteChildren: RootRouteChildren = {
   TableRoute: TableRoute,
   WorldCupRoute: WorldCupRouteWithChildren,
   RulesPrizePoolRoute: RulesPrizePoolRoute,
+  RulesScoringRoute: RulesScoringRoute,
   SeasonSeasonIdRoute: SeasonSeasonIdRoute,
   TeamManagerIdRoute: TeamManagerIdRoute,
 }
