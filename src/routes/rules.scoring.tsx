@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Shield, Info } from "lucide-react";
+import { Shield, Info, TrendingUp, TrendingDown } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/rules/scoring")({
@@ -219,15 +219,31 @@ function ScoringPage() {
           ))}
         </TabsList>
 
-        {POSITIONS.map((p) => (
-          <TabsContent key={p.key} value={p.key} className="mt-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Shield className="w-5 h-5" style={{ color: p.tint }} />
-              <h2 className="font-display text-xl" style={{ color: p.tint }}>{p.label} Scoring</h2>
-            </div>
-            <RowList rows={CORE[p.key]} />
-          </TabsContent>
-        ))}
+        {POSITIONS.map((p) => {
+          const rows = CORE[p.key];
+          const positive = rows.filter((r) => !r.value.startsWith("-"));
+          const negative = rows.filter((r) => r.value.startsWith("-"));
+          return (
+            <TabsContent key={p.key} value={p.key} className="mt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Shield className="w-5 h-5" style={{ color: p.tint }} />
+                <h2 className="font-display text-xl" style={{ color: p.tint }}>{p.label} Scoring</h2>
+              </div>
+
+              <div className="flex items-center gap-2 mb-3 mt-6">
+                <TrendingUp className="w-4 h-4 text-green-400" />
+                <h3 className="font-display text-lg text-green-400">Ways to Score Points</h3>
+              </div>
+              <RowList rows={positive} />
+
+              <div className="flex items-center gap-2 mb-3 mt-8">
+                <TrendingDown className="w-4 h-4 text-red-400" />
+                <h3 className="font-display text-lg text-red-400">Ways to Lose Points</h3>
+              </div>
+              <RowList rows={negative} />
+            </TabsContent>
+          );
+        })}
       </Tabs>
 
       <div className="flex items-center gap-2 justify-center mt-6 text-xs text-muted-foreground">
