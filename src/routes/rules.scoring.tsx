@@ -113,7 +113,6 @@ const CORE: Record<string, Row[]> = {
     { label: "Game Tied", value: "1" },
     { label: "Offside", value: "-1" },
     { label: "Dispossessed", value: "-1" },
-    { label: "Goal Conceded", value: "-1" },
     { label: "Error Leading to Goal", value: "-3" },
     { label: "Yellow Card", value: "-3" },
     { label: "Red Card", value: "-7", note: "Awarded back if rescinded" },
