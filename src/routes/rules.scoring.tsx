@@ -8,23 +8,21 @@ export const Route = createFileRoute("/rules/scoring")({
     meta: [
       { title: "Point Scoring System | FPL Super League" },
       { name: "description", content: "The full position-by-position point scoring breakdown used across the league." },
-    ],
-  }),
-});
+    ] }) });
 
-type Row = { label: string; value: string; was?: string; note?: string };
+type Row = { label: string; value: string; note?: string };
 
 const CORE: Record<string, Row[]> = {
   GK: [
-    { label: "Goal", value: "15", was: "Was 13 last season" },
+    { label: "Goal", value: "15" },
     { label: "Assist (Official)", value: "8", note: "Assists last year were all worth the same" },
     { label: "Assist (Fantasy)", value: "5" },
     { label: "Penalty Save", value: "8" },
     { label: "Clean Sheet", value: "5" },
     { label: "Key Pass (leading directly to shot)", value: "4" },
     { label: "Game Won", value: "3" },
-    { label: "Penalty Won", value: "3", was: "Was 2 last season" },
-    { label: "Save", value: "2", was: "Was 1 last season" },
+    { label: "Penalty Won", value: "3" },
+    { label: "Save", value: "2" },
     { label: "Interception", value: "2" },
     { label: "Shot on Target", value: "2" },
     { label: "Successful Tackle", value: "2" },
@@ -40,17 +38,17 @@ const CORE: Record<string, Row[]> = {
     { label: "Goal Conceded", value: "-2" },
     { label: "Penalty Missed", value: "-8" },
     { label: "Red Card", value: "-7", note: "Awarded back if rescinded" },
-    { label: "Own Goal", value: "-10", was: "Was -9 last season" },
+    { label: "Own Goal", value: "-10" },
   ],
   DEF: [
-    { label: "Goal", value: "14", was: "Was 13 last season" },
+    { label: "Goal", value: "14" },
     { label: "Assist (Official)", value: "8", note: "Assists last year were all worth the same" },
     { label: "Assist (Fantasy)", value: "5" },
     { label: "Clean Sheet", value: "5" },
     { label: "Big Chance Created", value: "4" },
     { label: "Game Won", value: "3" },
-    { label: "Successful Last Man Tackle", value: "3", was: "Was 2 last season" },
-    { label: "Penalty Won", value: "3", was: "Was 2 last season" },
+    { label: "Successful Last Man Tackle", value: "3" },
+    { label: "Penalty Won", value: "3" },
     { label: "Shot on Target", value: "2" },
     { label: "Successful Tackle", value: "2" },
     { label: "Named in Starting 11", value: "1" },
@@ -67,16 +65,16 @@ const CORE: Record<string, Row[]> = {
     { label: "Yellow Card", value: "-3" },
     { label: "Red Card", value: "-7", note: "Awarded back if rescinded" },
     { label: "Penalty Missed", value: "-8" },
-    { label: "Own Goal", value: "-10", was: "Was -9 last season" },
+    { label: "Own Goal", value: "-10" },
   ],
   MID: [
-    { label: "Goal", value: "13", was: "Was 12 last season" },
+    { label: "Goal", value: "13" },
     { label: "Assist (Official)", value: "7", note: "Assists last year were all worth the same" },
     { label: "Assist (Fantasy)", value: "4" },
     { label: "Big Chance Created", value: "4" },
     { label: "Game Won", value: "3" },
-    { label: "Successful Last Man Tackle", value: "3", was: "Was 2 last season" },
-    { label: "Penalty Won", value: "3", was: "Was 2 last season" },
+    { label: "Successful Last Man Tackle", value: "3" },
+    { label: "Penalty Won", value: "3" },
     { label: "Shot on Target", value: "2" },
     { label: "Successful Tackle", value: "2" },
     { label: "Clean Sheet", value: "1" },
@@ -94,16 +92,16 @@ const CORE: Record<string, Row[]> = {
     { label: "Yellow Card", value: "-3" },
     { label: "Red Card", value: "-7", note: "Awarded back if rescinded" },
     { label: "Penalty Missed", value: "-8" },
-    { label: "Own Goal", value: "-10", was: "Was -9 last season" },
+    { label: "Own Goal", value: "-10" },
   ],
   FWD: [
-    { label: "Goal", value: "12", was: "Was 11 last season" },
+    { label: "Goal", value: "12" },
     { label: "Assist (Official)", value: "6", note: "Assists last year were all worth the same" },
     { label: "Assist (Fantasy)", value: "3" },
     { label: "Big Chance Created", value: "4" },
     { label: "Game Won", value: "3" },
-    { label: "Successful Last Man Tackle", value: "3", was: "Was 2 last season" },
-    { label: "Penalty Won", value: "3", was: "Was 2 last season" },
+    { label: "Successful Last Man Tackle", value: "3" },
+    { label: "Penalty Won", value: "3" },
     { label: "Shot on Target", value: "2" },
     { label: "Successful Tackle", value: "2" },
     { label: "Named in Starting 11", value: "1" },
@@ -120,9 +118,8 @@ const CORE: Record<string, Row[]> = {
     { label: "Yellow Card", value: "-3" },
     { label: "Red Card", value: "-7", note: "Awarded back if rescinded" },
     { label: "Penalty Missed", value: "-8" },
-    { label: "Own Goal", value: "-10", was: "Was -9 last season" },
-  ],
-};
+    { label: "Own Goal", value: "-10" },
+  ] };
 
 const NEW_POINTS: Record<string, Row[]> = {
   GK: [
@@ -167,8 +164,7 @@ const NEW_POINTS: Record<string, Row[]> = {
     { label: "Key Pass", value: "1" },
     { label: "Big Chance Missed", value: "-1" },
     { label: "Penalties Caused", value: "-3" },
-  ],
-};
+  ] };
 
 const POSITIONS: Array<{ key: string; label: string; tint: string }> = [
   { key: "GK", label: "Goalkeeper", tint: "hsl(45 90% 55%)" },
@@ -191,8 +187,8 @@ function RowList({ rows }: { rows: Row[] }) {
         <li key={r.label} className="flex items-center justify-between gap-4 px-4 py-3">
           <div className="min-w-0">
             <div className="text-sm text-white">{r.label}</div>
-            {(r.was || r.note) && (
-              <div className="text-[11px] text-muted-foreground mt-0.5">{r.was ?? r.note}</div>
+            {r.note && (
+              <div className="text-[11px] text-muted-foreground mt-0.5">{r.note}</div>
             )}
           </div>
           <div className="font-display text-lg tabular-nums shrink-0" style={{ color: valColor(r.value) }}>
