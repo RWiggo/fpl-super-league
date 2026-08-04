@@ -13,6 +13,21 @@ export const Route = createFileRoute("/rules/general")({
 
 const FORMATIONS = ["3-3-4", "3-4-3", "3-5-2", "4-2-4", "4-3-3", "4-4-2", "4-5-1", "5-2-3", "5-3-2", "5-4-1"];
 
+const WAIVER_ORDER: Array<{ team: string; manager: string; note?: string }> = [
+  { team: "SW8 Gunners", manager: "Chavez", note: "New" },
+  { team: "Send Me Location", manager: "Tim Hazzledine" },
+  { team: "Not Too Xabi FC", manager: "Mark Knight" },
+  { team: "Padleys Piranhas", manager: "Perry Padley" },
+  { team: "Wiggo Wanderers", manager: "Ryan Wiggins" },
+  { team: "Adam All Stars", manager: "Adam Wiggins" },
+  { team: "Fordys XI", manager: "Ollie Ford" },
+  { team: "Raybould Eagles", manager: "Ryan Raybould" },
+  { team: "Power Reijnders FC", manager: "Jake Toyer" },
+  { team: "El Changusto", manager: "Alfie Clark" },
+  { team: "Charleston Athletic", manager: "Charlie Clark" },
+  { team: "ALS Ajax", manager: "Alex Allsopp" },
+];
+
 function RuleCard({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-xl p-5 border border-white/10" style={{ background: "rgba(255,255,255,0.02)" }}>
@@ -105,7 +120,7 @@ function GeneralRulesPage() {
       </section>
 
       {/* Section: Injured Players */}
-      <section className="mb-6">
+      <section className="mb-16">
         <div className="flex items-center gap-2 mb-6">
           <ShieldAlert className="w-5 h-5 text-red-400" />
           <h2 className="font-display text-2xl text-red-400">Injured Players &amp; Sub Manipulation</h2>
@@ -121,6 +136,81 @@ function GeneralRulesPage() {
             </p>
             <p className="text-sm text-muted-foreground leading-relaxed">
               If you're found doing this in an attempt to manipulate your automatic substitutions, you will be docked <strong className="text-red-300">10 FPL points</strong> for that gameweek.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Section: Waivers, Pick Ups & Transfers */}
+      <section className="mb-16">
+        <div className="flex items-center gap-2 mb-6">
+          <ArrowLeftRight className="w-5 h-5 text-gold" />
+          <h2 className="font-display text-2xl text-gold">Waivers, Pick Ups &amp; Transfers</h2>
+        </div>
+
+        {/* Waivers */}
+        <h3 className="font-display text-lg text-white mb-3">Waivers</h3>
+        <div className="rounded-xl p-5 border border-white/10 mb-4" style={{ background: "rgba(255,255,255,0.02)" }}>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Waivers are how unowned (free agent) players get claimed. Rather than first-come-first-served, claims are processed in <strong className="text-white">waiver order</strong> &mdash; if more than one manager claims the same player, whoever is highest in the order gets them. After a successful claim, that manager drops to the bottom of the order, so priority rotates fairly over the season.
+          </p>
+        </div>
+
+        <div className="rounded-xl p-5 border border-white/10 mb-4" style={{ background: "rgba(255,255,255,0.02)" }}>
+          <p className="text-sm text-white font-bold mb-3">Season 5 Starting Waiver Order</p>
+          <ol className="space-y-2">
+            {WAIVER_ORDER.map((w, i) => (
+              <li key={w.manager} className="flex items-center gap-3 text-sm">
+                <span className="w-6 text-gold font-display text-base shrink-0">{i + 1}</span>
+                <span className="text-white">{w.team}</span>
+                <span className="text-muted-foreground">&mdash; {w.manager}</span>
+                {w.note && (
+                  <span
+                    className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ml-auto shrink-0"
+                    style={{ background: "rgba(212,175,55,0.15)", color: "#D4AF37" }}
+                  >
+                    {w.note}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ol>
+          <p className="text-xs text-muted-foreground mt-4">
+            Based on 2025/26 final standings &mdash; the higher you finished, the higher your starting priority. New managers start at the very top of the order.
+          </p>
+        </div>
+
+        <RuleCard icon={<Clock className="w-5 h-5" />} title="Waiver Processing Times">
+          Waivers are processed twice a week, <strong className="text-white">Tuesday and Friday at 11:00am</strong>.
+        </RuleCard>
+
+        {/* Pick Ups */}
+        <h3 className="font-display text-lg text-white mb-3 mt-8">Pick Ups</h3>
+        <RuleCard icon={<Users className="w-5 h-5" />} title="Free Agent Pick Ups">
+          Outside of waiver processing times, you're able to pick up players for free. Typically, a player becomes available on a free transfer shortly after the waiver process if they weren&apos;t claimed and remain on the free agent list.
+        </RuleCard>
+
+        {/* Transfers */}
+        <h3 className="font-display text-lg text-white mb-3 mt-8">Transfers</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <RuleCard icon={<ArrowLeftRight className="w-5 h-5" />} title="Permanent Only">
+            Transfers between managers are allowed and can happen <strong className="text-white">at any time</strong>. All transfers must be permanent &mdash; <strong className="text-red-300">no loans</strong>.
+          </RuleCard>
+          <RuleCard icon={<ShieldAlert className="w-5 h-5" />} title="Fair Trade Monitoring">
+            Transfers are monitored to make sure trades are fair, with no clear instances of unsportsmanlike dealing.
+          </RuleCard>
+        </div>
+
+        {/* General rule callout */}
+        <div
+          className="rounded-xl p-5 sm:p-6 mt-4 flex gap-4"
+          style={{ background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.4)" }}
+        >
+          <Info className="w-6 h-6 shrink-0 text-gold" />
+          <div>
+            <p className="text-sm sm:text-base font-bold text-white mb-1">General Rule</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Players exchanged in a trade must always be <strong className="text-white">like-for-like in position</strong>.
             </p>
           </div>
         </div>
