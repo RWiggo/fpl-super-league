@@ -42,7 +42,7 @@ function GeneralRulesPage() {
         <div className="text-[11px] uppercase tracking-[0.3em] text-gold mb-3">Rules &amp; Regulations</div>
         <h1 className="font-display text-4xl sm:text-5xl">General Rules</h1>
         <p className="text-sm text-muted-foreground mt-4">
-          League-wide rules that apply across every season.
+          League-wide rules that apply across every season, including this one.
         </p>
       </div>
 
