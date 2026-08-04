@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Clock, ArrowLeftRight, Lock, Users, LayoutGrid, ShieldAlert, Info } from "lucide-react";
+import { Clock, ArrowLeftRight, Lock, Users, LayoutGrid, ShieldAlert, Info, ListChecks, Shirt } from "lucide-react";
 
 export const Route = createFileRoute("/rules/general")({
   component: GeneralRulesPage,
@@ -113,6 +113,43 @@ function GeneralRulesPage() {
               <span className="font-display text-2xl text-gold">{f}</span>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Section: Squad Rules */}
+      <section className="mb-16">
+        <div className="flex items-center gap-2 mb-6">
+          <ListChecks className="w-5 h-5 text-gold" />
+          <h2 className="font-display text-2xl text-gold">Squad Rules</h2>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="rounded-xl p-5 border border-white/10" style={{ background: "rgba(255,255,255,0.02)" }}>
+            <div className="flex items-center gap-2.5 mb-3">
+              <Users className="w-5 h-5 text-gold shrink-0" />
+              <h3 className="font-display text-lg text-white">Squad Size</h3>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              Squads are <strong className="text-white">23 players</strong>, made up of:
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { label: "Goalkeepers", n: 3 },
+                { label: "Defenders", n: 7 },
+                { label: "Midfielders", n: 7 },
+                { label: "Forwards", n: 6 },
+              ].map((s) => (
+                <div key={s.label} className="rounded-lg px-3 py-2 flex items-center justify-between" style={{ background: "rgba(212,175,55,0.08)" }}>
+                  <span className="text-xs text-muted-foreground">{s.label}</span>
+                  <span className="font-display text-lg text-gold">{s.n}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <RuleCard icon={<Shirt className="w-5 h-5" />} title="Premier League Club Limit">
+            There is <strong className="text-white">no limit</strong> on how many players you can own from a single Premier League club &mdash; stack as many as you want from the same team.
+          </RuleCard>
         </div>
       </section>
 
