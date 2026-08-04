@@ -33,7 +33,7 @@ function RuleCard({ icon, title, children }: { icon: React.ReactNode; title: str
   return (
     <div className="rounded-xl p-5 border border-white/10" style={{ background: "rgba(255,255,255,0.02)" }}>
       <div className="flex items-center gap-2.5 mb-2">
-        <span className="text-gold shrink-0">{icon}</span>
+        <span className="text-[#BA30E8] shrink-0">{icon}</span>
         <h3 className="font-display text-lg text-white">{title}</h3>
       </div>
       <p className="text-sm text-muted-foreground leading-relaxed">{children}</p>
@@ -55,7 +55,7 @@ function GeneralRulesPage() {
 
       {/* Header */}
       <div className="text-center mb-10">
-        <div className="text-[11px] uppercase tracking-[0.3em] text-gold mb-3">Rules &amp; Regulations</div>
+        <div className="text-[11px] uppercase tracking-[0.3em] text-[#BA30E8] mb-3">Rules &amp; Regulations</div>
         <h1 className="font-display text-4xl sm:text-5xl">General Rules</h1>
       </div>
 
@@ -69,8 +69,8 @@ function GeneralRulesPage() {
         {/* TAB 1: Gameweek Line-Up Rules */}
         <TabsContent value="lineup" className="mt-8">
           <div className="flex items-center gap-2 mb-6">
-            <Users className="w-5 h-5 text-gold" />
-            <h2 className="font-display text-2xl text-gold">Gameweek Line-Up Rules</h2>
+            <Users className="w-5 h-5 text-[#BA30E8]" />
+            <h2 className="font-display text-2xl text-[#BA30E8]">Gameweek Line-Up Rules</h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -85,9 +85,9 @@ function GeneralRulesPage() {
 
           <div
             className="rounded-xl p-5 sm:p-6 mt-4 flex gap-4"
-            style={{ background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.4)" }}
+            style={{ background: "rgba(186,48,232,0.08)", border: "1px solid rgba(186,48,232,0.4)" }}
           >
-            <Lock className="w-6 h-6 shrink-0 text-gold" />
+            <Lock className="w-6 h-6 shrink-0 text-[#BA30E8]" />
             <div>
               <p className="text-sm sm:text-base font-bold text-white mb-1">Important: Per-Player Lock Times</p>
               <p className="text-sm text-muted-foreground leading-relaxed">
@@ -103,8 +103,8 @@ function GeneralRulesPage() {
           </div>
 
           <div className="flex items-center gap-2 mb-5 mt-8">
-            <LayoutGrid className="w-5 h-5 text-gold" />
-            <h3 className="font-display text-xl text-gold">Legal Formations</h3>
+            <LayoutGrid className="w-5 h-5 text-[#BA30E8]" />
+            <h3 className="font-display text-xl text-[#BA30E8]">Legal Formations</h3>
           </div>
           <p className="text-sm text-muted-foreground mb-5">These remain unchanged from previous seasons.</p>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
@@ -114,7 +114,7 @@ function GeneralRulesPage() {
                 className="rounded-xl py-4 text-center border border-white/10"
                 style={{ background: "rgba(255,255,255,0.02)" }}
               >
-                <span className="font-display text-2xl text-gold">{f}</span>
+                <span className="font-display text-2xl text-[#BA30E8]">{f}</span>
               </div>
             ))}
           </div>
@@ -142,14 +142,14 @@ function GeneralRulesPage() {
         {/* TAB 2: Squad Rules */}
         <TabsContent value="squad" className="mt-8">
           <div className="flex items-center gap-2 mb-6">
-            <ListChecks className="w-5 h-5 text-gold" />
-            <h2 className="font-display text-2xl text-gold">Squad Rules</h2>
+            <ListChecks className="w-5 h-5 text-[#BA30E8]" />
+            <h2 className="font-display text-2xl text-[#BA30E8]">Squad Rules</h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="rounded-xl p-5 border border-white/10" style={{ background: "rgba(255,255,255,0.02)" }}>
               <div className="flex items-center gap-2.5 mb-3">
-                <Users className="w-5 h-5 text-gold shrink-0" />
+                <Users className="w-5 h-5 text-[#BA30E8] shrink-0" />
                 <h3 className="font-display text-lg text-white">Squad Size</h3>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
@@ -162,9 +162,9 @@ function GeneralRulesPage() {
                   { label: "Midfielders", n: 7 },
                   { label: "Forwards", n: 6 },
                 ].map((s) => (
-                  <div key={s.label} className="rounded-lg px-3 py-2 flex items-center justify-between" style={{ background: "rgba(212,175,55,0.08)" }}>
+                  <div key={s.label} className="rounded-lg px-3 py-2 flex items-center justify-between" style={{ background: "rgba(186,48,232,0.08)" }}>
                     <span className="text-xs text-muted-foreground">{s.label}</span>
-                    <span className="font-display text-lg text-gold">{s.n}</span>
+                    <span className="font-display text-lg text-[#BA30E8]">{s.n}</span>
                   </div>
                 ))}
               </div>
@@ -179,8 +179,8 @@ function GeneralRulesPage() {
         {/* TAB 3: Waivers, Pick Ups & Transfers */}
         <TabsContent value="waivers" className="mt-8">
           <div className="flex items-center gap-2 mb-6">
-            <ArrowLeftRight className="w-5 h-5 text-gold" />
-            <h2 className="font-display text-2xl text-gold">Waivers, Pick Ups &amp; Transfers</h2>
+            <ArrowLeftRight className="w-5 h-5 text-[#BA30E8]" />
+            <h2 className="font-display text-2xl text-[#BA30E8]">Waivers, Pick Ups &amp; Transfers</h2>
           </div>
 
           <h3 className="font-display text-lg text-white mb-3">Waivers</h3>
@@ -195,13 +195,13 @@ function GeneralRulesPage() {
             <ol className="space-y-2">
               {WAIVER_ORDER.map((w, i) => (
                 <li key={w.manager} className="flex items-center gap-3 text-sm">
-                  <span className="w-6 text-gold font-display text-base shrink-0">{i + 1}</span>
+                  <span className="w-6 text-[#BA30E8] font-display text-base shrink-0">{i + 1}</span>
                   <span className="text-white">{w.team}</span>
                   <span className="text-muted-foreground">&mdash; {w.manager}</span>
                   {w.note && (
                     <span
                       className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ml-auto shrink-0"
-                      style={{ background: "rgba(212,175,55,0.15)", color: "#D4AF37" }}
+                      style={{ background: "rgba(186,48,232,0.15)", color: "#BA30E8" }}
                     >
                       {w.note}
                     </span>
@@ -235,9 +235,9 @@ function GeneralRulesPage() {
 
           <div
             className="rounded-xl p-5 sm:p-6 mt-4 flex gap-4"
-            style={{ background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.4)" }}
+            style={{ background: "rgba(186,48,232,0.08)", border: "1px solid rgba(186,48,232,0.4)" }}
           >
-            <Info className="w-6 h-6 shrink-0 text-gold" />
+            <Info className="w-6 h-6 shrink-0 text-[#BA30E8]" />
             <div>
               <p className="text-sm sm:text-base font-bold text-white mb-1">General Rule</p>
               <p className="text-sm text-muted-foreground leading-relaxed">
