@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Clock, ArrowLeftRight, Lock, Users, LayoutGrid, ShieldAlert, Info, ListChecks, Shirt } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/rules/general")({
   component: GeneralRulesPage,
@@ -53,204 +54,201 @@ function GeneralRulesPage() {
       </div>
 
       {/* Header */}
-      <div className="text-center mb-14">
+      <div className="text-center mb-10">
         <div className="text-[11px] uppercase tracking-[0.3em] text-gold mb-3">Rules &amp; Regulations</div>
         <h1 className="font-display text-4xl sm:text-5xl">General Rules</h1>
       </div>
 
-      {/* Section: Gameweek Line-Up Rules */}
-      <section className="mb-16">
-        <div className="flex items-center gap-2 mb-6">
-          <Users className="w-5 h-5 text-gold" />
-          <h2 className="font-display text-2xl text-gold">Gameweek Line-Up Rules</h2>
-        </div>
+      <Tabs defaultValue="lineup" className="mb-12">
+        <TabsList className="grid grid-cols-3 w-full h-auto">
+          <TabsTrigger value="lineup" className="text-xs sm:text-sm py-2">Gameweek Line-Up</TabsTrigger>
+          <TabsTrigger value="squad" className="text-xs sm:text-sm py-2">Squad Rules</TabsTrigger>
+          <TabsTrigger value="waivers" className="text-xs sm:text-sm py-2">Waivers &amp; Transfers</TabsTrigger>
+        </TabsList>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <RuleCard icon={<Clock className="w-5 h-5" />} title="Sub Order Deadline">
-            You have until <strong className="text-white">15 minutes before kick off</strong> to set your substitute order for the gameweek.
-          </RuleCard>
-
-          <RuleCard icon={<ArrowLeftRight className="w-5 h-5" />} title="Mid-Week Swaps">
-            You can switch anyone in or out of your starting line-up during the gameweek, as long as <strong className="text-white">both the player coming in and the player going out have not yet played their game</strong>.
-          </RuleCard>
-        </div>
-
-        {/* Important callout */}
-        <div
-          className="rounded-xl p-5 sm:p-6 mt-4 flex gap-4"
-          style={{ background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.4)" }}
-        >
-          <Lock className="w-6 h-6 shrink-0 text-gold" />
-          <div>
-            <p className="text-sm sm:text-base font-bold text-white mb-1">Important: Per-Player Lock Times</p>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Although you can swap a player in or out of your line-up any time before <em>their</em> game kicks off, that swap locks <strong className="text-white">15 minutes before that player&apos;s own game</strong> &mdash; not just at the start of the gameweek. Give yourself plenty of time.
-            </p>
+        {/* TAB 1: Gameweek Line-Up Rules */}
+        <TabsContent value="lineup" className="mt-8">
+          <div className="flex items-center gap-2 mb-6">
+            <Users className="w-5 h-5 text-gold" />
+            <h2 className="font-display text-2xl text-gold">Gameweek Line-Up Rules</h2>
           </div>
-        </div>
 
-        <div className="mt-4">
-          <RuleCard icon={<LayoutGrid className="w-5 h-5" />} title="Automatic Substitutions">
-            Subs come on automatically at the end of the gameweek for anyone in your starting line-up who didn&apos;t play at all. They come on <strong className="text-white">in the order you&apos;ve numbered them</strong>, as long as the resulting formation stays legal.
-          </RuleCard>
-        </div>
-      </section>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <RuleCard icon={<Clock className="w-5 h-5" />} title="Sub Order Deadline">
+              You have until <strong className="text-white">15 minutes before kick off</strong> to set your substitute order for the gameweek.
+            </RuleCard>
 
-      {/* Section: Legal Formations */}
-      <section className="mb-16">
-        <div className="flex items-center gap-2 mb-6">
-          <LayoutGrid className="w-5 h-5 text-gold" />
-          <h2 className="font-display text-2xl text-gold">Legal Formations</h2>
-        </div>
-        <p className="text-sm text-muted-foreground mb-5">These remain unchanged from previous seasons.</p>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          {FORMATIONS.map((f) => (
-            <div
-              key={f}
-              className="rounded-xl py-4 text-center border border-white/10"
-              style={{ background: "rgba(255,255,255,0.02)" }}
-            >
-              <span className="font-display text-2xl text-gold">{f}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+            <RuleCard icon={<ArrowLeftRight className="w-5 h-5" />} title="Mid-Week Swaps">
+              You can switch anyone in or out of your starting line-up during the gameweek, as long as <strong className="text-white">both the player coming in and the player going out have not yet played their game</strong>.
+            </RuleCard>
+          </div>
 
-      {/* Section: Squad Rules */}
-      <section className="mb-16">
-        <div className="flex items-center gap-2 mb-6">
-          <ListChecks className="w-5 h-5 text-gold" />
-          <h2 className="font-display text-2xl text-gold">Squad Rules</h2>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="rounded-xl p-5 border border-white/10" style={{ background: "rgba(255,255,255,0.02)" }}>
-            <div className="flex items-center gap-2.5 mb-3">
-              <Users className="w-5 h-5 text-gold shrink-0" />
-              <h3 className="font-display text-lg text-white">Squad Size</h3>
-            </div>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-              Squads are <strong className="text-white">23 players</strong>, made up of:
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { label: "Goalkeepers", n: 3 },
-                { label: "Defenders", n: 7 },
-                { label: "Midfielders", n: 7 },
-                { label: "Forwards", n: 6 },
-              ].map((s) => (
-                <div key={s.label} className="rounded-lg px-3 py-2 flex items-center justify-between" style={{ background: "rgba(212,175,55,0.08)" }}>
-                  <span className="text-xs text-muted-foreground">{s.label}</span>
-                  <span className="font-display text-lg text-gold">{s.n}</span>
-                </div>
-              ))}
+          <div
+            className="rounded-xl p-5 sm:p-6 mt-4 flex gap-4"
+            style={{ background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.4)" }}
+          >
+            <Lock className="w-6 h-6 shrink-0 text-gold" />
+            <div>
+              <p className="text-sm sm:text-base font-bold text-white mb-1">Important: Per-Player Lock Times</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Although you can swap a player in or out of your line-up any time before <em>their</em> game kicks off, that swap locks <strong className="text-white">15 minutes before that player&apos;s own game</strong> &mdash; not just at the start of the gameweek. Give yourself plenty of time.
+              </p>
             </div>
           </div>
 
-          <RuleCard icon={<Shirt className="w-5 h-5" />} title="Premier League Club Limit">
-            There is <strong className="text-white">no limit</strong> on how many players you can own from a single Premier League club &mdash; stack as many as you want from the same team.
-          </RuleCard>
-        </div>
-      </section>
-
-      {/* Section: Injured Players */}
-      <section className="mb-16">
-        <div className="flex items-center gap-2 mb-6">
-          <ShieldAlert className="w-5 h-5 text-red-400" />
-          <h2 className="font-display text-2xl text-red-400">Injured Players &amp; Sub Manipulation</h2>
-        </div>
-        <div
-          className="rounded-xl p-5 sm:p-6 flex gap-4"
-          style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.4)" }}
-        >
-          <ShieldAlert className="w-6 h-6 shrink-0 text-red-400" />
-          <div>
-            <p className="text-sm sm:text-base font-bold text-white mb-1">
-              It is illegal to knowingly leave a reported-injured player in your starting line-up.
-            </p>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              If you're found doing this in an attempt to manipulate your automatic substitutions, you will be docked <strong className="text-red-300">10 FPL points</strong> for that gameweek.
-            </p>
+          <div className="mt-4">
+            <RuleCard icon={<LayoutGrid className="w-5 h-5" />} title="Automatic Substitutions">
+              Subs come on automatically at the end of the gameweek for anyone in your starting line-up who didn&apos;t play at all. They come on <strong className="text-white">in the order you&apos;ve numbered them</strong>, as long as the resulting formation stays legal.
+            </RuleCard>
           </div>
-        </div>
-      </section>
 
-      {/* Section: Waivers, Pick Ups & Transfers */}
-      <section className="mb-16">
-        <div className="flex items-center gap-2 mb-6">
-          <ArrowLeftRight className="w-5 h-5 text-gold" />
-          <h2 className="font-display text-2xl text-gold">Waivers, Pick Ups &amp; Transfers</h2>
-        </div>
-
-        {/* Waivers */}
-        <h3 className="font-display text-lg text-white mb-3">Waivers</h3>
-        <div className="rounded-xl p-5 border border-white/10 mb-4" style={{ background: "rgba(255,255,255,0.02)" }}>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Waivers are how unowned (free agent) players get claimed. Rather than first-come-first-served, claims are processed in <strong className="text-white">waiver order</strong> &mdash; if more than one manager claims the same player, whoever is highest in the order gets them. After a successful claim, that manager drops to the bottom of the order, so priority rotates fairly over the season.
-          </p>
-        </div>
-
-        <div className="rounded-xl p-5 border border-white/10 mb-4" style={{ background: "rgba(255,255,255,0.02)" }}>
-          <p className="text-sm text-white font-bold mb-3">Season 5 Starting Waiver Order</p>
-          <ol className="space-y-2">
-            {WAIVER_ORDER.map((w, i) => (
-              <li key={w.manager} className="flex items-center gap-3 text-sm">
-                <span className="w-6 text-gold font-display text-base shrink-0">{i + 1}</span>
-                <span className="text-white">{w.team}</span>
-                <span className="text-muted-foreground">&mdash; {w.manager}</span>
-                {w.note && (
-                  <span
-                    className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ml-auto shrink-0"
-                    style={{ background: "rgba(212,175,55,0.15)", color: "#D4AF37" }}
-                  >
-                    {w.note}
-                  </span>
-                )}
-              </li>
+          <div className="flex items-center gap-2 mb-5 mt-8">
+            <LayoutGrid className="w-5 h-5 text-gold" />
+            <h3 className="font-display text-xl text-gold">Legal Formations</h3>
+          </div>
+          <p className="text-sm text-muted-foreground mb-5">These remain unchanged from previous seasons.</p>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            {FORMATIONS.map((f) => (
+              <div
+                key={f}
+                className="rounded-xl py-4 text-center border border-white/10"
+                style={{ background: "rgba(255,255,255,0.02)" }}
+              >
+                <span className="font-display text-2xl text-gold">{f}</span>
+              </div>
             ))}
-          </ol>
-          <p className="text-xs text-muted-foreground mt-4">
-            Based on 2025/26 final standings &mdash; the higher you finished, the higher your starting priority. New managers start at the very top of the order.
-          </p>
-        </div>
+          </div>
 
-        <RuleCard icon={<Clock className="w-5 h-5" />} title="Waiver Processing Times">
-          Waivers are processed twice a week, <strong className="text-white">Tuesday and Friday at 11:00am</strong>.
-        </RuleCard>
+          <div className="flex items-center gap-2 mb-5 mt-8">
+            <ShieldAlert className="w-5 h-5 text-red-400" />
+            <h3 className="font-display text-xl text-red-400">Injured Players &amp; Sub Manipulation</h3>
+          </div>
+          <div
+            className="rounded-xl p-5 sm:p-6 flex gap-4"
+            style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.4)" }}
+          >
+            <ShieldAlert className="w-6 h-6 shrink-0 text-red-400" />
+            <div>
+              <p className="text-sm sm:text-base font-bold text-white mb-1">
+                It is illegal to knowingly leave a reported-injured player in your starting line-up.
+              </p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                If you're found doing this in an attempt to manipulate your automatic substitutions, you will be docked <strong className="text-red-300">10 FPL points</strong> for that gameweek.
+              </p>
+            </div>
+          </div>
+        </TabsContent>
 
-        {/* Pick Ups */}
-        <h3 className="font-display text-lg text-white mb-3 mt-8">Pick Ups</h3>
-        <RuleCard icon={<Users className="w-5 h-5" />} title="Free Agent Pick Ups">
-          Outside of waiver processing times, you're able to pick up players for free. Typically, a player becomes available on a free transfer shortly after the waiver process if they weren&apos;t claimed and remain on the free agent list.
-        </RuleCard>
+        {/* TAB 2: Squad Rules */}
+        <TabsContent value="squad" className="mt-8">
+          <div className="flex items-center gap-2 mb-6">
+            <ListChecks className="w-5 h-5 text-gold" />
+            <h2 className="font-display text-2xl text-gold">Squad Rules</h2>
+          </div>
 
-        {/* Transfers */}
-        <h3 className="font-display text-lg text-white mb-3 mt-8">Transfers</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <RuleCard icon={<ArrowLeftRight className="w-5 h-5" />} title="Permanent Only">
-            Transfers between managers are allowed and can happen <strong className="text-white">at any time</strong>. All transfers must be permanent &mdash; <strong className="text-red-300">no loans</strong>.
-          </RuleCard>
-          <RuleCard icon={<ShieldAlert className="w-5 h-5" />} title="Fair Trade Monitoring">
-            Transfers are monitored to make sure trades are fair, with no clear instances of unsportsmanlike dealing.
-          </RuleCard>
-        </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="rounded-xl p-5 border border-white/10" style={{ background: "rgba(255,255,255,0.02)" }}>
+              <div className="flex items-center gap-2.5 mb-3">
+                <Users className="w-5 h-5 text-gold shrink-0" />
+                <h3 className="font-display text-lg text-white">Squad Size</h3>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                Squads are <strong className="text-white">23 players</strong>, made up of:
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { label: "Goalkeepers", n: 3 },
+                  { label: "Defenders", n: 7 },
+                  { label: "Midfielders", n: 7 },
+                  { label: "Forwards", n: 6 },
+                ].map((s) => (
+                  <div key={s.label} className="rounded-lg px-3 py-2 flex items-center justify-between" style={{ background: "rgba(212,175,55,0.08)" }}>
+                    <span className="text-xs text-muted-foreground">{s.label}</span>
+                    <span className="font-display text-lg text-gold">{s.n}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-        {/* General rule callout */}
-        <div
-          className="rounded-xl p-5 sm:p-6 mt-4 flex gap-4"
-          style={{ background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.4)" }}
-        >
-          <Info className="w-6 h-6 shrink-0 text-gold" />
-          <div>
-            <p className="text-sm sm:text-base font-bold text-white mb-1">General Rule</p>
+            <RuleCard icon={<Shirt className="w-5 h-5" />} title="Premier League Club Limit">
+              There is <strong className="text-white">no limit</strong> on how many players you can own from a single Premier League club &mdash; stack as many as you want from the same team.
+            </RuleCard>
+          </div>
+        </TabsContent>
+
+        {/* TAB 3: Waivers, Pick Ups & Transfers */}
+        <TabsContent value="waivers" className="mt-8">
+          <div className="flex items-center gap-2 mb-6">
+            <ArrowLeftRight className="w-5 h-5 text-gold" />
+            <h2 className="font-display text-2xl text-gold">Waivers, Pick Ups &amp; Transfers</h2>
+          </div>
+
+          <h3 className="font-display text-lg text-white mb-3">Waivers</h3>
+          <div className="rounded-xl p-5 border border-white/10 mb-4" style={{ background: "rgba(255,255,255,0.02)" }}>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Players exchanged in a trade must always be <strong className="text-white">like-for-like in position</strong>.
+              Waivers are how unowned (free agent) players get claimed. Rather than first-come-first-served, claims are processed in <strong className="text-white">waiver order</strong> &mdash; if more than one manager claims the same player, whoever is highest in the order gets them. After a successful claim, that manager drops to the bottom of the order, so priority rotates fairly over the season.
             </p>
           </div>
-        </div>
-      </section>
 
-      <div className="flex items-center gap-2 justify-center mt-10 text-xs text-muted-foreground">
+          <div className="rounded-xl p-5 border border-white/10 mb-4" style={{ background: "rgba(255,255,255,0.02)" }}>
+            <p className="text-sm text-white font-bold mb-3">Season 5 Starting Waiver Order</p>
+            <ol className="space-y-2">
+              {WAIVER_ORDER.map((w, i) => (
+                <li key={w.manager} className="flex items-center gap-3 text-sm">
+                  <span className="w-6 text-gold font-display text-base shrink-0">{i + 1}</span>
+                  <span className="text-white">{w.team}</span>
+                  <span className="text-muted-foreground">&mdash; {w.manager}</span>
+                  {w.note && (
+                    <span
+                      className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ml-auto shrink-0"
+                      style={{ background: "rgba(212,175,55,0.15)", color: "#D4AF37" }}
+                    >
+                      {w.note}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ol>
+            <p className="text-xs text-muted-foreground mt-4">
+              Based on 2025/26 final standings &mdash; the higher you finished, the higher your starting priority. New managers start at the very top of the order.
+            </p>
+          </div>
+
+          <RuleCard icon={<Clock className="w-5 h-5" />} title="Waiver Processing Times">
+            Waivers are processed twice a week, <strong className="text-white">Tuesday and Friday at 11:00am</strong>.
+          </RuleCard>
+
+          <h3 className="font-display text-lg text-white mb-3 mt-8">Pick Ups</h3>
+          <RuleCard icon={<Users className="w-5 h-5" />} title="Free Agent Pick Ups">
+            Outside of waiver processing times, you're able to pick up players for free. Typically, a player becomes available on a free transfer shortly after the waiver process if they weren&apos;t claimed and remain on the free agent list.
+          </RuleCard>
+
+          <h3 className="font-display text-lg text-white mb-3 mt-8">Transfers</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <RuleCard icon={<ArrowLeftRight className="w-5 h-5" />} title="Permanent Only">
+              Transfers between managers are allowed and can happen <strong className="text-white">at any time</strong>. All transfers must be permanent &mdash; <strong className="text-red-300">no loans</strong>.
+            </RuleCard>
+            <RuleCard icon={<ShieldAlert className="w-5 h-5" />} title="Fair Trade Monitoring">
+              Transfers are monitored to make sure trades are fair, with no clear instances of unsportsmanlike dealing.
+            </RuleCard>
+          </div>
+
+          <div
+            className="rounded-xl p-5 sm:p-6 mt-4 flex gap-4"
+            style={{ background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.4)" }}
+          >
+            <Info className="w-6 h-6 shrink-0 text-gold" />
+            <div>
+              <p className="text-sm sm:text-base font-bold text-white mb-1">General Rule</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Players exchanged in a trade must always be <strong className="text-white">like-for-like in position</strong>.
+              </p>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      <div className="flex items-center gap-2 justify-center mt-6 text-xs text-muted-foreground">
         <Info className="w-3.5 h-3.5" />
         Part of Rules &amp; Regulations &mdash; more sections will be added here over time
       </div>
