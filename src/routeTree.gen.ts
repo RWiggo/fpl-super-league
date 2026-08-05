@@ -20,6 +20,7 @@ import { Route as SeasonSeasonIdRouteImport } from './routes/season.$seasonId'
 import { Route as RulesScoringRouteImport } from './routes/rules.scoring'
 import { Route as RulesPrizePoolRouteImport } from './routes/rules.prize-pool'
 import { Route as RulesGeneralRouteImport } from './routes/rules.general'
+import { Route as RulesDraftOrderRouteImport } from './routes/rules.draft-order'
 
 const WorldCupRoute = WorldCupRouteImport.update({
   id: '/world-cup',
@@ -76,6 +77,11 @@ const RulesGeneralRoute = RulesGeneralRouteImport.update({
   path: '/rules/general',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RulesDraftOrderRoute = RulesDraftOrderRouteImport.update({
+  id: '/rules/draft-order',
+  path: '/rules/draft-order',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -83,6 +89,7 @@ export interface FileRoutesByFullPath {
   '/records': typeof RecordsRoute
   '/table': typeof TableRoute
   '/world-cup': typeof WorldCupRouteWithChildren
+  '/rules/draft-order': typeof RulesDraftOrderRoute
   '/rules/general': typeof RulesGeneralRoute
   '/rules/prize-pool': typeof RulesPrizePoolRoute
   '/rules/scoring': typeof RulesScoringRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/records': typeof RecordsRoute
   '/table': typeof TableRoute
   '/world-cup': typeof WorldCupRouteWithChildren
+  '/rules/draft-order': typeof RulesDraftOrderRoute
   '/rules/general': typeof RulesGeneralRoute
   '/rules/prize-pool': typeof RulesPrizePoolRoute
   '/rules/scoring': typeof RulesScoringRoute
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   '/records': typeof RecordsRoute
   '/table': typeof TableRoute
   '/world-cup': typeof WorldCupRouteWithChildren
+  '/rules/draft-order': typeof RulesDraftOrderRoute
   '/rules/general': typeof RulesGeneralRoute
   '/rules/prize-pool': typeof RulesPrizePoolRoute
   '/rules/scoring': typeof RulesScoringRoute
@@ -125,6 +134,7 @@ export interface FileRouteTypes {
     | '/records'
     | '/table'
     | '/world-cup'
+    | '/rules/draft-order'
     | '/rules/general'
     | '/rules/prize-pool'
     | '/rules/scoring'
@@ -138,6 +148,7 @@ export interface FileRouteTypes {
     | '/records'
     | '/table'
     | '/world-cup'
+    | '/rules/draft-order'
     | '/rules/general'
     | '/rules/prize-pool'
     | '/rules/scoring'
@@ -151,6 +162,7 @@ export interface FileRouteTypes {
     | '/records'
     | '/table'
     | '/world-cup'
+    | '/rules/draft-order'
     | '/rules/general'
     | '/rules/prize-pool'
     | '/rules/scoring'
@@ -165,6 +177,7 @@ export interface RootRouteChildren {
   RecordsRoute: typeof RecordsRoute
   TableRoute: typeof TableRoute
   WorldCupRoute: typeof WorldCupRouteWithChildren
+  RulesDraftOrderRoute: typeof RulesDraftOrderRoute
   RulesGeneralRoute: typeof RulesGeneralRoute
   RulesPrizePoolRoute: typeof RulesPrizePoolRoute
   RulesScoringRoute: typeof RulesScoringRoute
@@ -251,6 +264,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RulesGeneralRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rules/draft-order': {
+      id: '/rules/draft-order'
+      path: '/rules/draft-order'
+      fullPath: '/rules/draft-order'
+      preLoaderRoute: typeof RulesDraftOrderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -272,6 +292,7 @@ const rootRouteChildren: RootRouteChildren = {
   RecordsRoute: RecordsRoute,
   TableRoute: TableRoute,
   WorldCupRoute: WorldCupRouteWithChildren,
+  RulesDraftOrderRoute: RulesDraftOrderRoute,
   RulesGeneralRoute: RulesGeneralRoute,
   RulesPrizePoolRoute: RulesPrizePoolRoute,
   RulesScoringRoute: RulesScoringRoute,
