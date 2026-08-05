@@ -5,7 +5,7 @@ export const Route = createFileRoute("/rules/draft-order")({
   component: DraftOrderPage,
   head: () => ({
     meta: [
-      { title: "Season 5 Draft Order | FPL Super League" },
+      { title: "Season 5 Draft Day Details | FPL Super League" },
       { name: "description", content: "Season 5 snake draft order, format, and draft night details." },
     ],
   }),
@@ -40,7 +40,7 @@ function DraftOrderPage() {
         <span className="mx-2">/</span>
         <span>Rules &amp; Regulations</span>
         <span className="mx-2">/</span>
-        <span className="text-foreground">Draft Order</span>
+        <span className="text-foreground">Draft Day Details</span>
       </div>
 
       {/* Header */}
@@ -48,7 +48,7 @@ function DraftOrderPage() {
         <div className="text-[11px] uppercase tracking-[0.3em] mb-3" style={{ color: ACCENT }}>
           Season 5 &middot; Rules &amp; Regulations
         </div>
-        <h1 className="font-display text-4xl sm:text-5xl">Draft Order</h1>
+        <h1 className="font-display text-4xl sm:text-5xl">Draft Day Details</h1>
         <p className="text-sm font-bold mt-4" style={{ color: ACCENT }}>
           Thursday 13th August, 8:00pm BST
         </p>

@@ -261,7 +261,7 @@ export function Layout() {
                   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                       <RulesTile to="/rules/general" tint="hsl(45 90% 55%)" title="General Rules" />
-                      <RulesTile to="/rules/draft-order" tint="hsl(285 80% 55%)" title="Season 5 Draft Order" />
+                      <RulesTile to="/rules/draft-order" tint="hsl(285 80% 55%)" title="Season 5 Draft Day Details" />
                       <RulesTile to="/rules/prize-pool" tint="hsl(285 80% 55%)" title="Season 5 Prize Pool" />
                       <RulesTile to="/rules/scoring" tint="hsl(45 90% 55%)" title="Point Scoring System" />
                     </div>
@@ -369,7 +369,7 @@ export function Layout() {
                 <summary className="py-2 text-xs font-bold uppercase tracking-[0.18em] cursor-pointer text-white/85">Rules &amp; Regulations</summary>
                 <div className="grid grid-cols-1 gap-2 pt-2 pb-1">
                   <RulesTile to="/rules/general" tint="hsl(45 90% 55%)" title="General Rules" compact onClick={() => setOpen(false)} />
-                  <RulesTile to="/rules/draft-order" tint="hsl(285 80% 55%)" title="Season 5 Draft Order" compact onClick={() => setOpen(false)} />
+                  <RulesTile to="/rules/draft-order" tint="hsl(285 80% 55%)" title="Season 5 Draft Day Details" compact onClick={() => setOpen(false)} />
                   <RulesTile to="/rules/prize-pool" tint="hsl(285 80% 55%)" title="Season 5 Prize Pool" compact onClick={() => setOpen(false)} />
                   <RulesTile to="/rules/scoring" tint="hsl(45 90% 55%)" title="Point Scoring System" compact onClick={() => setOpen(false)} />
                 </div>
