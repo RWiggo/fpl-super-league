@@ -21,15 +21,21 @@ export function ensureSeasonAssets() {
   if (status !== "idle") return;
   status = "loading";
   Promise.all([
-    supabase.from("team_badges_resolved").select("manager_id,season_id,badge_url"),
+    supabase.from("team_badges_resolved").select("manager_id,season_id,badge_url,badge_season"),
     supabase.from("team_kits").select("manager_id,season_id,home_kit_url"),
   ])
     .then(([b, k]) => {
       (b.data ?? []).forEach((r: any) => {
         if (!r.badge_url) return;
-        badgeMap.set(`${r.manager_id}|${r.season_id}`, r.badge_url);
+        // team_badges_resolved carries forward the most recent explicit badge into every
+        // later season row (labelled with that later season's id), so a naive season_id
+        // match is never actually "exact". badge_season is the real season the badge_url
+        // was recorded for - only treat it as exact when the two agree.
+        if (r.season_id === r.badge_season) {
+          badgeMap.set(`${r.manager_id}|${r.season_id}`, r.badge_url);
+        }
         const prev = latestBadgeSeason.get(String(r.manager_id)) ?? 0;
-        if (r.season_id > prev) latestBadgeSeason.set(String(r.manager_id), r.season_id);
+        if (r.badge_season > prev) latestBadgeSeason.set(String(r.manager_id), r.badge_season);
       });
       (k.data ?? []).forEach((r: any) => {
         if (!r.home_kit_url) return;
