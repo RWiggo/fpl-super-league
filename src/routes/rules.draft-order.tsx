@@ -20,7 +20,7 @@ const DRAFT_ORDER: Array<{ team: string; manager: string; note?: string }> = [
   { team: "ALS Ajax", manager: "Alex Allsopp" },
   { team: "Charleston Athletic", manager: "Charlie Clark" },
   { team: "El Changusto", manager: "Alfie Clark" },
-  { team: "Power Reijnders FC", manager: "Jake Toyer" },
+  { team: "Champagne Kusanova", manager: "Jake Toyer" },
   { team: "Raybould Eagles", manager: "Ryan Raybould" },
   { team: "Fordys XI", manager: "Ollie Ford" },
   { team: "Adam All Stars", manager: "Adam Wiggins" },

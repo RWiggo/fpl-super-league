@@ -23,7 +23,7 @@ const WAIVER_ORDER: Array<{ team: string; manager: string; note?: string }> = [
   { team: "Adam All Stars", manager: "Adam Wiggins" },
   { team: "Fordys XI", manager: "Ollie Ford" },
   { team: "Raybould Eagles", manager: "Ryan Raybould" },
-  { team: "Power Reijnders FC", manager: "Jake Toyer" },
+  { team: "Champagne Kusanova", manager: "Jake Toyer" },
   { team: "El Changusto", manager: "Alfie Clark" },
   { team: "Charleston Athletic", manager: "Charlie Clark" },
   { team: "ALS Ajax", manager: "Alex Allsopp" },

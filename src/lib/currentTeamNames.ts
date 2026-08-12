@@ -8,7 +8,7 @@ export const CURRENT_TEAM_NAMES: Record<string, string> = {
   "6": "Fordys XI",
   "7": "The 2aybould Eagles",
   "8": "Adam All Stars",
-  "9": "Power Reijnders FC",
+  "9": "Champagne Kusanova",
   "10": "Send Me Location",
   "11": "Not Too Xabi FC",
   "12": "Average Team",
