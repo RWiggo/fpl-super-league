@@ -84,13 +84,13 @@ export function SeasonFiveLiveTableSection() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                  <th className="text-left font-medium px-4 sm:px-6 py-3">#</th>
+                  <th className="text-left font-medium px-3 sm:px-6 py-3">#</th>
                   <th className="text-left font-medium px-2 py-3">Team</th>
-                  <th className="text-center font-medium px-2 py-3">W</th>
-                  <th className="text-center font-medium px-2 py-3">D</th>
-                  <th className="text-center font-medium px-2 py-3">L</th>
+                  <th className="text-center font-medium px-1.5 sm:px-2 py-3">W</th>
+                  <th className="text-center font-medium px-1.5 sm:px-2 py-3 hidden sm:table-cell">D</th>
+                  <th className="text-center font-medium px-1.5 sm:px-2 py-3 hidden sm:table-cell">L</th>
                   <th className="text-center font-medium px-2 py-3 hidden sm:table-cell">Diff</th>
-                  <th className="text-center font-medium px-4 sm:px-6 py-3">Pts</th>
+                  <th className="text-center font-medium px-3 sm:px-6 py-3">Pts</th>
                 </tr>
               </thead>
               <tbody>
@@ -102,13 +102,13 @@ export function SeasonFiveLiveTableSection() {
                       className="border-t hover:bg-white/[0.03] transition-colors"
                       style={{ borderColor: `${SEASON_5_ACCENT}1a` }}
                     >
-                      <td className="px-4 sm:px-6 py-3 font-display text-lg" style={{ color: i === 0 ? SEASON_5_ACCENT : undefined }}>{r.position}</td>
-                      <td className="px-2 py-3">
-                        <Link to="/team/$managerId" params={{ managerId: String(r.manager_id) }} className="flex items-center gap-3 group">
+                      <td className="px-3 sm:px-6 py-3 font-display text-lg" style={{ color: i === 0 ? SEASON_5_ACCENT : undefined }}>{r.position}</td>
+                      <td className="px-2 py-3 max-w-[110px] sm:max-w-none">
+                        <Link to="/team/$managerId" params={{ managerId: String(r.manager_id) }} className="flex items-center gap-2 sm:gap-3 group">
                           {badge ? (
-                            <img src={badge} alt="" className="w-8 h-8 object-contain shrink-0" />
+                            <img src={badge} alt="" className="w-7 h-7 sm:w-8 sm:h-8 object-contain shrink-0" />
                           ) : (
-                            <div className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center text-xs shrink-0">{r.name?.[0]}</div>
+                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-muted/50 flex items-center justify-center text-xs shrink-0">{r.name?.[0]}</div>
                           )}
                           <div className="min-w-0">
                             <div className="truncate group-hover:underline">{r.team_name}</div>
@@ -116,11 +116,11 @@ export function SeasonFiveLiveTableSection() {
                           </div>
                         </Link>
                       </td>
-                      <td className="text-center px-2 py-3 text-green-400">{r.wins}</td>
-                      <td className="text-center px-2 py-3 text-yellow-400">{r.draws}</td>
-                      <td className="text-center px-2 py-3 text-red-400">{r.losses}</td>
+                      <td className="text-center px-1.5 sm:px-2 py-3 text-green-400">{r.wins}</td>
+                      <td className="text-center px-1.5 sm:px-2 py-3 text-yellow-400 hidden sm:table-cell">{r.draws}</td>
+                      <td className="text-center px-1.5 sm:px-2 py-3 text-red-400 hidden sm:table-cell">{r.losses}</td>
                       <td className="text-center px-2 py-3 hidden sm:table-cell text-muted-foreground">{r.points_difference > 0 ? `+${r.points_difference}` : r.points_difference}</td>
-                      <td className="text-center px-4 sm:px-6 py-3 font-display text-lg">{r.total_points}</td>
+                      <td className="text-center px-3 sm:px-6 py-3 font-display text-lg">{r.total_points}</td>
                     </tr>
                   );
                 })}
