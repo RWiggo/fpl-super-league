@@ -19,7 +19,7 @@ export const Route = createFileRoute("/table")({
 
 type SortKey =
   | "rank" | "seasons" | "played" | "wins" | "draws" | "losses"
-  | "pf" | "pa" | "pd" | "ppg" | "pts" | "winpct" | "best" | "titles";
+  | "pf" | "pa" | "pd" | "ppg" | "pts" | "winpct" | "best" | "titles" | "cups";
 
 const COLS: { key: SortKey; label: string; tip: string; align: "left" | "center" | "right" }[] = [
   { key: "rank", label: "#", tip: "Rank", align: "left" },
@@ -34,7 +34,8 @@ const COLS: { key: SortKey; label: string; tip: string; align: "left" | "center"
   { key: "ppg", label: "PPG", tip: "League Points per Game", align: "right" },
   { key: "winpct", label: "Win%", tip: "Win Percentage", align: "right" },
   { key: "best", label: "Best", tip: "Best season finish", align: "center" },
-  { key: "titles", label: "T", tip: "Titles", align: "center" },
+  { key: "titles", label: "T", tip: "League Titles", align: "center" },
+  { key: "cups", label: "C", tip: "Cups Won (special tournaments, e.g. World Cup)", align: "center" },
   { key: "pts", label: "Pts", tip: "Total League Points (3W/1D)", align: "right" },
 ];
 
@@ -53,7 +54,8 @@ function TablePage() {
       supabase.from("managers").select("*"),
       supabase.from("seasons").select("*"),
       supabase.from("season_standings").select("season_id,manager_id,position"),
-    ]).then(([a, m, s, st]) => setD({ alltime: a.data ?? [], managers: m.data ?? [], seasons: s.data ?? [], standings: st.data ?? [] }));
+      supabase.from("manager_cups_won").select("*"),
+    ]).then(([a, m, s, st, c]) => setD({ alltime: a.data ?? [], managers: m.data ?? [], seasons: s.data ?? [], standings: st.data ?? [], cups: c.data ?? [] }));
   }, []);
 
   const spoonsByMgr = useMemo(() => {
@@ -89,6 +91,10 @@ function TablePage() {
         completedChampions.set(k, (completedChampions.get(k) ?? 0) + 1);
       }
     }
+    const cupsByMgr = new Map<string, number>();
+    for (const c of d.cups ?? []) {
+      cupsByMgr.set(String(c.manager_id), c.cups_won ?? 0);
+    }
     const mapped = [...d.alltime].map((r) => {
         const w = r.total_wins ?? 0;
         const dr = r.total_draws ?? 0;
@@ -108,11 +114,12 @@ function TablePage() {
           _pts: r.total_league_points ?? 0,
           _best: r.best_finish ?? null,
           _titles: completedChampions.get(String(r.manager_id)) ?? 0,
+          _cups: cupsByMgr.get(String(r.manager_id)) ?? 0,
           _spoons: spoonsByMgr.get(String(r.manager_id)) ?? 0,
         };
       });
     return mapped
-      .sort((a, b) => (b._titles - a._titles) || (b._ppgRaw - a._ppgRaw) || (b._pf - a._pf))
+      .sort((a, b) => (b._titles - a._titles) || (b._cups - a._cups) || (b._ppgRaw - a._ppgRaw) || (b._pf - a._pf))
       .map((r, i) => ({ ...r, _rank: i + 1 }));
   }, [d, spoonsByMgr]);
 
@@ -133,6 +140,7 @@ function TablePage() {
       winpct: (r) => r._winpct,
       best: (r) => r._best == null ? Number.MAX_SAFE_INTEGER : r._best,
       titles: (r) => r._titles,
+      cups: (r) => r._cups,
     };
     const f = keyMap[sortKey];
     return [...enriched].sort((a, b) => (f(a) - f(b)) * dir);
@@ -302,6 +310,7 @@ function TablePage() {
                   <MobileStat label="Win" value={`${r._winpct.toFixed(0)}%`} />
                   <MobileStat label="Best" value={r._best ? ord(r._best) : "-"} />
                   <MobileStat label="T" value={r._titles || "-"} valueClass={r._titles ? "text-gold" : ""} />
+                  <MobileStat label="C" value={r._cups || "-"} valueClass={r._cups ? "text-cyan-300" : ""} />
                   <MobileStat label="Pts" value={r._pts} valueClass="text-gold" />
                 </div>
               </Link>
@@ -371,6 +380,13 @@ function TablePage() {
                         </span>
                       ) : "-"}
                     </td>
+                    <td className="text-center px-2 py-2 whitespace-nowrap">
+                      {r._cups > 0 ? (
+                        <span className="inline-flex items-center justify-center gap-1 text-cyan-300 font-display">
+                          <Medal className="w-3.5 h-3.5" />{r._cups}
+                        </span>
+                      ) : "-"}
+                    </td>
                     <td className="text-right px-2 py-2 font-display text-gold tabular-nums whitespace-nowrap">{r._pts}</td>
                   </tr>
                 );
@@ -387,7 +403,8 @@ function TablePage() {
           <span><b className="text-white">PF/PA/PD</b> FPL Points For/Against/Difference</span>
           <span><b className="text-white">PPG</b> FPL Points per Game</span>
           <span><b className="text-white">Best</b> Best season finish</span>
-          <span><b className="text-white">T</b> Titles</span>
+          <span><b className="text-white">T</b> League Titles</span>
+          <span><b className="text-white">C</b> Cups Won (special tournaments, e.g. World Cup)</span>
           <span><b className="text-white">Pts</b> League Points (3W/1D)</span>
         </div>
       </section>

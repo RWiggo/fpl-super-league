@@ -32,7 +32,7 @@ function TeamPage() {
     (async () => {
       const managerRes = await supabase.from("managers").select("*").eq("id", managerId).single();
       const mName = managerRes.data?.name;
-      const [seasons, allManagers, mst, standings, allStandings, fixtures, streaks, h2h, overall, teamStats, legends, tots, history, alltimePlayers, unbeaten, winless, losing, allClubs] = await Promise.all([
+      const [seasons, allManagers, mst, standings, allStandings, fixtures, streaks, h2h, overall, teamStats, legends, tots, history, alltimePlayers, unbeaten, winless, losing, allClubs, alltimeTable, cupsWon, cupResults] = await Promise.all([
         supabase.from("seasons").select("*").order("year_start"),
         supabase.from("managers").select("*"),
         supabase.from("manager_season_teams").select("*").eq("manager_id", managerId),
@@ -51,6 +51,9 @@ function TeamPage() {
         supabase.from("winless_streaks").select("*").eq("manager_name", mName),
         supabase.from("losing_streaks").select("*").eq("manager_name", mName),
         supabase.from("player_team_history").select("club"),
+        supabase.from("alltime_table").select("*"),
+        supabase.from("manager_cups_won").select("*"),
+        supabase.from("special_tournament_results").select("*, special_tournaments(short_name, linked_season_id)").eq("manager_id", managerId),
       ]);
       const manager = managerRes;
       setD({
@@ -77,6 +80,9 @@ function TeamPage() {
         winless: normalizeStreaks(winless.data),
         losing: normalizeStreaks(losing.data),
         allClubs: [...new Set((allClubs.data ?? []).map((r: any) => r.club).filter(Boolean))] as string[],
+        alltimeTable: alltimeTable.data ?? [],
+        cupsWon: cupsWon.data ?? [],
+        cupResults: cupResults.data ?? [],
       });
     })();
   }, [managerId]);
@@ -162,18 +168,34 @@ function TeamPage() {
   const pointsDiff = totalPF - totalPA;
   const winPct = totalGames ? ((totalWins / totalGames) * 100).toFixed(1) : "0";
 
-  // All-time league position by PPG
-  const ppgByManager = new Map<string, { games: number; pts: number }>();
-  for (const s of d.allStandings as any[]) {
-    const cur = ppgByManager.get(s.manager_id) ?? { games: 0, pts: 0 };
-    cur.games += (s.wins ?? 0) + (s.draws ?? 0) + (s.losses ?? 0);
-    cur.pts += s.total_points ?? 0;
-    ppgByManager.set(s.manager_id, cur);
+  // All-time league rank - mirrors the exact algorithm on /table (titles, then cups,
+  // then raw PPG, then FPL points) so the two pages never disagree.
+  const completedChampionsAllTime = new Map<string, number>();
+  for (const s of d.seasons as any[]) {
+    if (s.champion_manager_id && s.season_complete !== false) {
+      const k = String(s.champion_manager_id);
+      completedChampionsAllTime.set(k, (completedChampionsAllTime.get(k) ?? 0) + 1);
+    }
   }
-  const ppgRanked = [...ppgByManager.entries()]
-    .map(([id, v]) => ({ id, ppg: v.games ? v.pts / v.games : 0 }))
-    .sort((a, b) => b.ppg - a.ppg);
-  const allTimeRank = ppgRanked.findIndex((x) => String(x.id) === String(managerId)) + 1;
+  const cupsByManagerAllTime = new Map<string, number>();
+  for (const c of d.cupsWon as any[]) {
+    cupsByManagerAllTime.set(String(c.manager_id), c.cups_won ?? 0);
+  }
+  const allTimeRanked = (d.alltimeTable as any[])
+    .map((r) => {
+      const w = r.total_wins ?? 0, dr = r.total_draws ?? 0, l = r.total_losses ?? 0;
+      const games = w + dr + l;
+      return {
+        id: r.manager_id,
+        _titles: completedChampionsAllTime.get(String(r.manager_id)) ?? 0,
+        _cups: cupsByManagerAllTime.get(String(r.manager_id)) ?? 0,
+        _ppgRaw: games ? (Number(r.total_league_points ?? 0)) / games : 0,
+        _pf: Number(r.total_points_for ?? 0),
+      };
+    })
+    .sort((a, b) => (b._titles - a._titles) || (b._cups - a._cups) || (b._ppgRaw - a._ppgRaw) || (b._pf - a._pf));
+  const allTimeRank = allTimeRanked.findIndex((x) => String(x.id) === String(managerId)) + 1;
+  const cupsWonCount = cupsByManagerAllTime.get(String(managerId)) ?? 0;
   const ordinal = (n: number) => {
     const s = ["th", "st", "nd", "rd"], v = n % 100;
     return n + (s[(v - 20) % 10] || s[v] || s[0]);
@@ -438,7 +460,8 @@ function TeamPage() {
         }
         facts={[
           { label: "Seasons Played in", value: d.standings.length },
-          { label: "Titles Won", value: titles },
+          { label: "League Titles Won", value: titles },
+          { label: "Cups Won", value: cupsWonCount },
           { label: "All-Time Rank", value: allTimeRank > 0 ? ordinal(allTimeRank) : "-" },
           { label: "Win %", value: `${winPct}%` },
         ]}
@@ -545,6 +568,25 @@ function TeamPage() {
                     valueClass={diff >= 0 ? "text-emerald-400" : "text-red-400"}
                   />
                 </div>
+
+                {(() => {
+                  const cupResult = (d.cupResults as any[]).find(
+                    (c) => c.special_tournaments?.linked_season_id === s.season_id
+                  );
+                  if (!cupResult) return null;
+                  return (
+                    <div className="relative border-t border-border/40 bg-black/30 px-4 py-2 flex items-center justify-between gap-2">
+                      <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-1.5">
+                        <Award className="w-3 h-3 text-gold" />
+                        {cupResult.special_tournaments?.short_name}
+                      </span>
+                      <span className={`text-[11px] font-display ${cupResult.position === 1 ? "text-gold" : "text-silver/90"}`}>
+                        {cupResult.position === 1 && <Trophy className="w-3 h-3 inline mr-1 -mt-0.5" />}
+                        {ordinal(cupResult.position)}
+                      </span>
+                    </div>
+                  );
+                })()}
               </Link>
             );
           })}
