@@ -1168,7 +1168,7 @@ function ArchiveButtons({
             items={badgeArchive.map((b) => ({
               seasonLabel: spanLabel(b.spanLabels),
               teamName: b.teamName,
-              image: b.badge ?? "",
+              images: b.badge ? [{ src: b.badge }] : [],
               imageClass: "w-24 h-24 sm:w-28 sm:h-28 object-contain",
             }))}
           />
@@ -1178,15 +1178,22 @@ function ArchiveButtons({
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display text-2xl uppercase">{teamName} · Kit Archive</DialogTitle>
-            <DialogDescription>Home kits worn through the seasons.</DialogDescription>
+            <DialogDescription>Kits worn through the seasons.</DialogDescription>
           </DialogHeader>
           <ArchiveTimeline
-            items={kitArchive.map((k) => ({
-              seasonLabel: spanLabel(k.spanLabels),
-              teamName: k.teamName,
-              image: k.kit?.home ?? "",
-              imageClass: "w-24 h-24 sm:w-28 sm:h-28 object-contain",
-            }))}
+            items={kitArchive.map((k) => {
+              const variants: { src: string; label: string }[] = [];
+              if (k.kit?.home) variants.push({ src: k.kit.home, label: "Home" });
+              if (k.kit?.away) variants.push({ src: k.kit.away, label: "Away" });
+              if (k.kit?.third) variants.push({ src: k.kit.third, label: "Third" });
+              if (k.kit?.gkImage) variants.push({ src: k.kit.gkImage, label: "GK" });
+              return {
+                seasonLabel: spanLabel(k.spanLabels),
+                teamName: k.teamName,
+                images: variants,
+                imageClass: "w-20 h-20 sm:w-24 sm:h-24 object-contain",
+              };
+            })}
           />
         </DialogContent>
       </Dialog>
@@ -1197,7 +1204,7 @@ function ArchiveButtons({
 function ArchiveTimeline({
   items,
 }: {
-  items: { seasonLabel: string; teamName: string; image: string; imageClass: string }[];
+  items: { seasonLabel: string; teamName: string; images: { src: string; label?: string }[]; imageClass: string }[];
 }) {
   if (!items.length) return <div className="text-sm text-muted-foreground p-6 text-center">No archive entries yet.</div>;
   return (
@@ -1205,14 +1212,21 @@ function ArchiveTimeline({
       {items.map((it, i) => (
         <li key={i} className="relative pl-8 pb-8 last:pb-2">
           <span className="absolute -left-[7px] top-2 w-3 h-3 rounded-full bg-gold shadow-[0_0_0_4px_rgba(0,0,0,0.6)]" />
-          <div className="flex items-center gap-5">
-            <div className="shrink-0 bg-black/30 rounded-lg p-3 border border-border/40">
-              {it.image ? (
-                <img src={it.image} alt="" loading="lazy" className={it.imageClass} />
-              ) : (
+          <div className="flex items-center gap-5 flex-wrap">
+            {it.images.length > 0 ? (
+              it.images.map((img, j) => (
+                <div key={j} className="shrink-0 bg-black/30 rounded-lg p-3 border border-border/40 flex flex-col items-center gap-1.5">
+                  <img src={img.src} alt="" loading="lazy" className={it.imageClass} />
+                  {img.label && it.images.length > 1 && (
+                    <span className="text-[9px] uppercase tracking-widest text-muted-foreground">{img.label}</span>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="shrink-0 bg-black/30 rounded-lg p-3 border border-border/40">
                 <div className="w-24 h-24 grid place-items-center text-xs text-muted-foreground">No asset</div>
-              )}
-            </div>
+              </div>
+            )}
             <div className="min-w-0">
               <div className="text-[10px] uppercase tracking-[0.3em] text-silver/60">{it.seasonLabel}</div>
               <div className="font-display text-xl uppercase truncate">{it.teamName}</div>

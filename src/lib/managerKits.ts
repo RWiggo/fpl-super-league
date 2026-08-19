@@ -13,7 +13,13 @@ import k9 from "@/assets/kits/9_home.png";
 import k10 from "@/assets/kits/10_home.png";
 
 export type GkPalette = { primary: string; sleeve: string; trim: string };
-export type Kit = { home: string; gk: GkPalette };
+export type Kit = {
+  home: string;
+  gk: GkPalette; // colour palette fallback, used to render a synthetic GK jersey when no real gkImage exists
+  away?: string;
+  third?: string;
+  gkImage?: string; // real GK kit photo, takes priority over the synthetic gk palette when present
+};
 
 export const MANAGER_KITS: Record<string, Kit> = {
   // 1 El Changusto - green/red Mexico vibe → midnight black GK with neon accents
