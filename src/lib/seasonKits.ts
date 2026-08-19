@@ -19,10 +19,6 @@ import s1_6 from "@/assets/kits/season1/6_home.png";
 import s1_7 from "@/assets/kits/season1/7_home.png";
 import s1_8 from "@/assets/kits/season1/8_home.png";
 
-import s5_3 from "@/assets/kits/season5/3_home.png";
-import s5_4 from "@/assets/kits/season5/4_home.png";
-import s5_10 from "@/assets/kits/season5/10_home.png";
-
 const KIT_OVERRIDES: Record<string, string> = {
   "1|1": s1_1,
   "2|1": s1_2,
@@ -32,10 +28,6 @@ const KIT_OVERRIDES: Record<string, string> = {
   "6|1": s1_6,
   "7|1": s1_7,
   "8|1": s1_8,
-
-  "3|5": s5_3,
-  "4|5": s5_4,
-  "10|5": s5_10,
 };
 
 export function getSeasonKit(
