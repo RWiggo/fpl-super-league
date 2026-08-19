@@ -23,6 +23,11 @@ import s1_6 from "@/assets/kits/season1/6_home.png";
 import s1_7 from "@/assets/kits/season1/7_home.png";
 import s1_8 from "@/assets/kits/season1/8_home.png";
 
+import s5_1_home from "@/assets/kits/season5/1_home.png";
+import s5_1_away from "@/assets/kits/season5/1_away.png";
+import s5_1_third from "@/assets/kits/season5/1_third.png";
+import s5_1_gk from "@/assets/kits/season5/1_gk.png";
+
 import s5_4_home from "@/assets/kits/season5/4_home.png";
 import s5_4_away from "@/assets/kits/season5/4_away.png";
 import s5_4_third from "@/assets/kits/season5/4_third.png";
@@ -40,6 +45,7 @@ const KIT_OVERRIDES: Record<string, KitOverride> = {
   "7|1": { home: s1_7 },
   "8|1": { home: s1_8 },
 
+  "1|5": { home: s5_1_home, away: s5_1_away, third: s5_1_third, gkImage: s5_1_gk },
   "4|5": { home: s5_4_home, away: s5_4_away, third: s5_4_third, gkImage: s5_4_gk },
 };
 
