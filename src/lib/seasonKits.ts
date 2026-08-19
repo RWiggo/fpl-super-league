@@ -28,6 +28,11 @@ import s5_1_away from "@/assets/kits/season5/1_away.png";
 import s5_1_third from "@/assets/kits/season5/1_third.png";
 import s5_1_gk from "@/assets/kits/season5/1_gk.png";
 
+import s5_2_home from "@/assets/kits/season5/2_home.png";
+import s5_2_away from "@/assets/kits/season5/2_away.png";
+import s5_2_third from "@/assets/kits/season5/2_third.png";
+import s5_2_gk from "@/assets/kits/season5/2_gk.png";
+
 import s5_3_home from "@/assets/kits/season5/3_home.png";
 import s5_3_away from "@/assets/kits/season5/3_away.png";
 import s5_3_third from "@/assets/kits/season5/3_third.png";
@@ -56,6 +61,7 @@ const KIT_OVERRIDES: Record<string, KitOverride> = {
   "8|1": { home: s1_8 },
 
   "1|5": { home: s5_1_home, away: s5_1_away, third: s5_1_third, gkImage: s5_1_gk },
+  "2|5": { home: s5_2_home, away: s5_2_away, third: s5_2_third, gkImage: s5_2_gk },
   "3|5": { home: s5_3_home, away: s5_3_away, third: s5_3_third, gkImage: s5_3_gk },
   "4|5": { home: s5_4_home, away: s5_4_away, third: s5_4_third, gkImage: s5_4_gk },
   "8|5": { home: s5_8_home, away: s5_8_away, third: s5_8_third, gkImage: s5_8_gk },
