@@ -73,6 +73,11 @@ import s5_13_away from "@/assets/kits/season5/13_away.png";
 import s5_13_third from "@/assets/kits/season5/13_third.png";
 import s5_13_gk from "@/assets/kits/season5/13_gk.png";
 
+import s5_7_home from "@/assets/kits/season5/7_home.png";
+import s5_7_away from "@/assets/kits/season5/7_away.png";
+import s5_7_third from "@/assets/kits/season5/7_third.png";
+import s5_7_gk from "@/assets/kits/season5/7_gk.png";
+
 type KitOverride = Partial<Kit>;
 
 const KIT_OVERRIDES: Record<string, KitOverride> = {
@@ -95,6 +100,7 @@ const KIT_OVERRIDES: Record<string, KitOverride> = {
   "9|5": { home: s5_9_home, away: s5_9_away, third: s5_9_third, gkImage: s5_9_gk },
   "5|5": { home: s5_5_home, away: s5_5_away, third: s5_5_third, gkImage: s5_5_gk },
   "13|5": { home: s5_13_home, away: s5_13_away, third: s5_13_third, gkImage: s5_13_gk },
+  "7|5": { home: s5_7_home, away: s5_7_away, third: s5_7_third, gkImage: s5_7_gk },
 };
 
 const FALLBACK_GK = { primary: "#0a0a0a", sleeve: "#fff", trim: "#ccc" };
