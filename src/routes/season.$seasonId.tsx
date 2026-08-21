@@ -22,7 +22,7 @@ function SeasonPage() {
     (async () => {
       const seasonRes = await supabase.from("seasons").select("*").eq("id", seasonId).single();
       const sname = seasonRes.data?.name;
-      const [managers, mst, standings, fixtures, gwTable, winS, loseS, unbeatenS, winlessS, teamStats, overallTOTS, weeklyHi, seasonPlayers] = await Promise.all([
+      const [managers, mst, standings, fixtures, gwTable, winS, loseS, unbeatenS, winlessS, teamStats, overallTOTS, weeklyHi, seasonPlayers, schedule] = await Promise.all([
         supabase.from("managers").select("*"),
         supabase.from("manager_season_teams").select("*").eq("season_id", seasonId),
         supabase.from("season_standings").select("*").eq("season_id", seasonId),
@@ -36,6 +36,7 @@ function SeasonPage() {
         supabase.from("overall_team_of_the_season").select("*").eq("season_name", sname),
         supabase.from("weekly_high_scores").select("*").eq("season_id", seasonId),
         supabase.from("player_team_history").select("*").eq("season_name", sname),
+        supabase.from("fixture_schedule").select("*").eq("season_id", seasonId),
       ]);
       const mstRows = mst.data ?? [];
       const teamByMgr: Record<string, string> = {};
@@ -52,6 +53,7 @@ function SeasonPage() {
         mst: mstRows,
         standings: (standings.data ?? []).sort((a: any, b: any) => a.position - b.position),
         fixtures: fixtures.data ?? [],
+        schedule: schedule.data ?? [],
         gwTable: gwTable.data ?? [],
         winS: winS.data ?? [],
         loseS: injectTeam(filterStreaksForSeason(loseS.data, sname)),
@@ -76,7 +78,7 @@ function SeasonPage() {
     .map((row: any) => ({ ...mById(row.manager_id), team_name: row.team_name }))
     .filter((m: any) => m && m.id);
 
-  const maxGW = Math.max(...d.fixtures.map((f: any) => f.gameweek), 1);
+  const maxGW = Math.max(...d.schedule.map((f: any) => f.gameweek), 1);
 
   // Records
   const completed = d.fixtures.filter((f: any) => f.home_score != null && !(Number(f.home_score) === 0 && Number(f.away_score) === 0));
@@ -197,7 +199,7 @@ function SeasonPage() {
       {/* Fixtures */}
       <section className="max-w-7xl mx-auto px-4 py-12 border-t border-border/50">
         <SectionTitle kicker="Match Centre" title="Fixtures & Results" />
-        <FixturesPanel fixtures={d.fixtures} managers={d.managers} maxGW={maxGW} seasonId={d.season.id} />
+        <FixturesPanel fixtures={d.schedule} managers={d.managers} maxGW={maxGW} seasonId={d.season.id} />
       </section>
 
 
