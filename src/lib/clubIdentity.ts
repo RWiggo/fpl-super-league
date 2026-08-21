@@ -15,6 +15,12 @@ export const CLUB_IDENTITY: Record<string, ClubIdentity> = {
     stadium: { name: "The Feeding Grounds", capacity: "18,000" },
     anthem: { title: "Shark in the Water", artist: "V V Brown" },
   },
+  "13": {
+    // SW8 Gunners
+    slogan: "Victory Through Unity.",
+    stadium: { name: "The Battersea Fortress, Battersea, London", capacity: "24,000" },
+    anthem: { title: "The World Is Yours", artist: "Nas" },
+  },
 };
 
 export function getClubIdentity(managerId: string | number): ClubIdentity | null {
