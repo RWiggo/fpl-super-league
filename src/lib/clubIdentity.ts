@@ -57,6 +57,12 @@ export const CLUB_IDENTITY: Record<string, ClubIdentity> = {
     stadium: { name: "Étoile Stadium, Kusanova City", capacity: "24,300" },
     anthem: { title: "Champagne Supernova", artist: "Oasis" },
   },
+  "1": {
+    // El Changusto
+    slogan: "Swing Together. Strike Together. Win Together.",
+    stadium: { name: "El Jardín Verde, El Parque", capacity: "18,250" },
+    anthem: { title: "Do It Again", artist: "Steely Dan" },
+  },
 };
 
 export function getClubIdentity(managerId: string | number): ClubIdentity | null {
