@@ -75,6 +75,12 @@ export const CLUB_IDENTITY: Record<string, ClubIdentity> = {
     stadium: { name: "The Igloo, Wiggoville", capacity: "12,022" },
     anthem: { title: "Penguins", artist: "Ed Sheeran" },
   },
+  "2": {
+    // Charleston Athletic
+    slogan: "Fly Higher. The Flock Remembers.",
+    stadium: { name: "Crow's Nest Stadium, Charleston", capacity: "24,500" },
+    anthem: { title: "Punchline Fistfight", artist: "The Kairos" },
+  },
 };
 
 export function getClubIdentity(managerId: string | number): ClubIdentity | null {
