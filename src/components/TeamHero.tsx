@@ -96,13 +96,19 @@ export function TeamHero({
                 <span style={{ color: tint }}>{nickname}</span>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Supporting identity strip - slogan, ground/anthem, former names: centered, full width */}
+        {(slogan || stadium || anthem || (formerlyKnownAs && formerlyKnownAs.length > 0)) && (
+          <div className="mt-4 sm:mt-6 text-center max-w-2xl mx-auto">
             {slogan && (
-              <div className="mt-2 sm:mt-3 text-sm md:text-base italic text-silver/70">
+              <div className="text-sm md:text-base italic text-silver/70">
                 “{slogan}”
               </div>
             )}
             {(stadium || anthem) && (
-              <div className="mt-3 sm:mt-5 flex flex-wrap gap-x-4 sm:gap-x-8 gap-y-1 sm:gap-y-2">
+              <div className="mt-2 sm:mt-3 flex flex-wrap justify-center gap-x-4 sm:gap-x-8 gap-y-1 sm:gap-y-2">
                 {stadium && (
                   <div className="text-[11px] sm:text-xs">
                     <span className="uppercase tracking-[0.15em] sm:tracking-[0.2em] text-silver/50">Ground </span>
@@ -124,9 +130,9 @@ export function TeamHero({
               </div>
             )}
             {formerlyKnownAs && formerlyKnownAs.length > 0 && (
-              <div className="mt-2 sm:mt-5 max-w-2xl">
+              <div className="mt-3 sm:mt-5">
                 <div className="text-[8px] sm:text-[9px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-silver/60 mb-1 sm:mb-1.5">Formerly Known As</div>
-                <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
                   {formerlyKnownAs.map((name, i) => (
                     <span
                       key={i}
@@ -139,7 +145,7 @@ export function TeamHero({
               </div>
             )}
           </div>
-        </div>
+        )}
 
         {/* Quick facts strip - UCL "club info" row */}
         {facts.length > 0 && (
@@ -150,7 +156,7 @@ export function TeamHero({
             >
               {facts.map((f, i) => (
                 <div key={i} className="py-2.5 sm:py-4 md:py-5 px-1 sm:px-2 md:px-5 first:pl-0 flex flex-col items-center sm:items-start text-center sm:text-left min-w-0">
-                  <div className="text-[9px] sm:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.25em] text-silver/60 leading-tight">{f.label}</div>
+                  <div className="text-[9px] sm:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.25em] text-silver/60 leading-tight min-h-[2.3em] flex items-center sm:items-start">{f.label}</div>
                   <div className="font-display text-3xl sm:text-2xl md:text-3xl lg:text-4xl mt-1 sm:mt-2 leading-none whitespace-nowrap tabular-nums" style={{ color: tint }}>
                     {f.value}
                   </div>
@@ -164,7 +170,7 @@ export function TeamHero({
               >
                 {secondaryFacts.map((f, i) => (
                   <div key={i} className="py-2 sm:py-3 md:py-4 px-1 sm:px-2 md:px-5 first:pl-0 flex flex-col items-center sm:items-start text-center sm:text-left min-w-0">
-                    <div className="text-[8px] sm:text-[9px] uppercase tracking-[0.08em] sm:tracking-[0.22em] text-silver/50 leading-tight">{f.label}</div>
+                    <div className="text-[8px] sm:text-[9px] uppercase tracking-[0.08em] sm:tracking-[0.22em] text-silver/50 leading-tight min-h-[2.1em] flex items-center sm:items-start">{f.label}</div>
                     <div className="font-display text-xl sm:text-lg md:text-xl lg:text-2xl mt-0.5 sm:mt-1 leading-none whitespace-nowrap tabular-nums" style={{ color: tint }}>
                       {f.value}
                     </div>
