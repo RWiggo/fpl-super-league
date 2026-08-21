@@ -69,6 +69,12 @@ export const CLUB_IDENTITY: Record<string, ClubIdentity> = {
     stadium: { name: "The Emerald Forge, Ajax Quarter", capacity: "19,800" },
     anthem: { title: "I'm Shipping Up to Boston", artist: "Dropkick Murphys" },
   },
+  "3": {
+    // Wiggo Wanderers
+    slogan: "United We Waddle.",
+    stadium: { name: "The Igloo, Wiggoville", capacity: "12,022" },
+    anthem: { title: "Penguins", artist: "Ed Sheeran" },
+  },
 };
 
 export function getClubIdentity(managerId: string | number): ClubIdentity | null {
