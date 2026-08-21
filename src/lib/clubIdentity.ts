@@ -39,6 +39,12 @@ export const CLUB_IDENTITY: Record<string, ClubIdentity> = {
     stadium: { name: "The Songbround", capacity: "18,240" },
     anthem: { title: "Songbird", artist: "Fleetwood Mac" },
   },
+  "6": {
+    // Fordy's XI
+    slogan: "Stand Tall. Strike First.",
+    stadium: { name: "The Nest", capacity: "18,500" },
+    anthem: { title: "Pink Flamingos", artist: "Tracy Byrd" },
+  },
 };
 
 export function getClubIdentity(managerId: string | number): ClubIdentity | null {
