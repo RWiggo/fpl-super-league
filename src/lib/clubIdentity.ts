@@ -45,6 +45,12 @@ export const CLUB_IDENTITY: Record<string, ClubIdentity> = {
     stadium: { name: "The Nest", capacity: "18,500" },
     anthem: { title: "Pink Flamingos", artist: "Tracy Byrd" },
   },
+  "8": {
+    // Adam All Stars
+    slogan: "Ice in Our Veins. Heart in Our Game. Stars in Our Name.",
+    stadium: { name: "Polaris Arena", capacity: "21,500" },
+    anthem: { title: "Cold as Ice", artist: "Foreigner" },
+  },
 };
 
 export function getClubIdentity(managerId: string | number): ClubIdentity | null {
