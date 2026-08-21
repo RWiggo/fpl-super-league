@@ -63,6 +63,12 @@ export const CLUB_IDENTITY: Record<string, ClubIdentity> = {
     stadium: { name: "El Jardín Verde, El Parque", capacity: "18,250" },
     anthem: { title: "Do It Again", artist: "Steely Dan" },
   },
+  "4": {
+    // ALS Ajax
+    slogan: "Born Lucky. Built Ruthless.",
+    stadium: { name: "The Emerald Forge, Ajax Quarter", capacity: "19,800" },
+    anthem: { title: "I'm Shipping Up to Boston", artist: "Dropkick Murphys" },
+  },
 };
 
 export function getClubIdentity(managerId: string | number): ClubIdentity | null {
