@@ -6,7 +6,6 @@ import { StatCard, Skeleton } from "@/components/StatCard";
 import { FormationPitch } from "@/components/FormationPitch";
 import { Trophy, Crown, Flame, Target, Zap, TrendingDown, Award, ShieldOff, Flag, Skull, ChevronLeft, ChevronRight } from "lucide-react";
 import { getBranding } from "@/lib/managerBranding";
-import { getClubIdentity } from "@/lib/clubIdentity";
 import { getNickname } from "@/lib/managerNicknames";
 import { getPlClubBadge } from "@/lib/plClubBadges";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -33,7 +32,7 @@ function TeamPage() {
     (async () => {
       const managerRes = await supabase.from("managers").select("*").eq("id", managerId).single();
       const mName = managerRes.data?.name;
-      const [seasons, allManagers, mst, standings, allStandings, fixtures, streaks, h2h, overall, teamStats, legends, tots, history, alltimePlayers, unbeaten, winless, losing, allClubs, alltimeTable, cupsWon, cupResults] = await Promise.all([
+      const [seasons, allManagers, mst, standings, allStandings, fixtures, streaks, h2h, overall, teamStats, legends, tots, history, alltimePlayers, unbeaten, winless, losing, allClubs, alltimeTable, cupsWon, cupResults, clubIdentity] = await Promise.all([
         supabase.from("seasons").select("*").order("year_start"),
         supabase.from("managers").select("*"),
         supabase.from("manager_season_teams").select("*").eq("manager_id", managerId),
@@ -55,6 +54,7 @@ function TeamPage() {
         supabase.from("alltime_table").select("*"),
         supabase.from("manager_cups_won").select("*"),
         supabase.from("special_tournament_results").select("*, special_tournaments(short_name, linked_season_id)").eq("manager_id", managerId),
+        supabase.from("club_identity").select("*").eq("manager_id", managerId).maybeSingle(),
       ]);
       const manager = managerRes;
       setD({
@@ -84,6 +84,7 @@ function TeamPage() {
         alltimeTable: alltimeTable.data ?? [],
         cupsWon: cupsWon.data ?? [],
         cupResults: cupResults.data ?? [],
+        clubIdentity: clubIdentity.data ?? null,
       });
     })();
   }, [managerId]);
@@ -456,9 +457,9 @@ function TeamPage() {
         primary={branding?.primary}
         nickname={getNickname(managerId)}
         formerlyKnownAs={formerlyKnownAs}
-        slogan={getClubIdentity(managerId)?.slogan}
-        stadium={getClubIdentity(managerId)?.stadium}
-        anthem={getClubIdentity(managerId)?.anthem}
+        slogan={d.clubIdentity?.slogan}
+        stadium={d.clubIdentity?.stadium_name ? { name: d.clubIdentity.stadium_name, capacity: d.clubIdentity.stadium_capacity } : undefined}
+        anthem={d.clubIdentity?.anthem_title ? { title: d.clubIdentity.anthem_title, artist: d.clubIdentity.anthem_artist } : undefined}
         extras={
           <ArchiveButtons badgeArchive={badgeArchive} kitArchive={kitArchive} teamName={currentTeamName} />
         }
