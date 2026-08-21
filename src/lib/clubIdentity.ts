@@ -27,6 +27,12 @@ export const CLUB_IDENTITY: Record<string, ClubIdentity> = {
     stadium: { name: "The Octagon", capacity: "24,500" },
     anthem: { title: "I Believe I Can Fly", artist: "R. Kelly" },
   },
+  "10": {
+    // Send Me Location
+    slogan: "Step In. Stand Tall.",
+    stadium: { name: "The Octagon", capacity: "24,500" },
+    anthem: { title: "Till I Collapse", artist: "Eminem" },
+  },
 };
 
 export function getClubIdentity(managerId: string | number): ClubIdentity | null {
