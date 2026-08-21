@@ -65,7 +65,7 @@ export function TeamHero({
           <span className="inline-block w-6 h-px bg-silver/60" />
           The FPL Super League · Club
         </div>
-        {extras && <div className="mb-3 sm:mb-6">{extras}</div>}
+        {extras && <div className="mb-5 sm:mb-8">{extras}</div>}
 
         <div className="grid grid-cols-[auto_1fr] md:grid-cols-[auto_1fr] gap-5 sm:gap-6 md:gap-10 items-center">
           {badge && (
