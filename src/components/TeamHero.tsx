@@ -77,7 +77,7 @@ export function TeamHero({
               <img
                 src={badge}
                 alt={`${teamName} badge`}
-                className="relative w-24 h-24 sm:w-28 sm:h-28 md:w-40 md:h-40 lg:w-48 lg:h-48 drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)]"
+                className="relative w-28 h-28 sm:w-28 sm:h-28 md:w-40 md:h-40 lg:w-48 lg:h-48 drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)]"
               />
             </div>
           )}
@@ -97,14 +97,14 @@ export function TeamHero({
               </div>
             )}
             {slogan && (
-              <div className="mt-1.5 sm:mt-3 text-base md:text-base italic text-silver/80">
+              <div className="mt-1.5 sm:mt-3 text-lg md:text-base italic text-silver/80">
                 “{slogan}”
               </div>
             )}
             {(stadium || anthem) && (
               <div className="mt-2 sm:mt-5 flex flex-wrap gap-x-4 sm:gap-x-8 gap-y-1 sm:gap-y-2">
                 {stadium && (
-                  <div className="text-xs sm:text-xs">
+                  <div className="text-sm sm:text-xs">
                     <span className="uppercase tracking-[0.15em] sm:tracking-[0.2em] text-silver/60">Ground </span>
                     <span className="text-silver/90">
                       {stadium.name}
@@ -113,7 +113,7 @@ export function TeamHero({
                   </div>
                 )}
                 {anthem && (
-                  <div className="text-xs sm:text-xs">
+                  <div className="text-sm sm:text-xs">
                     <span className="uppercase tracking-[0.15em] sm:tracking-[0.2em] text-silver/60">Anthem </span>
                     <span className="text-silver/90">
                       “{anthem.title}”
@@ -150,8 +150,8 @@ export function TeamHero({
             >
               {facts.map((f, i) => (
                 <div key={i} className="py-2.5 sm:py-4 md:py-5 px-1 sm:px-2 md:px-5 first:pl-0 flex flex-col items-center sm:items-start text-center sm:text-left min-w-0">
-                  <div className="text-[8px] sm:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.25em] text-silver/60 leading-tight">{f.label}</div>
-                  <div className="font-display text-2xl sm:text-2xl md:text-3xl lg:text-4xl mt-1 sm:mt-2 leading-none whitespace-nowrap" style={{ color: tint }}>
+                  <div className="text-[9px] sm:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.25em] text-silver/60 leading-tight">{f.label}</div>
+                  <div className="font-display text-3xl sm:text-2xl md:text-3xl lg:text-4xl mt-1 sm:mt-2 leading-none whitespace-nowrap" style={{ color: tint }}>
                     {f.value}
                   </div>
                 </div>
@@ -164,8 +164,8 @@ export function TeamHero({
               >
                 {secondaryFacts.map((f, i) => (
                   <div key={i} className="py-2 sm:py-3 md:py-4 px-1 sm:px-2 md:px-5 first:pl-0 flex flex-col items-center sm:items-start text-center sm:text-left min-w-0">
-                    <div className="text-[7px] sm:text-[9px] uppercase tracking-[0.08em] sm:tracking-[0.22em] text-silver/50 leading-tight">{f.label}</div>
-                    <div className="font-display text-lg sm:text-lg md:text-xl lg:text-2xl mt-0.5 sm:mt-1 leading-none whitespace-nowrap" style={{ color: tint }}>
+                    <div className="text-[8px] sm:text-[9px] uppercase tracking-[0.08em] sm:tracking-[0.22em] text-silver/50 leading-tight">{f.label}</div>
+                    <div className="font-display text-xl sm:text-lg md:text-xl lg:text-2xl mt-0.5 sm:mt-1 leading-none whitespace-nowrap" style={{ color: tint }}>
                       {f.value}
                     </div>
                   </div>
