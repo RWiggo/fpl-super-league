@@ -464,8 +464,8 @@ function TeamPage() {
         }
         facts={[
           { label: "Seasons Played in", value: d.standings.length },
-          { label: "League Titles Won", value: titles },
-          { label: "Cups Won", value: cupsWonCount },
+          { label: "League Titles", value: titles },
+          { label: "Cups", value: cupsWonCount },
           { label: "All-Time Rank", value: allTimeRank > 0 ? ordinal(allTimeRank) : "-" },
           { label: "Win %", value: `${winPct}%` },
         ]}
