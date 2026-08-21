@@ -21,6 +21,12 @@ export const CLUB_IDENTITY: Record<string, ClubIdentity> = {
     stadium: { name: "The Battersea Fortress, Battersea, London", capacity: "24,000" },
     anthem: { title: "The World Is Yours", artist: "Nas" },
   },
+  "7": {
+    // The Raybould Eagles
+    slogan: "Rise Together. Soar Forever.",
+    stadium: { name: "The Octagon", capacity: "24,500" },
+    anthem: { title: "I Believe I Can Fly", artist: "R. Kelly" },
+  },
 };
 
 export function getClubIdentity(managerId: string | number): ClubIdentity | null {

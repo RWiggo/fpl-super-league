@@ -67,7 +67,7 @@ export function TeamHero({
         </div>
         {extras && <div className="mb-2 sm:mb-6">{extras}</div>}
 
-        <div className="grid grid-cols-[auto_1fr] md:grid-cols-[auto_1fr] gap-3 sm:gap-6 md:gap-10 items-center">
+        <div className="grid grid-cols-[auto_1fr] md:grid-cols-[auto_1fr] gap-4 sm:gap-6 md:gap-10 items-center">
           {badge && (
             <div className="relative">
               <div
@@ -77,34 +77,34 @@ export function TeamHero({
               <img
                 src={badge}
                 alt={`${teamName} badge`}
-                className="relative w-16 h-16 sm:w-28 sm:h-28 md:w-40 md:h-40 lg:w-48 lg:h-48 drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)]"
+                className="relative w-20 h-20 sm:w-28 sm:h-28 md:w-40 md:h-40 lg:w-48 lg:h-48 drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)]"
               />
             </div>
           )}
           <div className="min-w-0">
             <div className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-silver/70 mb-1 sm:mb-2">{managerName}</div>
             <h1
-              className="font-display text-3xl sm:text-5xl md:text-7xl lg:text-8xl leading-[0.95] sm:leading-[0.9] uppercase"
+              className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl leading-[0.95] sm:leading-[0.9] uppercase"
               style={{ color: "var(--foreground)" }}
             >
               {teamName}
             </h1>
-            <div className="mt-2 sm:mt-4 h-[2px] w-14 sm:w-20" style={{ background: tint }} />
+            <div className="mt-2 sm:mt-4 h-[2px] w-16 sm:w-20" style={{ background: tint }} />
             {nickname && (
-              <div className="mt-2 sm:mt-4 text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em]">
+              <div className="mt-2 sm:mt-4 text-xs uppercase tracking-[0.25em] sm:tracking-[0.3em]">
                 <span className="text-silver/70">Known as </span>
                 <span style={{ color: tint }}>{nickname}</span>
               </div>
             )}
             {slogan && (
-              <div className="mt-1.5 sm:mt-3 text-xs sm:text-sm md:text-base italic text-silver/80">
+              <div className="mt-1.5 sm:mt-3 text-sm md:text-base italic text-silver/80">
                 “{slogan}”
               </div>
             )}
             {(stadium || anthem) && (
-              <div className="mt-2 sm:mt-5 flex flex-wrap gap-x-4 sm:gap-x-8 gap-y-0.5 sm:gap-y-2">
+              <div className="mt-2 sm:mt-5 flex flex-wrap gap-x-4 sm:gap-x-8 gap-y-1 sm:gap-y-2">
                 {stadium && (
-                  <div className="text-[10px] sm:text-xs">
+                  <div className="text-[11px] sm:text-xs">
                     <span className="uppercase tracking-[0.15em] sm:tracking-[0.2em] text-silver/60">Ground </span>
                     <span className="text-silver/90">
                       {stadium.name}
@@ -113,7 +113,7 @@ export function TeamHero({
                   </div>
                 )}
                 {anthem && (
-                  <div className="text-[10px] sm:text-xs">
+                  <div className="text-[11px] sm:text-xs">
                     <span className="uppercase tracking-[0.15em] sm:tracking-[0.2em] text-silver/60">Anthem </span>
                     <span className="text-silver/90">
                       “{anthem.title}”
@@ -149,9 +149,9 @@ export function TeamHero({
               style={{ gridTemplateColumns: `repeat(${facts.length}, minmax(0, 1fr))` }}
             >
               {facts.map((f, i) => (
-                <div key={i} className="py-2 sm:py-4 md:py-5 px-1 sm:px-2 md:px-5 first:pl-0 flex flex-col items-center sm:items-start text-center sm:text-left min-w-0">
-                  <div className="text-[7px] sm:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.25em] text-silver/60 leading-tight">{f.label}</div>
-                  <div className="font-display text-sm sm:text-2xl md:text-3xl lg:text-4xl mt-1 sm:mt-2 leading-none whitespace-nowrap" style={{ color: tint }}>
+                <div key={i} className="py-2.5 sm:py-4 md:py-5 px-1 sm:px-2 md:px-5 first:pl-0 flex flex-col items-center sm:items-start text-center sm:text-left min-w-0">
+                  <div className="text-[7.5px] sm:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.25em] text-silver/60 leading-tight">{f.label}</div>
+                  <div className="font-display text-lg sm:text-2xl md:text-3xl lg:text-4xl mt-1 sm:mt-2 leading-none whitespace-nowrap" style={{ color: tint }}>
                     {f.value}
                   </div>
                 </div>
@@ -163,9 +163,9 @@ export function TeamHero({
                 style={{ gridTemplateColumns: `repeat(${secondaryFacts.length}, minmax(0, 1fr))` }}
               >
                 {secondaryFacts.map((f, i) => (
-                  <div key={i} className="py-1.5 sm:py-3 md:py-4 px-1 sm:px-2 md:px-5 first:pl-0 flex flex-col items-center sm:items-start text-center sm:text-left min-w-0">
+                  <div key={i} className="py-2 sm:py-3 md:py-4 px-1 sm:px-2 md:px-5 first:pl-0 flex flex-col items-center sm:items-start text-center sm:text-left min-w-0">
                     <div className="text-[7px] sm:text-[9px] uppercase tracking-[0.08em] sm:tracking-[0.22em] text-silver/50 leading-tight">{f.label}</div>
-                    <div className="font-display text-xs sm:text-lg md:text-xl lg:text-2xl mt-0.5 sm:mt-1 leading-none whitespace-nowrap" style={{ color: tint }}>
+                    <div className="font-display text-sm sm:text-lg md:text-xl lg:text-2xl mt-0.5 sm:mt-1 leading-none whitespace-nowrap" style={{ color: tint }}>
                       {f.value}
                     </div>
                   </div>
