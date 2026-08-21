@@ -51,6 +51,12 @@ export const CLUB_IDENTITY: Record<string, ClubIdentity> = {
     stadium: { name: "Polaris Arena", capacity: "21,500" },
     anthem: { title: "Cold as Ice", artist: "Foreigner" },
   },
+  "9": {
+    // Champagne Kusanova
+    slogan: "Wear the Night. Win the Moment.",
+    stadium: { name: "Étoile Stadium, Kusanova City", capacity: "24,300" },
+    anthem: { title: "Champagne Supernova", artist: "Oasis" },
+  },
 };
 
 export function getClubIdentity(managerId: string | number): ClubIdentity | null {
