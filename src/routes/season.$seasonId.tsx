@@ -1257,12 +1257,12 @@ function FixturesPanel({ fixtures, managers, maxGW, seasonId }: any) {
           const awayM = mByName(f.away_manager);
           const hb = homeM ? { badge: getSeasonBadge(homeM.id, seasonId) ?? getBranding(homeM.id)?.badge } : null;
           const ab = awayM ? { badge: getSeasonBadge(awayM.id, seasonId) ?? getBranding(awayM.id)?.badge } : null;
-          const homeWon = f.played === true && f.home_score > f.away_score;
-          const awayWon = f.played === true && f.away_score > f.home_score;
-          const isDraw = f.home_score != null && f.home_score === f.away_score;
+          const hasScore = f.home_score != null && !(Number(f.home_score) === 0 && Number(f.away_score) === 0);
+          const homeWon = hasScore && f.home_score > f.away_score;
+          const awayWon = hasScore && f.away_score > f.home_score;
+          const isDraw = hasScore && f.home_score === f.away_score;
           const homeColor = homeWon ? "text-emerald-400" : isDraw ? "text-yellow-400" : "text-red-400";
           const awayColor = awayWon ? "text-emerald-400" : isDraw ? "text-yellow-400" : "text-red-400";
-          const hasScore = f.played === true;
           return (
             <div key={f.id} className="premium-card rounded-lg p-3 sm:p-4">
               <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">GW {f.gameweek}</div>
