@@ -33,6 +33,12 @@ export const CLUB_IDENTITY: Record<string, ClubIdentity> = {
     stadium: { name: "The Octagon", capacity: "24,500" },
     anthem: { title: "Till I Collapse", artist: "Eminem" },
   },
+  "11": {
+    // Not Too Xabi FC
+    slogan: "Let the Football Sing.",
+    stadium: { name: "The Songbround", capacity: "18,240" },
+    anthem: { title: "Songbird", artist: "Fleetwood Mac" },
+  },
 };
 
 export function getClubIdentity(managerId: string | number): ClubIdentity | null {
