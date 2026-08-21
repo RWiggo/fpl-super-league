@@ -6,6 +6,7 @@ import { StatCard, Skeleton } from "@/components/StatCard";
 import { FormationPitch } from "@/components/FormationPitch";
 import { Trophy, Crown, Flame, Target, Zap, TrendingDown, Award, ShieldOff, Flag, Skull, ChevronLeft, ChevronRight } from "lucide-react";
 import { getBranding } from "@/lib/managerBranding";
+import { getClubIdentity } from "@/lib/clubIdentity";
 import { getNickname } from "@/lib/managerNicknames";
 import { getPlClubBadge } from "@/lib/plClubBadges";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -455,6 +456,9 @@ function TeamPage() {
         primary={branding?.primary}
         nickname={getNickname(managerId)}
         formerlyKnownAs={formerlyKnownAs}
+        slogan={getClubIdentity(managerId)?.slogan}
+        stadium={getClubIdentity(managerId)?.stadium}
+        anthem={getClubIdentity(managerId)?.anthem}
         extras={
           <ArchiveButtons badgeArchive={badgeArchive} kitArchive={kitArchive} teamName={currentTeamName} />
         }

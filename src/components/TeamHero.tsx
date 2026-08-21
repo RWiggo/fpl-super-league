@@ -12,6 +12,9 @@ export function TeamHero({
   facts,
   secondaryFacts,
   extras,
+  slogan,
+  stadium,
+  anthem,
 }: {
   managerName: string;
   teamName: string;
@@ -22,6 +25,9 @@ export function TeamHero({
   facts: QuickFact[];
   secondaryFacts?: QuickFact[];
   extras?: ReactNode;
+  slogan?: string;
+  stadium?: { name: string; capacity?: string };
+  anthem?: { title: string; artist?: string };
 }) {
   // UCL-style team hero: dark navy base, diagonal team-colour wash on the
   // right, oversized faded crest watermark, crest + name on the left, and
@@ -88,6 +94,33 @@ export function TeamHero({
               <div className="mt-4 text-xs uppercase tracking-[0.3em]">
                 <span className="text-silver/70">Known as </span>
                 <span style={{ color: tint }}>{nickname}</span>
+              </div>
+            )}
+            {slogan && (
+              <div className="mt-3 text-sm md:text-base italic text-silver/80">
+                “{slogan}”
+              </div>
+            )}
+            {(stadium || anthem) && (
+              <div className="mt-5 flex flex-wrap gap-x-8 gap-y-2">
+                {stadium && (
+                  <div className="text-xs">
+                    <span className="uppercase tracking-[0.2em] text-silver/60">Ground </span>
+                    <span className="text-silver/90">
+                      {stadium.name}
+                      {stadium.capacity && <span className="text-silver/60"> · Cap. {stadium.capacity}</span>}
+                    </span>
+                  </div>
+                )}
+                {anthem && (
+                  <div className="text-xs">
+                    <span className="uppercase tracking-[0.2em] text-silver/60">Anthem </span>
+                    <span className="text-silver/90">
+                      “{anthem.title}”
+                      {anthem.artist && <span className="text-silver/60"> — {anthem.artist}</span>}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
             {formerlyKnownAs && formerlyKnownAs.length > 0 && (
